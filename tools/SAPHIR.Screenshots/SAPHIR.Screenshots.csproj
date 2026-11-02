@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Outil de captures d'écran : ouvre les vrais écrans de SAPHIR sans affichage (Avalonia Headless + Skia),
+    avec des données d'exemple (aucun serveur), et enregistre des PNG.
+    Lancement : voir le workflow screenshots.yml.
+  -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net9.0</TargetFramework>
+    <RootNamespace>Saphir.Screenshots</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Avalonia.Headless" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Skia" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\src\SAPHIR.App\SAPHIR.App.csproj" />
+  </ItemGroup>
+</Project>

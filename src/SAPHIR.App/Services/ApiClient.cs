@@ -18,9 +18,16 @@ public sealed class ApiClient
     private static readonly JsonSerializerOptions JsonOptions = new(JsonSerializerDefaults.Web) { PropertyNameCaseInsensitive = true };
     private readonly HttpClient _http;
 
-    public ApiClient(string token)
+    public ApiClient(string token) : this(token, null)
     {
-        _http = new HttpClient { BaseAddress = ClientSettings.Current.HttpBaseUri, Timeout = TimeSpan.FromSeconds(20) };
+    }
+
+    /// <summary>Avec un <paramref name="handler"/> fourni : réponses simulées (outil de captures d'écran).</summary>
+    public ApiClient(string token, HttpMessageHandler? handler)
+    {
+        _http = handler is null ? new HttpClient() : new HttpClient(handler);
+        _http.BaseAddress = ClientSettings.Current.HttpBaseUri;
+        _http.Timeout = TimeSpan.FromSeconds(20);
         _http.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
     }
 
@@ -124,6 +131,13 @@ public static class SaphirSession
     }
 
     public static void Update(SaphirUserDto user) => User = user;
+
+    /// <summary>Session avec un client d'API fourni (outil de captures d'écran, données d'exemple).</summary>
+    public static void Open(ApiClient api, SaphirUserDto user)
+    {
+        Api = api;
+        User = user;
+    }
 
     public static void Close()
     {

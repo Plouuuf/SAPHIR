@@ -35,15 +35,22 @@ public static class Program
 
         builder.Services.Configure<SaphirServerOptions>(builder.Configuration.GetSection("SAPHIR"));
         builder.Services.Configure<DiscordOAuthOptions>(builder.Configuration.GetSection("Discord"));
+        builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("Database"));
+
+        // Connexion Discord et temps réel
         builder.Services.AddSingleton<AuthSessionStore>();
         builder.Services.AddSingleton<PersistentDiscordSessionStore>();
         builder.Services.AddSingleton<DiscordOAuthService>();
         builder.Services.AddSingleton<RealtimeHub>();
-        builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("Database"));
-        builder.Services.AddSingleton<FiveMReader>();
-        builder.Services.AddSingleton<MeoFicStore>();
-        builder.Services.AddSingleton<PegaseStore>();
-        builder.Services.AddSingleton<PtsStore>();
+
+        // Base SAPHIR et socle
+        builder.Services.AddSingleton<SaphirDb>();
+        builder.Services.AddSingleton<PermissionService>();
+        builder.Services.AddSingleton<ParametresService>();
+        builder.Services.AddSingleton<JournalAcces>();
+        builder.Services.AddSingleton<AgentStore>();
+        builder.Services.AddSingleton<AdminStore>();
+        builder.Services.AddSingleton<SessionService>();
 
         var app = builder.Build();
 
@@ -54,27 +61,24 @@ public static class Program
         if (!app.Services.GetRequiredService<DiscordOAuthService>().IsConfigured)
             app.Logger.LogWarning("Connexion Discord non configurée : renseigner Discord:ClientId, ClientSecret, PublicBaseUrl, GuildId et RequiredRoleId.");
 
-        var meoFic = app.Services.GetRequiredService<MeoFicStore>();
-        if (!meoFic.IsConfigured)
-        {
-            app.Logger.LogWarning("Base SAPHIR non configurée : renseigner Database:Saphir (MEO-FIC indisponible).");
-        }
+        // Migrations et données de départ. Base injoignable : le serveur démarre quand même, les routes /api répondent 503
+        // et un nouvel essai a lieu au plus toutes les 30 secondes (l'erreur est déjà journalisée par SaphirDb).
+        var db = app.Services.GetRequiredService<SaphirDb>();
+        if (!db.IsConfigured)
+            app.Logger.LogError("Base SAPHIR non configurée : renseigner Database:Saphir. Les routes /api répondront 503.");
         else
-        {
-            try
-            {
-                await meoFic.InitializeAsync(CancellationToken.None);
-            }
-            catch (Exception ex)
-            {
-                app.Logger.LogError(ex, "Base SAPHIR injoignable au démarrage : MEO-FIC répondra « base injoignable » tant qu'elle ne l'est pas.");
-            }
-        }
+            await db.EnsureReadyAsync(CancellationToken.None);
 
         app.UseWebSockets(new WebSocketOptions { KeepAliveInterval = TimeSpan.FromSeconds(15) });
 
         app.MapGet("/", () => Results.Ok(new { service = "SAPHIR Server", status = "online" }));
-        app.MapGet("/health", (RealtimeHub hub) => Results.Ok(new { status = "ok", utc = DateTimeOffset.UtcNow, connections = hub.ConnectionCount }));
+        app.MapGet("/health", (RealtimeHub hub, SaphirDb database) => Results.Ok(new
+        {
+            status = "ok",
+            utc = DateTimeOffset.UtcNow,
+            connections = hub.ConnectionCount,
+            database = database.IsReady
+        }));
 
         // ===== Connexion Discord =====
 
@@ -131,21 +135,13 @@ public static class Program
 
         app.Map("/ws", branch => branch.Run(context => context.RequestServices.GetRequiredService<RealtimeHub>().HandleAsync(context)));
 
-        // ===== Données (jeton d'application requis) =====
+        // ===== Socle : version, session, Administration (jeton d'application requis, sauf /api/version) =====
 
-        app.MapGet("/api/me", async (HttpContext context) =>
-        {
-            var user = await ApiAuth.AuthenticateAsync(context);
-            return user is null ? Results.Unauthorized() : Results.Ok(user);
-        });
-
-        app.MapMeoFic();
-        app.MapPegase();
-        app.MapPts();
+        app.MapSocle();
 
         // ===== Intégrations serveur à serveur (clé SAPHIR:AccessKey dans l'en-tête X-Saphir-Key) =====
 
-        // Notification de test, et base des futurs liens (SIMCALL pour PEGASE, scripts FiveM).
+        // Notification générique (tests, futurs liens SIMCALL et scripts FiveM).
         // Corps : { "type": "notify", "title": "…", "text": "…", "appId": "…" } ; ?userId=… pour un seul joueur.
         app.MapPost("/api/integrations/notify", async (HttpContext context, RealtimeMessage message, RealtimeHub hub) =>
         {
@@ -158,30 +154,6 @@ public static class Program
                 ? await hub.BroadcastAsync(notification, context.RequestAborted)
                 : await hub.SendToUserAsync(userId, notification, context.RequestAborted);
             return Results.Ok(new { sent });
-        });
-
-        // SIMCALL : décroché d'un 17 → fiche d'appel PEGASE ouverte sur le poste de l'opérateur.
-        app.MapPost("/api/integrations/simcall/answered", async (HttpContext context, SimcallCallAnswered message, PegaseStore pegase) =>
-        {
-            if (!HasIntegrationKey(context, accessKey))
-                return Results.Unauthorized();
-            if (string.IsNullOrWhiteSpace(message.SimcallCallId) || string.IsNullOrWhiteSpace(message.DiscordUserId))
-                return Results.BadRequest(new { error = "Appel SIMCALL incomplet." });
-            if (!meoFic.IsConfigured)
-                return Results.Json(new { error = "Base SAPHIR non configurée." }, statusCode: StatusCodes.Status503ServiceUnavailable);
-            var call = await pegase.SimcallAnsweredAsync(message, context.RequestAborted);
-            return Results.Ok(new { id = call.Id });
-        });
-
-        // SIMCALL : raccroché → durée de l'appel figée.
-        app.MapPost("/api/integrations/simcall/ended", async (HttpContext context, SimcallCallEnded message, PegaseStore pegase) =>
-        {
-            if (!HasIntegrationKey(context, accessKey))
-                return Results.Unauthorized();
-            if (!meoFic.IsConfigured)
-                return Results.Json(new { error = "Base SAPHIR non configurée." }, statusCode: StatusCodes.Status503ServiceUnavailable);
-            await pegase.SimcallEndedAsync(message, context.RequestAborted);
-            return Results.NoContent();
         });
 
         await app.RunAsync();

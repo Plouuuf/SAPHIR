@@ -1,0 +1,121 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.LogonView">
+    <!-- Ouverture de session, façon Windows 7 : vignette de l'utilisateur, connexion Discord, marque en bas. -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.logon">
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Effect">
+                <DropShadowEffect BlurRadius="8" OffsetX="0" OffsetY="1" Opacity="0.85" Color="#002050"/>
+            </Setter>
+        </Style>
+        <!-- Bouton rond vitré avec flèche (« Ouvrir la session ») -->
+        <Style Selector="Button.arrow">
+            <Setter Property="Width" Value="34"/>
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="CornerRadius" Value="17"/>
+            <Setter Property="BorderBrush" Value="#99FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#9FD3F5"/>
+                    <GradientStop Offset="0.5" Color="#3D8FD6"/>
+                    <GradientStop Offset="0.5" Color="#2477C6"/>
+                    <GradientStop Offset="1" Color="#4AA3E8"/>
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+        <Style Selector="Button.arrow:pointerover /template/ Border#FlatRoot">
+            <Setter Property="BorderBrush" Value="White"/>
+        </Style>
+        <Style Selector="Button.logonpill">
+            <Setter Property="Height" Value="34"/>
+            <Setter Property="Padding" Value="16,0"/>
+            <Setter Property="CornerRadius" Value="17"/>
+            <Setter Property="BorderBrush" Value="#80FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#33FFFFFF"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="FontSize" Value="14"/>
+        </Style>
+        <Style Selector="Button.logonpill:pointerover /template/ Border#FlatRoot">
+            <Setter Property="Background" Value="#55FFFFFF"/>
+            <Setter Property="BorderBrush" Value="White"/>
+        </Style>
+        <Style Selector="Button.power">
+            <Setter Property="Width" Value="44"/>
+            <Setter Property="Height" Value="32"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="BorderBrush" Value="#99FFFFFF"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="{StaticResource CloseButtonBrush}"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid RowDefinitions="*,Auto,*,Auto">
+        <StackPanel Grid.Row="1" HorizontalAlignment="Center" Spacing="10">
+            <!-- Vignette utilisateur : cadre vitré -->
+            <Border Width="140" Height="140" CornerRadius="8" Padding="8" HorizontalAlignment="Center"
+                    BorderBrush="#B3FFFFFF" BorderThickness="1">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#80FFFFFF"/>
+                        <GradientStop Offset="1" Color="#26FFFFFF"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Border CornerRadius="4" ClipToBounds="True" Background="#E8F1FA">
+                    <Panel>
+                        <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Margin="10" IsVisible="{Binding !HasAvatar}"/>
+                        <Image Source="{Binding Avatar}" Stretch="UniformToFill" IsVisible="{Binding HasAvatar}"/>
+                    </Panel>
+                </Border>
+            </Border>
+
+            <TextBlock Classes="logon" Text="{Binding DisplayName}" FontSize="26" HorizontalAlignment="Center" Margin="0,6,0,0"/>
+            <TextBlock Classes="logon" Text="{Binding Subtitle}" FontSize="14" Opacity="0.9" HorizontalAlignment="Center"/>
+
+            <!-- Action principale -->
+            <StackPanel Orientation="Horizontal" Spacing="10" HorizontalAlignment="Center" Margin="0,12,0,0"
+                        IsVisible="{Binding IsIdle}">
+                <Button Classes="flat logonpill" Content="{Binding SignInLabel}" Command="{Binding SignInCommand}"/>
+                <Button Classes="flat arrow" Command="{Binding SignInCommand}" ToolTip.Tip="{Binding SignInLabel}">
+                    <PathIcon Data="{StaticResource IconArrowRight}" Width="16" Height="16" Foreground="White"/>
+                </Button>
+            </StackPanel>
+
+            <!-- Attente -->
+            <StackPanel Spacing="10" HorizontalAlignment="Center" IsVisible="{Binding IsBusy}" Margin="0,12,0,0">
+                <ProgressBar IsIndeterminate="True" Width="220" Height="6" Foreground="#9FD3F5"/>
+                <TextBlock Classes="logon" Text="{Binding StatusText}" FontSize="14" HorizontalAlignment="Center"/>
+                <Button Classes="flat logonpill" Content="Annuler" Command="{Binding CancelSignInCommand}" HorizontalAlignment="Center"/>
+            </StackPanel>
+
+            <!-- Erreur -->
+            <Border IsVisible="{Binding HasError}" Background="#CCFFFFFF" CornerRadius="4" Padding="14,8" MaxWidth="460"
+                    HorizontalAlignment="Center" Margin="0,8,0,0">
+                <StackPanel Orientation="Horizontal" Spacing="8">
+                    <PathIcon Data="{StaticResource IconWarning}" Width="18" Height="18" Foreground="#C7503B"/>
+                    <TextBlock Text="{Binding ErrorText}" Foreground="#1E395B" TextWrapping="Wrap" MaxWidth="400" FontSize="13"/>
+                </StackPanel>
+            </Border>
+
+            <Button Classes="link" Content="Utiliser un autre compte Discord" HorizontalAlignment="Center" Margin="0,6,0,0"
+                    Foreground="#D6E9FF" Command="{Binding UseOtherAccountCommand}" IsVisible="{Binding HasKnownAccount}"/>
+        </StackPanel>
+
+        <!-- Marque, en bas au centre (comme « Windows 7 Professionnel ») -->
+        <StackPanel Grid.Row="3" Orientation="Horizontal" Spacing="12" HorizontalAlignment="Center" Margin="0,0,0,26">
+            <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Width="40" Height="40"/>
+            <StackPanel VerticalAlignment="Center">
+                <TextBlock Classes="logon" Text="{Binding Version}" FontSize="22" FontWeight="Light"/>
+                <TextBlock Classes="logon" Text="Police nationale · Val-de-Marne Simulation" FontSize="12" Opacity="0.85"/>
+            </StackPanel>
+        </StackPanel>
+
+        <!-- Arrêt, en bas à droite -->
+        <Button Grid.Row="3" Classes="flat power" HorizontalAlignment="Right" VerticalAlignment="Bottom" Margin="0,0,24,30"
+                ToolTip.Tip="Quitter SAPHIR" Command="{Binding QuitCommand}" IsVisible="{Binding CanQuit}">
+            <PathIcon Data="{StaticResource IconPower}" Width="16" Height="16" Foreground="White"/>
+        </Button>
+    </Grid>
+</UserControl>

@@ -1,0 +1,210 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             x:Class="Saphir.Views.Apps.AdministrationView">
+    <!-- Administration SAPHIR. DataContext : AdministrationViewModel. -->
+    <Grid>
+        <Grid RowDefinitions="Auto,*">
+            <controls:MessageBar/>
+            <TabControl Grid.Row="1" Classes="win7" Margin="10,8,10,10">
+
+                <!-- ===== Comptes ===== -->
+                <TabItem Header="Comptes" IsVisible="{Binding CanComptes}">
+                    <Grid ColumnDefinitions="*,330" RowDefinitions="Auto,*" Margin="10">
+                        <Grid ColumnDefinitions="*,Auto,Auto,Auto" Margin="0,0,0,8">
+                            <TextBox Text="{Binding SearchText}" Watermark="Rechercher (nom, prénom, RIO, référence, Discord)"/>
+                            <ComboBox Grid.Column="1" ItemsSource="{Binding StatusFilters}" SelectedItem="{Binding StatusFilter}"
+                                      Width="150" Margin="8,0,0,0"/>
+                            <Button Grid.Column="2" Content="Rechercher" Command="{Binding SearchCommand}" Margin="8,0,0,0"/>
+                            <TextBlock Grid.Column="3" Classes="muted" Text="{Binding ComptesInfo}" VerticalAlignment="Center" Margin="10,0,0,0"/>
+                        </Grid>
+
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Comptes}" SelectedItem="{Binding SelectedCompte}"
+                                  IsReadOnly="True" AutoGenerateColumns="False" CanUserResizeColumns="True"
+                                  GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                                <DataGridTextColumn Header="Nom" Binding="{Binding Nom}" Width="120"/>
+                                <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="110"/>
+                                <DataGridTextColumn Header="RIO" Binding="{Binding Rio}" Width="80"/>
+                                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="120"/>
+                                <DataGridTextColumn Header="Profils" Binding="{Binding Profils}" Width="*"/>
+                                <DataGridTextColumn Header="Dernière connexion" Binding="{Binding DerniereConnexion}" Width="130"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+
+                        <!-- Panneau de droite : compte sélectionné -->
+                        <Border Grid.Column="1" Grid.RowSpan="2" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                            <Grid>
+                                <TextBlock Classes="muted" Text="Sélectionne un compte dans la liste." Margin="14" TextWrapping="Wrap"
+                                           IsVisible="{Binding !HasSelectedCompte}"/>
+                                <ScrollViewer IsVisible="{Binding HasSelectedCompte}">
+                                    <StackPanel Margin="14,12" Spacing="8">
+                                        <TextBlock Classes="instruction" Text="{Binding SelectedCompteTitle}" TextWrapping="Wrap" FontSize="14"/>
+                                        <TextBlock Classes="muted" Text="{Binding SelectedCompte.Discord, StringFormat='Discord : {0}'}"/>
+
+                                        <TextBlock Classes="groupheader" Text="Profils" Margin="0,6,0,0"/>
+                                        <ItemsControl ItemsSource="{Binding ProfilChoices}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="0,1">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Nom}" FontSize="12" Foreground="Black"/>
+                                                            <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </CheckBox>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <TextBox Text="{Binding ProfilsMotif}" Watermark="Motif (facultatif)"/>
+                                        <Button Classes="default" Content="Enregistrer les profils" Command="{Binding SaveProfilsCommand}" HorizontalAlignment="Right"/>
+
+                                        <TextBlock Classes="groupheader" Text="Statut du compte" Margin="0,8,0,0"/>
+                                        <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding NewStatut}" HorizontalAlignment="Stretch"/>
+                                        <TextBox Text="{Binding StatutMotif}" Watermark="Motif (obligatoire pour suspendre ou archiver)"/>
+                                        <Button Content="Appliquer le statut" Command="{Binding ApplyStatutCommand}" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </ScrollViewer>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== Profils ===== -->
+                <TabItem Header="Profils et permissions" IsVisible="{Binding CanProfils}">
+                    <Grid ColumnDefinitions="260,*" Margin="10">
+                        <Grid RowDefinitions="*,Auto">
+                            <ListBox ItemsSource="{Binding Profils}" SelectedItem="{Binding SelectedProfil}"
+                                     BorderBrush="#C8D5E7" BorderThickness="1">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="2,1">
+                                            <TextBlock Text="{Binding Nom}" FontSize="12" Foreground="Black"/>
+                                            <TextBlock Text="{Binding NombreAgents, StringFormat='{}{0} agent(s)'}" FontSize="11" Foreground="#5B6B7C"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <Button Grid.Row="1" Content="Nouveau profil" Command="{Binding NewProfilCommand}"
+                                    HorizontalAlignment="Left" Margin="0,8,0,0"/>
+                        </Grid>
+
+                        <Border Grid.Column="1" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                            <Grid>
+                                <TextBlock Classes="muted" Text="Sélectionne un profil ou crée-en un nouveau." Margin="14"
+                                           IsVisible="{Binding !IsEditingProfil}"/>
+                                <Grid RowDefinitions="Auto,*,Auto" IsVisible="{Binding IsEditingProfil}">
+                                    <StackPanel Margin="14,12,14,6" Spacing="6">
+                                        <TextBlock Classes="instruction" Text="{Binding ProfilEditorTitle}" FontSize="14"/>
+                                        <TextBlock Classes="muted" Text="{Binding ProfilEditorInfo}" TextWrapping="Wrap"/>
+                                        <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto" Margin="0,4,0,0">
+                                            <TextBlock Classes="label" Text="Nom" VerticalAlignment="Center"/>
+                                            <TextBox Grid.Column="1" Text="{Binding EditNom}"/>
+                                            <TextBlock Grid.Row="1" Classes="label" Text="Description" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding EditDescription}" Margin="0,6,0,0"/>
+                                        </Grid>
+                                    </StackPanel>
+                                    <ScrollViewer Grid.Row="1">
+                                        <ItemsControl ItemsSource="{Binding PermissionGroups}" Margin="14,0,14,8">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <StackPanel Margin="0,6,0,0">
+                                                        <TextBlock Classes="groupheader" Text="{Binding Module}"/>
+                                                        <ItemsControl ItemsSource="{Binding Items}">
+                                                            <ItemsControl.ItemTemplate>
+                                                                <DataTemplate>
+                                                                    <CheckBox IsChecked="{Binding IsChecked}" Margin="6,0,0,0">
+                                                                        <TextBlock FontSize="12" Foreground="Black">
+                                                                            <Run Text="{Binding Libelle}"/>
+                                                                            <Run Text="{Binding Code, StringFormat=' ({0})'}" Foreground="#8492A3"/>
+                                                                        </TextBlock>
+                                                                    </CheckBox>
+                                                                </DataTemplate>
+                                                            </ItemsControl.ItemTemplate>
+                                                        </ItemsControl>
+                                                    </StackPanel>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                    <Border Grid.Row="2" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="12,8">
+                                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                            <Button Content="Supprimer" Command="{Binding DeleteProfilCommand}" IsVisible="{Binding CanDeleteProfil}"/>
+                                            <Button Classes="default" Content="Enregistrer" Command="{Binding SaveProfilCommand}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </Grid>
+                            </Grid>
+                        </Border>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== Paramètres ===== -->
+                <TabItem Header="Paramètres" IsVisible="{Binding CanParametres}">
+                    <ScrollViewer>
+                        <ItemsControl ItemsSource="{Binding Parametres}" Margin="16,12" MaxWidth="760" HorizontalAlignment="Left">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="220,*,Auto" Margin="0,0,0,10">
+                                        <StackPanel>
+                                            <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Cle}" FontSize="10.5" Foreground="#8492A3"/>
+                                        </StackPanel>
+                                        <StackPanel Grid.Column="1" Margin="10,0">
+                                            <TextBox Text="{Binding Valeur}" IsReadOnly="{Binding IsReadOnly}"/>
+                                            <TextBlock Text="{Binding Aide}" IsVisible="{Binding HasAide}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap" Margin="0,2,0,0"/>
+                                        </StackPanel>
+                                        <Button Grid.Column="2" Content="Enregistrer" Command="{Binding SaveCommand}"
+                                                IsEnabled="{Binding Modifiable}" VerticalAlignment="Top"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </TabItem>
+
+                <!-- ===== Historique ===== -->
+                <TabItem Header="Historique" IsVisible="{Binding CanJournaux}">
+                    <Grid RowDefinitions="Auto,*" Margin="10">
+                        <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,0,0,8">
+                            <TextBox Text="{Binding HistoriqueObjet}" Watermark="Objet (agent, profil, paramètre…)" Width="220"/>
+                            <TextBox Text="{Binding HistoriqueReference}" Watermark="Référence" Width="160"/>
+                            <Button Content="Filtrer" Command="{Binding RefreshHistoriqueCommand}"/>
+                        </StackPanel>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Historique}" IsReadOnly="True" AutoGenerateColumns="False"
+                                  CanUserResizeColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="140"/>
+                                <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="150"/>
+                                <DataGridTextColumn Header="Objet" Binding="{Binding Objet}" Width="90"/>
+                                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="110"/>
+                                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="130"/>
+                                <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                                <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+
+                <!-- ===== Journal des accès ===== -->
+                <TabItem Header="Journal des accès" IsVisible="{Binding CanJournaux}">
+                    <Grid RowDefinitions="Auto,*" Margin="10">
+                        <Button Content="Actualiser" Command="{Binding RefreshJournalCommand}" HorizontalAlignment="Left" Margin="0,0,0,8"/>
+                        <DataGrid Grid.Row="1" ItemsSource="{Binding Journal}" IsReadOnly="True" AutoGenerateColumns="False"
+                                  CanUserResizeColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                            <DataGrid.Columns>
+                                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="140"/>
+                                <DataGridTextColumn Header="Agent" Binding="{Binding Agent}" Width="170"/>
+                                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="160"/>
+                                <DataGridTextColumn Header="Cible" Binding="{Binding Cible}" Width="*"/>
+                                <DataGridTextColumn Header="Résultat" Binding="{Binding Resultat}" Width="110"/>
+                            </DataGrid.Columns>
+                        </DataGrid>
+                    </Grid>
+                </TabItem>
+            </TabControl>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

@@ -29,9 +29,9 @@
                     </Panel>
                 </Border>
                 <StackPanel Grid.Column="1" Margin="12,0,0,0" VerticalAlignment="Center">
-                    <TextBlock Classes="white shadow" Text="{Binding DisplayName}" FontSize="16" FontWeight="SemiBold"
+                    <TextBlock Classes="white shadow" Text="{Binding AgentName}" FontSize="16" FontWeight="SemiBold"
                                TextTrimming="CharacterEllipsis"/>
-                    <TextBlock Classes="white shadow" Text="{Binding LevelLabel}" FontSize="13" Opacity="0.9"/>
+                    <TextBlock Classes="white shadow" Text="{Binding AgentLine}" FontSize="13" Opacity="0.9"/>
                 </StackPanel>
                 <PathIcon Grid.Column="2" Data="{StaticResource IconNetwork}" Width="18" Height="18" Foreground="White"
                           Margin="8,0" Classes.offline="{Binding !IsOnline}" ToolTip.Tip="{Binding NetworkTooltip}"/>
@@ -72,10 +72,10 @@
                         <TextBlock Classes="white" Text="SAPHIR" FontSize="14" FontWeight="SemiBold"/>
                         <TextBlock Text="{Binding TrayTime}" Foreground="#BBBBBB" FontSize="12"/>
                     </StackPanel>
-                    <Button Grid.Column="2" Classes="flat corner" Command="{Binding LockCommand}">
+                    <Button Grid.Column="2" Classes="flat tray" Command="{Binding LockCommand}">
                         <PathIcon Data="{StaticResource IconLock}" Width="20" Height="20" Foreground="White"/>
                     </Button>
-                    <Button Grid.Column="3" Classes="flat corner" Command="{Binding SignOutCommand}">
+                    <Button Grid.Column="3" Classes="flat tray" Command="{Binding SignOutCommand}">
                         <PathIcon Data="{StaticResource IconSignOut}" Width="20" Height="20" Foreground="White"/>
                     </Button>
                 </Grid>
@@ -107,7 +107,7 @@
             <ItemsControl.ItemTemplate>
                 <DataTemplate>
                     <Button Classes="flat" Command="{Binding DismissCommand}" HorizontalContentAlignment="Stretch">
-                        <Border Background="{StaticResource StartMenuBrush}" CornerRadius="10" Padding="14,10"
+                        <Border Background="{StaticResource StartRightBrush}" CornerRadius="10" Padding="14,10"
                                 BoxShadow="0 4 16 0 #66000000">
                             <StackPanel Spacing="2">
                                 <TextBlock Classes="white" Text="{Binding Title}" FontSize="15" FontWeight="SemiBold"

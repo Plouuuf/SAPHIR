@@ -9,8 +9,9 @@ namespace Saphir.Server.Services;
 
 /// <summary>
 /// Connexion Discord (OAuth2, scopes identify + guilds.members.read), sur le modèle de SIMCALL.
-/// Le joueur doit être membre du Discord VDMS avec le rôle <see cref="DiscordOAuthOptions.RequiredRoleId"/> ;
-/// ses autres rôles donnent les niveaux d'accès SAPHIR (<see cref="AccessLevels"/>).
+/// Le joueur doit être membre du Discord VDMS avec le rôle <see cref="DiscordOAuthOptions.RequiredRoleId"/> (whitelist SAPHIR) ;
+/// le rôle <see cref="DiscordOAuthOptions.RhRoleId"/> donne <see cref="SaphirUserDto.RoleRh"/>.
+/// Les droits dans SAPHIR viennent ensuite des profils internes (permissions), pas de Discord.
 /// </summary>
 public sealed class DiscordOAuthService(
     IOptionsMonitor<DiscordOAuthOptions> options,
@@ -23,7 +24,7 @@ public sealed class DiscordOAuthService(
     private static readonly TimeSpan SessionLifetime = TimeSpan.FromHours(12);
     private static readonly TimeSpan RoleCheckInterval = TimeSpan.FromMinutes(5);
 
-    // Dernier profil connu par compte Discord (pseudo, avatar, niveaux), pour éviter un appel Discord à chaque reconnexion.
+    // Dernier profil connu par compte Discord (pseudo, avatar, rôle RH), pour éviter un appel Discord à chaque reconnexion.
     private readonly ConcurrentDictionary<string, SaphirUserDto> _users = new(StringComparer.Ordinal);
 
     public DiscordOAuthOptions Options => options.CurrentValue;
@@ -77,8 +78,8 @@ public sealed class DiscordOAuthService(
             var user = identity.User;
             var appToken = sessions.Approve(state, user, SessionLifetime);
             persistentSessions.Save(appToken, user.UserId, user.DisplayName, token.RefreshToken);
-            logger.LogInformation("Connexion SAPHIR autorisée pour {UserId} ({Display}), niveaux : {Levels}",
-                user.UserId, user.DisplayName, string.Join(", ", user.Levels));
+            logger.LogInformation("Connexion SAPHIR autorisée pour {UserId} ({Display}), rôle RH : {RoleRh}",
+                user.UserId, user.DisplayName, user.RoleRh);
             return new(true, $"Accès à SAPHIR autorisé pour {user.DisplayName}.", user.DisplayName);
         }
         catch (Exception ex)
@@ -227,47 +228,21 @@ public sealed class DiscordOAuthService(
             return new(false, false, "Réponse Discord invalide.", null);
 
         var display = FirstNonEmpty(member.Nick, discordUser.GlobalName, discordUser.Username) ?? "Utilisateur Discord";
-        var levels = ComputeLevels(member.Roles);
-        var user = new SaphirUserDto(discordUser.Id, display, BuildAvatarUrl(discordUser), levels);
+        var roleRh = HasRole(member.Roles, Options.RhRoleId);
+        var user = new SaphirUserDto(discordUser.Id, display, BuildAvatarUrl(discordUser), roleRh);
 
-        if (!levels.Contains(AccessLevels.Agent))
+        if (!HasRole(member.Roles, Options.RequiredRoleId))
         {
             _users.TryRemove(discordUser.Id, out _);
-            return new(false, true, "Accès refusé : le rôle Discord Police est requis pour utiliser SAPHIR.", user);
+            return new(false, true, "Accès refusé : le rôle Discord SAPHIR est requis pour utiliser SAPHIR.", user);
         }
 
         _users[discordUser.Id] = user;
         return new(true, false, "OK", user);
     }
 
-    /// <summary>
-    /// Rôle obligatoire → « agent ». Chaque entrée de LevelRoles (application, superviseur, administration)
-    /// donne son niveau au porteur d'un des rôles listés. Une application sans rôle configuré reste ouverte
-    /// à tous les agents, pour que le bureau ne soit jamais vide pendant la mise en place.
-    /// </summary>
-    private List<string> ComputeLevels(string[] roles)
-    {
-        var levels = new List<string>();
-        if (roles.Contains(Options.RequiredRoleId, StringComparer.Ordinal))
-            levels.Add(AccessLevels.Agent);
-        else
-            return levels;
-
-        foreach (var (level, roleIds) in Options.LevelRoles)
-        {
-            var ids = (roleIds ?? string.Empty).Split(',', StringSplitOptions.RemoveEmptyEntries | StringSplitOptions.TrimEntries);
-            if (ids.Any(id => roles.Contains(id, StringComparer.Ordinal)))
-                levels.Add(level.ToLowerInvariant());
-        }
-
-        foreach (var app in SaphirApps.All)
-        {
-            var configured = Options.LevelRoles.TryGetValue(app, out var appRoles) && !string.IsNullOrWhiteSpace(appRoles);
-            if (!configured && !levels.Contains(app))
-                levels.Add(app);
-        }
-        return levels;
-    }
+    private static bool HasRole(string[] roles, string? roleId)
+        => !string.IsNullOrWhiteSpace(roleId) && roles.Contains(roleId.Trim(), StringComparer.Ordinal);
 
     private static string BuildAvatarUrl(DiscordUser user)
     {
@@ -289,7 +264,7 @@ public sealed class DiscordOAuthService(
     {
         var request = new HttpRequestMessage(HttpMethod.Get, url);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", accessToken);
-        request.Headers.UserAgent.ParseAdd("SAPHIR/0.1");
+        request.Headers.UserAgent.ParseAdd("SAPHIR/0.2");
         return request;
     }
 

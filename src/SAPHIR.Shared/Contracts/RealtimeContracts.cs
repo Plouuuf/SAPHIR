@@ -3,7 +3,7 @@ namespace Saphir.Shared.Contracts;
 /// <summary>
 /// Message échangé sur la connexion temps réel (/ws), en JSON.
 /// Premier message du client : { "type": "auth", "token": "…" }.
-/// Le serveur répond « welcome » (ou « denied »), puis pousse ses notifications.
+/// Le serveur répond « welcome » (ou « denied »), puis pousse ses messages.
 /// </summary>
 public sealed record RealtimeMessage(
     string Type,
@@ -20,15 +20,12 @@ public static class RealtimeTypes
     public const string Ping = "ping";
     public const string Pong = "pong";
 
-    /// <summary>Notification à afficher (coin de l'écran sur ordinateur, bandeau sur téléphone).</summary>
+    /// <summary>Notification à afficher (bulle de la zone de notification, bandeau sur téléphone).</summary>
     public const string Notify = "notify";
 
-    /// <summary>Les données de PEGASE ont changé : les postes rechargent l'état.</summary>
-    public const string PegaseChanged = "pegase-changed";
+    /// <summary>Profils, permissions ou fiche de l'agent modifiés : le poste recharge sa session (GET /api/session).</summary>
+    public const string SessionChanged = "session-changed";
 
-    /// <summary>Ouvrir la prise d'appel PEGASE de l'appel indiqué (Text = identifiant), au décroché d'un 17.</summary>
-    public const string OpenCall = "open-call";
-
-    /// <summary>Traces PTS modifiées (rapprochement) : les postes PTS rechargent.</summary>
-    public const string PtsChanged = "pts-changed";
+    /// <summary>Paramètres centraux modifiés (version…).</summary>
+    public const string ParametresChanged = "parametres-changed";
 }

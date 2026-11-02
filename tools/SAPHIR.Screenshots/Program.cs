@@ -1,6 +1,7 @@
 using Avalonia;
 using Avalonia.Controls;
 using Avalonia.Headless;
+using Avalonia.LogicalTree;
 using Avalonia.Media;
 using Avalonia.Threading;
 using Saphir;
@@ -8,10 +9,11 @@ using Saphir.Screenshots;
 using Saphir.Services;
 using Saphir.Shared.Contracts;
 using Saphir.ViewModels;
+using Saphir.ViewModels.Apps;
 using Saphir.Views;
 using Saphir.Views.Apps;
 
-// Captures des écrans de SAPHIR avec des données d'exemple, sans serveur ni affichage.
+// Captures des écrans de SAPHIR avec des données fictives, sans serveur ni affichage.
 var output = Path.GetFullPath(args.Length > 0 ? args[0] : "captures");
 Directory.CreateDirectory(output);
 
@@ -21,118 +23,87 @@ AppBuilder.Configure<App>()
     .SetupWithoutStarting();
 AvaloniaSynchronizationContext.InstallIfNeeded();
 
-var user = new SaphirUserDto("1", "Brigadier DURAND", null,
-    [AccessLevels.Agent, AccessLevels.Administration, .. SaphirApps.All]);
-SaphirSession.Open(new ApiClient("exemple", new SampleApi()), user);
+Window? currentWindow = null;
+var user = new SaphirUserDto("560037927695024139", "jpdurand", null, true);
 
-// 1. Bureau avec PEGASE ouvert
+// 1-3. Ouverture de session, première connexion, « Bienvenue »
 {
-    var desktop = new DesktopViewModel(user, null, () => { }, () => { });
-    var root = new Grid();
-    root.Children.Add(new Image { Source = ImageLoader.Asset("Wallpapers/landscape.jpg"), Stretch = Stretch.UniformToFill });
-    root.Children.Add(new DesktopView { DataContext = desktop });
-    Capture(root, 1600, 900, "01-bureau.png", () =>
+    var shell = new ShellViewModel();
+    Pump(1500);
+    shell.ShowForCapture(ShellScreen.Logon, "DURAND Jean-Pierre", SampleApi.Version);
+    Capture(new ShellView { DataContext = shell }, 1600, 900, "01-ouverture-session.png");
+
+    shell.ShowForCapture(ShellScreen.FirstLogin, "jpdurand", SampleApi.Version, "durand", "jean-pierre");
+    Capture(new ShellView { DataContext = shell }, 1600, 900, "02-premiere-connexion.png");
+
+    shell.ShowForCapture(ShellScreen.Welcome, "DURAND Jean-Pierre", SampleApi.Version);
+    Capture(new ShellView { DataContext = shell }, 1600, 900, "03-bienvenue.png");
+}
+
+SaphirSession.Open(new ApiClient("exemple", new SampleApi()), user);
+SaphirSession.SetInfo(SampleApi.Session());
+
+// 4. Bureau avec le menu Démarrer ouvert
+{
+    var desktop = new DesktopViewModel(null, () => { }, () => { });
+    desktop.UpdateClock(new DateTime(2026, 11, 2, 9, 41, 0));
+    Capture(new DesktopView { DataContext = desktop }, 1600, 900, "04-bureau-menu-demarrer.png",
+        () => desktop.IsStartMenuOpen = true);
+}
+
+// 5. Bureau avec deux fenêtres : Centre de paramètres puis Administration
+{
+    var desktop = new DesktopViewModel(null, () => { }, () => { });
+    desktop.UpdateClock(new DateTime(2026, 11, 2, 9, 41, 0));
+    Capture(new DesktopView { DataContext = desktop }, 1600, 900, "05-bureau-fenetres.png", () =>
     {
-        desktop.OpenApp(desktop.Apps.First(a => a.Id == SaphirApps.MeoFic));
+        desktop.OpenById(SaphirApps.Parametres);
         Pump(300);
-        desktop.OpenApp(desktop.Apps.First(a => a.Id == SaphirApps.Pegase));
+        desktop.OpenById(SaphirApps.Administration);
     });
 }
 
-// 2. MEO-FIC : TAJ d'une personne inscrite au FPR
+// 6-10. Administration : chaque onglet
 {
-    var vm = new MeoFicViewModel();
-    Search(vm, "MARCHETTI");
-    vm.SelectedPersonResult = vm.PersonResults[0];
+    var vm = new AdministrationViewModel();
     Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "02-meofic-taj.png");
+    vm.SelectedCompte = vm.Comptes.FirstOrDefault(c => c.Nom == "BORDINI");
+    var view = new AdministrationView { DataContext = vm };
+    Capture(view, 1280, 820, "06-admin-comptes.png");
 
-    vm.PersonTabs[1].SelectCommand.Execute(null);
-    Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "03-meofic-fpr.png");
-
-    vm.PersonTabs[2].SelectCommand.Execute(null);
-    Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "04-meofic-snpc.png");
+    vm.SelectedProfil = vm.Profils.FirstOrDefault(p => p.Code == "chef-de-bord");
+    Capture(new AdministrationView { DataContext = vm }, 1280, 820, "07-admin-profils.png", () => SelectTab(1));
+    Capture(new AdministrationView { DataContext = vm }, 1280, 820, "08-admin-parametres.png", () => SelectTab(2));
+    Capture(new AdministrationView { DataContext = vm }, 1280, 820, "09-admin-historique.png", () => SelectTab(3));
+    Capture(new AdministrationView { DataContext = vm }, 1280, 820, "10-admin-journal.png", () => SelectTab(4));
 }
 
-// 3. MEO-FIC : véhicule signalé au FOVeS, puis SIV
+// 11. Centre de paramètres
 {
-    var vm = new MeoFicViewModel();
-    vm.VehicleTabs[0].SelectCommand.Execute(null);
-    Search(vm, "FT-119");
-    vm.SelectedVehicleResult = vm.VehicleResults[0];
+    var vm = new SettingsViewModel();
     Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "05-meofic-foves.png");
-
-    vm.VehicleTabs[2].SelectCommand.Execute(null);
-    Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "06-meofic-fva.png");
+    Capture(new SettingsView { DataContext = vm }, 1100, 760, "11-centre-parametres.png");
 }
 
-// 4. PEGASE : événements et fiche
+// 12. Téléphone : accueil
 {
-    var vm = new PegaseViewModel();
-    Pump();
-    vm.SelectedEvent = vm.Events.First(e => e.Id == 108);
-    Pump();
-    Capture(new PegaseView { DataContext = vm }, 1280, 860, "07-pegase-evenement.png");
-
-    vm.ShowCrewsCommand.Execute(null);
-    Pump();
-    Capture(new PegaseView { DataContext = vm }, 1280, 860, "08-pegase-equipages.png");
-    vm.Dispose();
-}
-
-// 5. PEGASE : prise d'appel ouverte au décroché d'un 17
-{
-    SaphirSession.PendingCallId = 42;
-    var vm = new PegaseViewModel();
-    Pump();
-    vm.CallForm.Adresse = "Rue du Général Leclerc, devant la pharmacie";
-    vm.CallForm.Commune = "Créteil";
-    vm.CallForm.Nature = "Vol avec violence / à l'arraché";
-    vm.CallForm.PrioriteIndex = 0;
-    vm.CallForm.RequerantNom = "Mme LEFÈVRE Anne";
-    vm.CallForm.Description = "On vient de m'arracher mon sac. Un homme en scooter noir, casque blanc, parti vers la mairie.";
-    Capture(new PegaseView { DataContext = vm }, 1280, 900, "09-pegase-prise-appel.png");
-    vm.Dispose();
-}
-
-// 6. PTS : FIJAIS, FAED et traces
-{
-    var vm = new MeoFicViewModel(MeoMode.Pts);
-    Search(vm, "MARCHETTI");
-    vm.SelectedPersonResult = vm.PersonResults[0];
-    Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "10-pts-faed.png");
-
-    vm.PersonTabs[2].SelectCommand.Execute(null);
-    Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "11-pts-fijais.png");
-
-    vm.VehicleTabs[0].SelectCommand.Execute(null);
-    Pump();
-    Capture(new MeoFicView { DataContext = vm }, 1280, 820, "12-pts-traces.png");
-    vm.Suspend();
-}
-
-// 7. Téléphone : PEGASE
-{
-    var vm = new PegaseViewModel();
-    Pump();
-    Capture(new PegaseView { DataContext = vm }, 390, 844, "13-telephone-pegase.png");
-    vm.Dispose();
+    var desktop = new DesktopViewModel(null, () => { }, () => { }) { IsCompactLayout = true };
+    desktop.UpdateClock(new DateTime(2026, 11, 2, 9, 41, 0));
+    var root = new Grid();
+    root.Children.Add(new Image { Source = ImageLoader.Asset("Wallpapers/logon-portrait.jpg"), Stretch = Stretch.UniformToFill });
+    root.Children.Add(new MobileHomeView { DataContext = desktop });
+    Capture(root, 390, 844, "12-telephone-accueil.png");
 }
 
 Console.WriteLine("Captures enregistrées dans " + output);
 return 0;
 
-void Search(MeoFicViewModel vm, string text)
+// Sélectionne l'onglet n de la vue Administration actuellement affichée.
+void SelectTab(int index)
 {
-    vm.SearchText = text;
-    vm.SearchCommand.Execute(null);
-    Pump();
+    if (currentWindow?.Content is Control content &&
+        content.GetLogicalDescendants().OfType<TabControl>().FirstOrDefault() is { } tabs)
+        tabs.SelectedIndex = index;
 }
 
 void Pump(int milliseconds = 800)
@@ -156,6 +127,7 @@ void Capture(Control content, int width, int height, string name, Action? afterS
         SystemDecorations = SystemDecorations.None,
         FontFamily = new FontFamily("Segoe UI, Helvetica Neue, Roboto, DejaVu Sans, Arial")
     };
+    currentWindow = window;
     window.Show();
     Pump();
     if (afterShow is not null)
@@ -170,6 +142,7 @@ void Capture(Control content, int width, int height, string name, Action? afterS
         frame.Save(Path.Combine(output, name));
     window.Content = null;
     window.Close();
+    currentWindow = null;
     Pump(100);
     Console.WriteLine("✓ " + name);
 }

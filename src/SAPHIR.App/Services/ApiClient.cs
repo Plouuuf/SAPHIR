@@ -56,6 +56,19 @@ public sealed class ApiClient
         }, ct);
     }
 
+    public async Task<T> SendAsync<T>(HttpMethod method, string path, object? body, CancellationToken ct = default)
+    {
+        using var response = await SendRawAsync(() =>
+        {
+            var request = new HttpRequestMessage(method, path);
+            if (body is not null)
+                request.Content = JsonContent.Create(body, body.GetType(), options: JsonOptions);
+            return request;
+        }, ct);
+        return await response.Content.ReadFromJsonAsync<T>(JsonOptions, ct)
+               ?? throw new ApiException("Réponse du serveur SAPHIR invalide.");
+    }
+
     /// <summary>Paramètre d'URL encodé.</summary>
     public static string Q(string value) => Uri.EscapeDataString(value);
 
@@ -116,48 +129,55 @@ public sealed class ApiClient
     }
 }
 
-/// <summary>Session ouverte sur le poste : utilisée par les applications pour appeler le serveur.</summary>
+/// <summary>
+/// Session ouverte sur le poste : client d'API, compte Discord, et session SAPHIR (agent, profils, permissions, version).
+/// Les applications l'interrogent pour savoir quoi afficher ; le serveur revérifie toujours chaque action.
+/// </summary>
 public static class SaphirSession
 {
     public static ApiClient? Api { get; private set; }
     public static SaphirUserDto? User { get; private set; }
+    public static SessionInfoDto? Info { get; private set; }
 
-    public static bool IsAdministrator => User?.Levels.Contains(AccessLevels.Administration) == true;
+    public static AgentDto? Agent => Info?.Agent;
+    public static string Version => Info?.Version ?? "SAPHIR";
+    public static bool RoleRh => Info?.RoleRh ?? User?.RoleRh ?? false;
 
-    public static void Open(string token, SaphirUserDto user)
-    {
-        Api = new ApiClient(token);
-        User = user;
-    }
+    public static bool Has(string permission) => Info?.Permissions.Contains(permission) == true;
 
-    public static void Update(SaphirUserDto user) => User = user;
+    public static bool CanOpen(string appId)
+        => Info is not null && SaphirApps.CanOpen(appId, Info.Permissions, Info.RoleRh);
+
+    /// <summary>Session ou permissions mises à jour (rechargement de GET /api/session).</summary>
+    public static event Action? Changed;
+
+    public static void Open(string token, SaphirUserDto user) => Open(new ApiClient(token), user);
 
     /// <summary>Session avec un client d'API fourni (outil de captures d'écran, données d'exemple).</summary>
     public static void Open(ApiClient api, SaphirUserDto user)
     {
         Api = api;
         User = user;
+        Info = null;
+    }
+
+    public static void Update(SaphirUserDto user) => User = user;
+
+    public static void SetInfo(SessionInfoDto info)
+    {
+        Info = info;
+        Changed?.Invoke();
     }
 
     public static void Close()
     {
         Api = null;
         User = null;
-        PendingCallId = null;
+        Info = null;
     }
 
-    /// <summary>Messages temps réel du serveur, relayés aux applications ouvertes (PEGASE, PTS…).</summary>
+    /// <summary>Messages temps réel du serveur, relayés aux applications ouvertes.</summary>
     public static event Action<RealtimeMessage>? Realtime;
 
     public static void Publish(RealtimeMessage message) => Realtime?.Invoke(message);
-
-    /// <summary>Appel 17 décroché à ouvrir dans PEGASE (consommé par la première fenêtre PEGASE qui le lit).</summary>
-    public static long? PendingCallId { get; set; }
-
-    public static long? TakePendingCall()
-    {
-        var id = PendingCallId;
-        PendingCallId = null;
-        return id;
-    }
 }

@@ -1,126 +1,221 @@
+using System.Data.Common;
+using System.Globalization;
 using MySqlConnector;
 
 namespace Saphir.Server.Data;
 
-/// <summary>Petites aides autour de MySqlConnector (MariaDB), sans ORM.</summary>
-public static class Sql
+/// <summary>
+/// Connexion ouverte à la base SAPHIR, avec une transaction facultative.
+/// Toutes les requêtes sont paramétrées : <c>("@nom", valeur)</c>.
+/// </summary>
+public sealed class SqlSession : IAsyncDisposable
 {
-    public static async Task<MySqlConnection> OpenAsync(string connectionString, CancellationToken ct)
+    private readonly MySqlConnection _connection;
+    private MySqlTransaction? _transaction;
+
+    private SqlSession(MySqlConnection connection) => _connection = connection;
+
+    public static async Task<SqlSession> OpenAsync(string connectionString, CancellationToken ct)
     {
         var connection = new MySqlConnection(connectionString);
-        await connection.OpenAsync(ct);
-        return connection;
+        try
+        {
+            await connection.OpenAsync(ct);
+        }
+        catch
+        {
+            await connection.DisposeAsync();
+            throw;
+        }
+        return new SqlSession(connection);
     }
 
-    public static MySqlCommand Command(MySqlConnection connection, string sql, params (string Name, object? Value)[] parameters)
+    /// <summary>Ouvre une transaction : les commandes suivantes y participent jusqu'à <see cref="CommitAsync"/>.</summary>
+    public async Task BeginAsync(CancellationToken ct)
     {
-        var command = connection.CreateCommand();
-        command.CommandText = sql;
-        foreach (var (name, value) in parameters)
-            command.Parameters.AddWithValue(name, value ?? DBNull.Value);
-        return command;
+        if (_transaction is not null)
+            throw new InvalidOperationException("Une transaction est déjà ouverte sur cette connexion.");
+        _transaction = await _connection.BeginTransactionAsync(ct);
     }
 
-    public static async Task<List<T>> QueryAsync<T>(
-        MySqlConnection connection, string sql, Func<MySqlDataReader, T> map, CancellationToken ct,
+    public async Task CommitAsync(CancellationToken ct)
+    {
+        if (_transaction is null)
+            return;
+        await _transaction.CommitAsync(ct);
+        await _transaction.DisposeAsync();
+        _transaction = null;
+    }
+
+    public async Task RollbackAsync()
+    {
+        if (_transaction is null)
+            return;
+        try
+        {
+            await _transaction.RollbackAsync(CancellationToken.None);
+        }
+        finally
+        {
+            await _transaction.DisposeAsync();
+            _transaction = null;
+        }
+    }
+
+    public async Task<List<T>> QueryAsync<T>(string sql, Func<SqlRow, T> map, CancellationToken ct,
         params (string Name, object? Value)[] parameters)
     {
-        await using var command = Command(connection, sql, parameters);
+        await using var command = CreateCommand(sql, parameters);
         await using var reader = await command.ExecuteReaderAsync(ct);
-        var rows = new List<T>();
+        var row = new SqlRow(reader);
+        var list = new List<T>();
         while (await reader.ReadAsync(ct))
-            rows.Add(map(reader));
-        return rows;
+            list.Add(map(row));
+        return list;
     }
 
-    public static async Task<int> ExecuteAsync(
-        MySqlConnection connection, string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
+    public async Task<T?> FirstOrDefaultAsync<T>(string sql, Func<SqlRow, T> map, CancellationToken ct,
+        params (string Name, object? Value)[] parameters) where T : class
     {
-        await using var command = Command(connection, sql, parameters);
-        return await command.ExecuteNonQueryAsync(ct);
+        await using var command = CreateCommand(sql, parameters);
+        await using var reader = await command.ExecuteReaderAsync(ct);
+        if (!await reader.ReadAsync(ct))
+            return null;
+        return map(new SqlRow(reader));
     }
 
-    /// <summary>Exécute un INSERT et renvoie l'identifiant créé.</summary>
-    public static async Task<long> InsertAsync(
-        MySqlConnection connection, string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
+    /// <summary>Première colonne de la première ligne ; <c>null</c> si aucune ligne ou valeur NULL.</summary>
+    public async Task<object?> ScalarAsync(string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
     {
-        await using var command = Command(connection, sql, parameters);
-        await command.ExecuteNonQueryAsync(ct);
-        return command.LastInsertedId;
-    }
-
-    public static async Task<object?> ScalarAsync(
-        MySqlConnection connection, string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
-    {
-        await using var command = Command(connection, sql, parameters);
+        await using var command = CreateCommand(sql, parameters);
         var value = await command.ExecuteScalarAsync(ct);
         return value is DBNull ? null : value;
     }
 
-    // ===== Lecture de colonnes, tolérante aux types =====
-
-    public static string? Str(this MySqlDataReader reader, string column)
+    /// <summary>Valeur entière (COUNT…) ; 0 si aucune ligne.</summary>
+    public async Task<long> LongAsync(string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
     {
-        var ordinal = reader.GetOrdinal(column);
-        if (reader.IsDBNull(ordinal))
-            return null;
-        var value = reader.GetValue(ordinal);
-        var text = value switch
+        var value = await ScalarAsync(sql, ct, parameters);
+        return value is null ? 0 : Convert.ToInt64(value, CultureInfo.InvariantCulture);
+    }
+
+    /// <summary>Exécute une commande ; retourne le nombre de lignes touchées.</summary>
+    public async Task<int> ExecuteAsync(string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
+    {
+        await using var command = CreateCommand(sql, parameters);
+        return await command.ExecuteNonQueryAsync(ct);
+    }
+
+    /// <summary>Exécute un INSERT ; retourne l'identifiant AUTO_INCREMENT créé.</summary>
+    public async Task<long> InsertAsync(string sql, CancellationToken ct, params (string Name, object? Value)[] parameters)
+    {
+        await using var command = CreateCommand(sql, parameters);
+        await command.ExecuteNonQueryAsync(ct);
+        return command.LastInsertedId;
+    }
+
+    public async ValueTask DisposeAsync()
+    {
+        if (_transaction is not null)
         {
-            byte[] bytes => System.Text.Encoding.UTF8.GetString(bytes),
-            DateTime date => date.ToString("dd/MM/yyyy"),
-            _ => Convert.ToString(value, System.Globalization.CultureInfo.InvariantCulture)
-        };
-        return string.IsNullOrWhiteSpace(text) ? null : text.Trim();
+            try
+            {
+                // Une transaction non validée est annulée.
+                await _transaction.DisposeAsync();
+            }
+            catch
+            {
+                // Connexion déjà perdue : rien à annuler.
+            }
+            _transaction = null;
+        }
+        await _connection.DisposeAsync();
     }
 
-    public static string Text(this MySqlDataReader reader, string column) => reader.Str(column) ?? string.Empty;
-
-    public static long Long(this MySqlDataReader reader, string column)
+    private MySqlCommand CreateCommand(string sql, (string Name, object? Value)[] parameters)
     {
-        var ordinal = reader.GetOrdinal(column);
-        return reader.IsDBNull(ordinal) ? 0 : Convert.ToInt64(reader.GetValue(ordinal), System.Globalization.CultureInfo.InvariantCulture);
+        var command = _connection.CreateCommand();
+        command.CommandText = sql;
+        command.Transaction = _transaction;
+        foreach (var (name, value) in parameters)
+            command.Parameters.AddWithValue(name, value ?? DBNull.Value);
+        return command;
+    }
+}
+
+/// <summary>
+/// Lecture tolérante d'une ligne : colonne absente ou NULL → valeur de repli, conversions souples
+/// (TINYINT/BIT → bool, DATETIME → DateTimeOffset UTC).
+/// </summary>
+public sealed class SqlRow
+{
+    private readonly DbDataReader _reader;
+    private readonly Dictionary<string, int> _ordinals = new(StringComparer.OrdinalIgnoreCase);
+
+    public SqlRow(DbDataReader reader)
+    {
+        _reader = reader;
+        for (var i = 0; i < reader.FieldCount; i++)
+            _ordinals.TryAdd(reader.GetName(i), i);
     }
 
-    public static long? NullableLong(this MySqlDataReader reader, string column)
-    {
-        var ordinal = reader.GetOrdinal(column);
-        return reader.IsDBNull(ordinal) ? null : Convert.ToInt64(reader.GetValue(ordinal), System.Globalization.CultureInfo.InvariantCulture);
-    }
+    public bool Has(string column) => _ordinals.ContainsKey(column);
 
-    public static bool Bool(this MySqlDataReader reader, string column)
+    public object? Value(string column)
     {
-        var ordinal = reader.GetOrdinal(column);
-        return !reader.IsDBNull(ordinal) && Convert.ToBoolean(reader.GetValue(ordinal), System.Globalization.CultureInfo.InvariantCulture);
-    }
-
-    /// <summary>Les dates SAPHIR sont enregistrées en UTC.</summary>
-    public static DateTimeOffset Utc(this MySqlDataReader reader, string column)
-        => reader.NullableUtc(column) ?? DateTimeOffset.MinValue;
-
-    public static DateTimeOffset? NullableUtc(this MySqlDataReader reader, string column)
-    {
-        var ordinal = reader.GetOrdinal(column);
-        if (reader.IsDBNull(ordinal))
+        if (!_ordinals.TryGetValue(column, out var ordinal) || _reader.IsDBNull(ordinal))
             return null;
-        var date = reader.GetDateTime(ordinal);
-        return new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc));
+        return _reader.GetValue(ordinal);
     }
 
-    /// <summary>Texte saisi : espaces retirés, chaîne vide → NULL, longueur bornée.</summary>
-    public static string? Clean(string? value, int maxLength = 255)
+    public string? NullableText(string column) => Value(column) switch
     {
-        if (string.IsNullOrWhiteSpace(value))
-            return null;
-        var text = value.Trim();
-        return text.Length > maxLength ? text[..maxLength] : text;
-    }
+        null => (string?)null,
+        string text => text,
+        byte[] bytes => System.Text.Encoding.UTF8.GetString(bytes),
+        var other => Convert.ToString(other, CultureInfo.InvariantCulture)
+    };
 
-    /// <summary>Échappe les jokers d'un LIKE et entoure de %.</summary>
-    public static string Like(string term)
-        => "%" + term.Replace("\\", "\\\\").Replace("%", "\\%").Replace("_", "\\_") + "%";
+    public string Text(string column, string fallback = "") => NullableText(column) ?? fallback;
 
-    /// <summary>Plaque comparable : majuscules, sans espace ni tiret.</summary>
-    public static string NormalizePlate(string? plate)
-        => new string((plate ?? string.Empty).ToUpperInvariant().Where(char.IsLetterOrDigit).ToArray());
+    public long? NullableLong(string column) => Value(column) switch
+    {
+        null => (long?)null,
+        var other => (long?)Convert.ToInt64(other, CultureInfo.InvariantCulture)
+    };
+
+    public long Long(string column, long fallback = 0) => NullableLong(column) ?? fallback;
+
+    public int Int(string column, int fallback = 0) => Value(column) switch
+    {
+        null => fallback,
+        var other => Convert.ToInt32(other, CultureInfo.InvariantCulture)
+    };
+
+    public bool Bool(string column, bool fallback = false) => Value(column) switch
+    {
+        null => fallback,
+        bool flag => flag,
+        var other => Convert.ToInt64(other, CultureInfo.InvariantCulture) != 0
+    };
+
+    /// <summary>DATETIME stocké en UTC → DateTimeOffset (décalage 0).</summary>
+    public DateTimeOffset? NullableDate(string column) => Value(column) switch
+    {
+        DateTime date => (DateTimeOffset?)new DateTimeOffset(DateTime.SpecifyKind(date, DateTimeKind.Utc)),
+        DateTimeOffset offset => (DateTimeOffset?)offset.ToUniversalTime(),
+        _ => (DateTimeOffset?)null
+    };
+
+    public DateTimeOffset Date(string column) => NullableDate(column) ?? DateTimeOffset.UnixEpoch;
+}
+
+/// <summary>Erreur métier renvoyée telle quelle au poste : code HTTP + message en français.</summary>
+public sealed class ApiException(int statusCode, string message) : Exception(message)
+{
+    public int StatusCode { get; } = statusCode;
+
+    public static ApiException Saisie(string message) => new(StatusCodes.Status400BadRequest, message);
+    public static ApiException Introuvable(string message) => new(StatusCodes.Status404NotFound, message);
+    public static ApiException Conflit(string message) => new(StatusCodes.Status409Conflict, message);
 }

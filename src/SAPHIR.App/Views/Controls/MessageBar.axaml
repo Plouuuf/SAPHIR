@@ -1,0 +1,21 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Controls.MessageBar">
+    <!-- Barre de message d'une application (erreur en jaune, information en bleu). DataContext : AppViewModelBase. -->
+    <StackPanel>
+        <Border IsVisible="{Binding HasError}" Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="0,0,0,1" Padding="10,6">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconWarning}" Width="15" Height="15" Foreground="#C7503B" Margin="0,0,8,0"/>
+                <TextBlock Grid.Column="1" Text="{Binding ErrorText}" TextWrapping="Wrap" FontSize="12" Foreground="Black" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Classes="link" Content="Fermer" Command="{Binding DismissMessagesCommand}" FontSize="11.5"/>
+            </Grid>
+        </Border>
+        <Border IsVisible="{Binding HasInfo}" Background="#E8F2FC" BorderBrush="#A9C7EA" BorderThickness="0,0,0,1" Padding="10,6">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <PathIcon Data="{StaticResource IconInfo}" Width="15" Height="15" Foreground="#2F6FBF" Margin="0,0,8,0"/>
+                <TextBlock Grid.Column="1" Text="{Binding InfoText}" TextWrapping="Wrap" FontSize="12" Foreground="Black" VerticalAlignment="Center"/>
+                <Button Grid.Column="2" Classes="link" Content="Fermer" Command="{Binding DismissMessagesCommand}" FontSize="11.5"/>
+            </Grid>
+        </Border>
+    </StackPanel>
+</UserControl>

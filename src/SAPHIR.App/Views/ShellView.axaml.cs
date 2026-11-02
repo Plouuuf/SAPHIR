@@ -10,7 +10,7 @@ namespace Saphir.Views;
 
 /// <summary>
 /// Racine de SAPHIR sur toutes les plateformes : fond d'écran + écran courant
-/// (verrouillage, connexion, bienvenue, bureau ou accueil mobile).
+/// (ouverture de session, première connexion, bienvenue, bureau ou accueil mobile).
 /// </summary>
 public partial class ShellView : UserControl
 {
@@ -73,8 +73,8 @@ public partial class ShellView : UserControl
         if (e.PropertyName == nameof(ShellViewModel.Desktop) && _vm.Desktop is not null)
             _vm.Desktop.IsCompactLayout = _vm.IsCompact;
 
-        // Les touches du clavier doivent arriver à l'écran de verrouillage / connexion.
-        if (e.PropertyName == nameof(ShellViewModel.Screen) && !_vm.IsDesktopScreen)
+        // Les touches du clavier doivent arriver à l'écran d'ouverture de session.
+        if (e.PropertyName == nameof(ShellViewModel.Screen) && _vm.IsLogonScreen)
             Focus();
     }
 
@@ -88,20 +88,21 @@ public partial class ShellView : UserControl
 
     protected override void OnKeyDown(KeyEventArgs e)
     {
-        switch (_vm.Screen)
+        // Entrée : ouvrir la session (écran d'ouverture) ou valider la première connexion.
+        if (e.Key == Key.Enter)
         {
-            case ShellScreen.Lock:
-                _vm.ShowLogin();
-                e.Handled = true;
-                return;
-            case ShellScreen.Login when e.Key == Key.Escape:
-                _vm.BackToLockCommand.Execute(null);
-                e.Handled = true;
-                return;
-            case ShellScreen.Login when e.Key == Key.Enter && _vm.SignInCommand.CanExecute(null):
+            if (_vm.IsLogonScreen && _vm.SignInCommand.CanExecute(null))
+            {
                 _vm.SignInCommand.Execute(null);
                 e.Handled = true;
                 return;
+            }
+            if (_vm.IsFirstLoginScreen && _vm.SubmitFirstLoginCommand.CanExecute(null))
+            {
+                _vm.SubmitFirstLoginCommand.Execute(null);
+                e.Handled = true;
+                return;
+            }
         }
         base.OnKeyDown(e);
     }

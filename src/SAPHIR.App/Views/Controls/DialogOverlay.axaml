@@ -1,0 +1,32 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Controls.DialogOverlay">
+    <!-- Boîte de dialogue Windows 7 par-dessus une application. DataContext : DialogViewModel (null = cachée). -->
+    <Grid Background="#66FFFFFF">
+        <Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="420" CornerRadius="6"
+                Background="{StaticResource AeroActiveBrush}" BorderBrush="#D02B4F7E" BorderThickness="1" Padding="7,0,7,7"
+                BoxShadow="0 8 26 0 #66000000">
+            <Grid RowDefinitions="28,*">
+                <TextBlock Text="{Binding Title}" FontSize="12" Foreground="Black" VerticalAlignment="Center" Margin="2,0"/>
+                <Border Grid.Row="1" Background="White" BorderBrush="#7A96B8" BorderThickness="1">
+                    <Grid RowDefinitions="*,Auto">
+                        <Grid ColumnDefinitions="Auto,*" Margin="18,18,18,20">
+                            <PathIcon Data="{StaticResource IconWarning}" Width="30" Height="30" Foreground="#E3A21A"
+                                      VerticalAlignment="Top" Margin="0,0,14,0" IsVisible="{Binding IsDanger}"/>
+                            <PathIcon Data="{StaticResource IconInfo}" Width="30" Height="30" Foreground="#2F6FBF"
+                                      VerticalAlignment="Top" Margin="0,0,14,0" IsVisible="{Binding !IsDanger}"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Message}" TextWrapping="Wrap" FontSize="12.5" Foreground="Black"
+                                       VerticalAlignment="Center"/>
+                        </Grid>
+                        <Border Grid.Row="1" Background="{StaticResource PanelBrush}" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="12,9">
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                                <Button Classes="default" Content="{Binding ConfirmLabel}" Command="{Binding ConfirmCommand}"/>
+                                <Button Content="{Binding CancelLabel}" Command="{Binding CancelCommand}" IsVisible="{Binding HasCancel}"/>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

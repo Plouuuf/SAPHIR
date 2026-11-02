@@ -1,24 +1,18 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Saphir.Views.WelcomeView">
-    <!-- « Bienvenue » de Windows 10, le temps de préparer le bureau. -->
-    <Grid Background="#4D000000">
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="18">
-            <Border Width="160" Height="160" CornerRadius="80" ClipToBounds="True"
-                    HorizontalAlignment="Center">
-                <Panel>
-                    <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Stretch="Uniform"
-                           IsVisible="{Binding !HasAvatar}"/>
-                    <Image Source="{Binding Avatar}" Stretch="UniformToFill" IsVisible="{Binding HasAvatar}"/>
-                </Panel>
-            </Border>
-            <TextBlock Text="{Binding DisplayName}" Foreground="White" FontSize="30" FontWeight="Light"
-                       HorizontalAlignment="Center"/>
-            <StackPanel Orientation="Horizontal" Spacing="14" HorizontalAlignment="Center">
-                <Arc Classes="spinner" Width="28" Height="28"/>
-                <TextBlock Text="Bienvenue" Foreground="White" FontSize="30" FontWeight="Light"
-                           VerticalAlignment="Center"/>
+    <!-- « Bienvenue » de Windows 7, le temps de préparer le bureau. -->
+    <Grid>
+        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+            <StackPanel Orientation="Horizontal" Spacing="16" HorizontalAlignment="Center">
+                <Arc Classes="spinner" Width="30" Height="30"/>
+                <TextBlock Text="Bienvenue" Foreground="White" FontSize="34" FontWeight="Light" VerticalAlignment="Center">
+                    <TextBlock.Effect>
+                        <DropShadowEffect BlurRadius="8" OffsetY="1" Opacity="0.8" Color="#002050"/>
+                    </TextBlock.Effect>
+                </TextBlock>
             </StackPanel>
+            <TextBlock Text="{Binding DisplayName}" Foreground="#D6E9FF" FontSize="16" HorizontalAlignment="Center"/>
         </StackPanel>
     </Grid>
 </UserControl>

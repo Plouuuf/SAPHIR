@@ -19,6 +19,11 @@ public sealed class AppTileViewModel : ViewModelBase
     public string Id => Definition.Id;
     public string Title => Definition.Title;
     public string Subtitle => Definition.Subtitle;
+
+    /// <summary>Texte de la page d'attente d'un module pas encore livré.</summary>
+    public string PhaseText => Definition.Phase is { } phase
+        ? $"Ce module arrive en phase {phase} du plan de développement de SAPHIR."
+        : "Ce module est en cours de préparation.";
     public Bitmap Icon { get; }
     public RelayCommand OpenCommand { get; }
 
@@ -29,9 +34,6 @@ public sealed class AppTileViewModel : ViewModelBase
         set => SetProperty(ref _isSelected, value);
     }
 }
-
-/// <summary>Titre de section du menu Démarrer (première lettre).</summary>
-public sealed record StartMenuHeader(string Letter);
 
 /// <summary>Fenêtre ouverte sur le bureau.</summary>
 public sealed class AppWindowViewModel : ViewModelBase

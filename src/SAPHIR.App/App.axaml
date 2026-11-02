@@ -5,22 +5,77 @@
              RequestedThemeVariant="Light">
     <Application.Styles>
         <FluentTheme />
-        <StyleInclude Source="avares://SAPHIR.App/Styles/Windows10.axaml" />
-        <StyleInclude Source="avares://SAPHIR.App/Styles/SaphirApps.axaml" />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml" />
+        <StyleInclude Source="avares://SAPHIR.App/Styles/Windows7.axaml" />
     </Application.Styles>
 
     <Application.Resources>
         <!-- Police : Segoe UI sous Windows, police système ailleurs. -->
         <FontFamily x:Key="WindowsFont">Segoe UI, Helvetica Neue, Roboto, Arial</FontFamily>
 
-        <!-- Couleurs Windows 10 -->
-        <SolidColorBrush x:Key="AccentBrush" Color="#0078D7"/>
-        <SolidColorBrush x:Key="AccentDarkBrush" Color="#005A9E"/>
-        <SolidColorBrush x:Key="AccentLightBrush" Color="#76B9ED"/>
-        <SolidColorBrush x:Key="TaskbarBrush" Color="#E6101010"/>
-        <SolidColorBrush x:Key="StartMenuBrush" Color="#F21F1F1F"/>
-        <SolidColorBrush x:Key="WindowBorderBrush" Color="#1883D7"/>
-        <SolidColorBrush x:Key="InactiveBorderBrush" Color="#AAAAAA"/>
+        <!-- Couleurs Windows 7 -->
+        <SolidColorBrush x:Key="AccentBrush" Color="#3399FF"/>
+        <SolidColorBrush x:Key="SelectionBrush" Color="#CCE8FF"/>
+        <SolidColorBrush x:Key="SelectionBorderBrush" Color="#7DA2CE"/>
+        <SolidColorBrush x:Key="TitleTextBrush" Color="#1E395B"/>
+        <SolidColorBrush x:Key="LinkBrush" Color="#0066CC"/>
+        <SolidColorBrush x:Key="PanelBrush" Color="#F0F0F0"/>
+        <SolidColorBrush x:Key="PanelBorderBrush" Color="#A0A0A0"/>
+        <SolidColorBrush x:Key="InstructionBrush" Color="#003399"/>
+
+        <!-- Cadre Aero : verre bleuté (fenêtre active / inactive) -->
+        <LinearGradientBrush x:Key="AeroActiveBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#F2C4DCF4"/>
+            <GradientStop Offset="0.35" Color="#EBA9C8EC"/>
+            <GradientStop Offset="1" Color="#E693B8E2"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="AeroInactiveBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#F2E3ECF6"/>
+            <GradientStop Offset="1" Color="#EBCFDCEB"/>
+        </LinearGradientBrush>
+
+        <!-- Barre des tâches vitrée -->
+        <LinearGradientBrush x:Key="TaskbarBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#B8536E92"/>
+            <GradientStop Offset="0.5" Color="#D02A4366"/>
+            <GradientStop Offset="1" Color="#E0152742"/>
+        </LinearGradientBrush>
+
+        <!-- Menu Démarrer : colonne de droite -->
+        <LinearGradientBrush x:Key="StartRightBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#E63D5A80"/>
+            <GradientStop Offset="1" Color="#F01C3354"/>
+        </LinearGradientBrush>
+
+        <!-- Bouton Windows 7 -->
+        <LinearGradientBrush x:Key="ButtonBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#F2F2F2"/>
+            <GradientStop Offset="0.5" Color="#EBEBEB"/>
+            <GradientStop Offset="0.5" Color="#DDDDDD"/>
+            <GradientStop Offset="1" Color="#CFCFCF"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ButtonHoverBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#EAF6FD"/>
+            <GradientStop Offset="0.5" Color="#D9F0FC"/>
+            <GradientStop Offset="0.5" Color="#BEE6FD"/>
+            <GradientStop Offset="1" Color="#A7D9F5"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="ButtonPressedBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#E5F4FC"/>
+            <GradientStop Offset="0.5" Color="#C4E5F6"/>
+            <GradientStop Offset="0.5" Color="#98D1EF"/>
+            <GradientStop Offset="1" Color="#68B3DB"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="CloseButtonBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#E8A493"/>
+            <GradientStop Offset="0.45" Color="#D9705A"/>
+            <GradientStop Offset="0.5" Color="#C7503B"/>
+            <GradientStop Offset="1" Color="#C4472F"/>
+        </LinearGradientBrush>
+        <LinearGradientBrush x:Key="HeaderBrush" StartPoint="0%,0%" EndPoint="0%,100%">
+            <GradientStop Offset="0" Color="#FFFFFF"/>
+            <GradientStop Offset="1" Color="#E8EEF6"/>
+        </LinearGradientBrush>
 
         <!-- Icônes vectorielles (24 × 24) -->
         <StreamGeometry x:Key="IconWindows">M0,0H11V11H0Z M13,0H24V11H13Z M0,13H11V24H0Z M13,13H24V24H13Z</StreamGeometry>
@@ -37,6 +92,13 @@
         <StreamGeometry x:Key="IconArrowRight">M4,11V13H16L10.5,18.5L11.92,19.92L19.84,12L11.92,4.08L10.5,5.5L16,11H4Z</StreamGeometry>
         <StreamGeometry x:Key="IconMenu">M3,6H21V8H3V6M3,11H21V13H3V11M3,16H21V18H3V16Z</StreamGeometry>
         <StreamGeometry x:Key="IconSettings">M12,15.5A3.5,3.5 0 0,1 8.5,12A3.5,3.5 0 0,1 12,8.5A3.5,3.5 0 0,1 15.5,12A3.5,3.5 0 0,1 12,15.5M19.43,12.97C19.47,12.65 19.5,12.33 19.5,12C19.5,11.67 19.47,11.34 19.43,11L21.54,9.37C21.73,9.22 21.78,8.95 21.66,8.73L19.66,5.27C19.54,5.05 19.27,4.96 19.05,5.05L16.56,6.05C16.04,5.66 15.5,5.32 14.87,5.07L14.5,2.42C14.46,2.18 14.25,2 14,2H10C9.75,2 9.54,2.18 9.5,2.42L9.13,5.07C8.5,5.32 7.96,5.66 7.44,6.05L4.95,5.05C4.73,4.96 4.46,5.05 4.34,5.27L2.34,8.73C2.21,8.95 2.27,9.22 2.46,9.37L4.57,11C4.53,11.34 4.5,11.67 4.5,12C4.5,12.33 4.53,12.65 4.57,12.97L2.46,14.63C2.27,14.78 2.21,15.05 2.34,15.27L4.34,18.73C4.46,18.95 4.73,19.03 4.95,18.95L7.44,17.94C7.96,18.34 8.5,18.68 9.13,18.93L9.5,21.58C9.54,21.82 9.75,22 10,22H14C14.25,22 14.46,21.82 14.5,21.58L14.87,18.93C15.5,18.67 16.04,18.34 16.56,17.94L19.05,18.95C19.27,19.03 19.54,18.95 19.66,18.73L21.66,15.27C21.78,15.05 21.73,14.78 21.54,14.63L19.43,12.97Z</StreamGeometry>
+
+        <StreamGeometry x:Key="IconFlag">M14.4,6L14,4H5V21H7V14H12.6L13,16H20V6H14.4Z</StreamGeometry>
+        <StreamGeometry x:Key="IconUser">M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z</StreamGeometry>
+        <StreamGeometry x:Key="IconRefresh">M17.65,6.35C16.2,4.9 14.21,4 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20C15.73,20 18.84,17.45 19.73,14H17.65C16.83,16.33 14.61,18 12,18A6,6 0 0,1 6,12A6,6 0 0,1 12,6C13.66,6 15.14,6.69 16.22,7.78L13,11H20V4L17.65,6.35Z</StreamGeometry>
+        <StreamGeometry x:Key="IconInfo">M13,9H11V7H13M13,17H11V11H13M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2Z</StreamGeometry>
+        <StreamGeometry x:Key="IconWarning">M13,14H11V10H13M13,18H11V16H13M1,21H23L12,2L1,21Z</StreamGeometry>
+        <StreamGeometry x:Key="IconTriangleRight">M8,5.14V19.14L19,12.14L8,5.14Z</StreamGeometry>
 
         <!-- Boutons de fenêtre (10 × 10, tracés fins comme Windows 10) -->
         <StreamGeometry x:Key="CaptionMinimize">M0,5.5 L10,5.5</StreamGeometry>

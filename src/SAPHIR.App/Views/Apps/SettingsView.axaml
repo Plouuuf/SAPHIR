@@ -1,0 +1,95 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             x:Class="Saphir.Views.Apps.SettingsView">
+    <!-- Centre de paramètres. DataContext : SettingsViewModel. -->
+    <Grid RowDefinitions="Auto,*">
+        <controls:MessageBar/>
+        <TabControl Grid.Row="1" Classes="win7" Margin="10,8,10,10">
+            <TabItem Header="Mon compte">
+                <ScrollViewer>
+                    <StackPanel Margin="20,16" Spacing="14" MaxWidth="720" HorizontalAlignment="Left">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="instruction" Text="{Binding AgentName}" FontSize="18"/>
+                                <TextBlock Classes="muted" Text="{Binding AgentStatus}"/>
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="Actualiser" Command="{Binding RefreshCommand}" VerticalAlignment="Top"/>
+                        </Grid>
+                        <Border IsVisible="{Binding IsIncomplete}" Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="1" Padding="10,6">
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="Black"
+                                       Text="Ta fiche est à compléter : le service RH renseignera ton RIO, ton grade, ton service, ton unité et ta fonction."/>
+                        </Border>
+                        <ItemsControl ItemsSource="{Binding AccountRows}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="170,*" Margin="0,3">
+                                        <TextBlock Classes="label" Text="{Binding Label}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <TextBlock Classes="groupheader" Text="Profils SAPHIR" Margin="0,6,0,0"/>
+                        <ItemsControl ItemsSource="{Binding ProfileNames}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#E3EFFB" BorderBrush="#B8D6FB" BorderThickness="1" CornerRadius="3" Padding="8,2" Margin="0,0,6,6">
+                                        <TextBlock Text="{Binding}" FontSize="12" Foreground="#1E395B"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="muted">
+                            <Run Text="{Binding PermissionCount}"/>
+                            <Run Text=" permission(s). Les profils sont attribués par l'administration."/>
+                        </TextBlock>
+
+                        <TextBlock Classes="groupheader" Text="Applications accessibles" Margin="0,6,0,0"/>
+                        <ItemsControl ItemsSource="{Binding AccessibleApps}">
+                            <ItemsControl.ItemsPanel>
+                                <ItemsPanelTemplate>
+                                    <WrapPanel/>
+                                </ItemsPanelTemplate>
+                            </ItemsControl.ItemsPanel>
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Background="#F4F4F4" BorderBrush="#D5D5D5" BorderThickness="1" CornerRadius="3" Padding="8,2" Margin="0,0,6,6">
+                                        <TextBlock Text="{Binding}" FontSize="12" Foreground="Black"/>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+            <TabItem Header="À propos de SAPHIR">
+                <StackPanel Margin="20,16" Spacing="14">
+                    <StackPanel Orientation="Horizontal" Spacing="16">
+                        <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Width="72" Height="72"/>
+                        <StackPanel VerticalAlignment="Center" Spacing="2">
+                            <TextBlock Classes="instruction" Text="{Binding Version}" FontSize="20"/>
+                            <TextBlock Classes="muted" Text="Système d'Administration, de Pilotage, d'Habilitation, d'Information et de Renseignement"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <ItemsControl ItemsSource="{Binding AboutRows}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="170,*" Margin="0,3">
+                                    <TextBlock Classes="label" Text="{Binding Label}"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Value}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

@@ -2,26 +2,31 @@ using Saphir.Shared.Contracts;
 
 namespace Saphir.Services;
 
-/// <summary>Application du bureau SAPHIR.</summary>
-public sealed record AppDefinition(string Id, string Title, string Subtitle, string IconPath);
+/// <summary>Application du bureau SAPHIR. <see cref="Phase"/> = phase du plan où elle arrive (null = disponible).</summary>
+public sealed record AppDefinition(string Id, string Title, string Subtitle, string IconPath, bool Principale, int? Phase);
 
-/// <summary>Les applications du bureau, dans l'ordre des icônes (fichiers, opérations, judiciaire, moyens, auxiliaires).</summary>
+/// <summary>Applications du bureau, dans l'ordre du menu Démarrer (modules principaux, compléments, système).</summary>
 public static class AppCatalog
 {
     public static readonly IReadOnlyList<AppDefinition> All =
     [
-        new(SaphirApps.MeoFic, "MEO-FIC", "TAJ · FPR · SNPC · FOVeS · SIV · FVA", "Icons/meo-fic.png"),
-        new(SaphirApps.Scientifique, "PTS", "FAED · FNAEG · FIJAIS · FIJAIT", "Icons/scientifique.png"),
-        new(SaphirApps.Pegase, "PEGASE", "Prise d'appels 17", "Icons/pegase.png"),
-        new(SaphirApps.GeoOps, "GÉOOPS", "Localisation des équipages", "Icons/geoops.png"),
-        new(SaphirApps.MainCourante, "Main courante", "Véhicules et équipages en service", "Icons/main-courante.png"),
-        new(SaphirApps.Lrppn, "LRPPN", "Rédaction des procédures", "Icons/lrppn.png"),
-        new(SaphirApps.Neo, "NEO", "Tchap · Annuaire · Messagerie · MRZ · Notes", "Icons/neo.png"),
-        new(SaphirApps.Bodycam, "Video Manager", "Caméras piétons", "Icons/bodycam.png"),
-        new(SaphirApps.Pve, "PVe", "Procès-verbal électronique", "Icons/pve.png"),
-        new(SaphirApps.Mugshot, "Mugshot", "Photos signalétiques", "Icons/mugshot.png"),
-        new(SaphirApps.GardeAVue, "Garde à vue", "Registre des gardes à vue", "Icons/garde-a-vue.png"),
-        new(SaphirApps.Armurerie, "Armurerie", "Armes, munitions et stocks", "Icons/armurerie.png")
+        new(SaphirApps.Cheops, "CHEOPS", "Fichiers de police", "Icons/cheops.png", true, 6),
+        new(SaphirApps.Pegase, "PÉGASE", "Appels et interventions (CIC)", "Icons/pegase.png", true, 5),
+        new(SaphirApps.MainCourante, "MAIN COURANTE", "Vacations, équipages, mentions", "Icons/main-courante.png", true, 4),
+        new(SaphirApps.Lrppn, "LRPPN", "Procédures et procès-verbaux", "Icons/lrppn.png", true, 7),
+        new(SaphirApps.Rh, "RESSOURCES HUMAINES", "Personnel, carrières, documents", "Icons/rh.png", true, 3),
+
+        new(SaphirApps.Neo, "NEO", "Terminal mobile", "Icons/neo.png", false, 8),
+        new(SaphirApps.Pve, "PVe", "Procès-verbal électronique", "Icons/pve.png", false, 8),
+        new(SaphirApps.Tchap, "TCHAP", "Communication", "Icons/tchap.png", false, 8),
+        new(SaphirApps.Annuaire, "ANNUAIRE", "Répertoire du personnel", "Icons/annuaire.png", false, 8),
+        new(SaphirApps.Messagerie, "MESSAGERIE", "Communications internes", "Icons/messagerie.png", false, 8),
+        new(SaphirApps.Mrz, "MRZ", "Lecture de documents", "Icons/mrz.png", false, 8),
+        new(SaphirApps.Notes, "NOTES", "Prise de notes", "Icons/notes.png", false, 8),
+        new(SaphirApps.Bodycam, "BODYCAM", "Enregistrements vidéo", "Icons/bodycam.png", false, 8),
+
+        new(SaphirApps.Administration, "ADMINISTRATION", "Comptes, profils, paramètres", "Icons/administration.png", false, null),
+        new(SaphirApps.Parametres, "Centre de paramètres", "Mon compte, affichage, à propos", "Icons/parametres.png", false, null)
     ];
 
     public static AppDefinition? Find(string id) => All.FirstOrDefault(a => a.Id == id);

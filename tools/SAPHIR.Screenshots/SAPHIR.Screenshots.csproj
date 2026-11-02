@@ -2,7 +2,7 @@
   <!--
     Outil de captures d'écran : ouvre les vrais écrans de SAPHIR sans affichage (Avalonia Headless + Skia),
     avec des données d'exemple (aucun serveur), et enregistre des PNG.
-    Lancement : voir le workflow screenshots.yml.
+    Lancement : job « captures » de .github/workflows/build.yml.
   -->
   <PropertyGroup>
     <OutputType>Exe</OutputType>

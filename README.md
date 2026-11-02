@@ -1,85 +1,73 @@
 # SAPHIR
 
 **S**ystème d'**A**dministration, de **P**ilotage, d'**H**abilitation, d'**I**nformation et de **R**enseignement :
-poste de travail Police nationale du serveur **Val De Marne Simulation**. Un bureau Windows 10 avec les logiciels
-métier, accessible uniquement aux membres du Discord VDMS ayant le rôle Police, chaque application étant ouverte
-par son propre rôle Discord.
+poste de travail Police nationale du serveur RP **Val-de-Marne Simulation**. Un bureau Windows 7 avec les
+logiciels métier, réservé aux membres du Discord VDMS qui ont le rôle SAPHIR.
 
-Plateformes : **Windows**, **macOS**, **iPhone / iPad**, **Android**. Même base technique qu'ARGOS et SIMCALL
-(.NET 9, Avalonia 11.3).
+Plateformes : **Windows**, **macOS**, **iPhone / iPad**, **Android** (.NET 9, Avalonia 11.3).
 
-## Version 0.1
+> Toutes les données sont fictives (jeu de rôle). SAPHIR n'a aucun lien avec les fichiers réels de l'État.
 
-- Socle repris d'ARGOS : écran de verrouillage, connexion Discord, bureau Windows 10, vue téléphone, temps réel.
-- Fond d'écran et icône SAPHIR. Icônes d'applications provisoires (à remplacer par les tiennes, mêmes noms de
-  fichiers dans `src/SAPHIR.App/Assets/Icons/`).
-- **Un rôle Discord par application** : seules les applications autorisées apparaissent sur le bureau, et la
-  liste est relue toutes les 5 minutes. Une application sans rôle configuré est ouverte à tous les agents.
-- **MEO-FIC** complet :
-  - Personnes : **TAJ** (antécédents, mis en cause / victime), **FPR** (fiches, conduite à tenir, dangereux /
-    armé, clôture), **SNPC** (statut, catégories, solde de points).
-  - Véhicules : **FOVeS** (signalements, clôture), **SIV** (immatriculation, titulaire), **FVA** (assurance).
-  - Identités et véhicules lus dans la **base FiveM** (ESX ou QBCore, lecture seule), complétés dans SAPHIR ;
-    fiches pour les personnes inconnues du serveur.
-  - Bandeau rouge dès qu'une personne est au FPR ou un véhicule au FOVeS, quel que soit le fichier consulté.
-  - Passage personne → véhicules et véhicule → titulaire.
-  - **Journal** de toutes les consultations et inscriptions (administration), suppression réservée à
-    l'administration.
-- **PEGASE** (prise des appels 17) :
-  - Au **décroché d'un 17 sur SIMCALL**, PEGASE s'ouvre sur le poste SAPHIR de l'opérateur avec la prise d'appel
-    déjà remplie (heure, numéro du requérant, chrono de l'appel figé au raccroché). Bouton « Nouvel appel 17 »
-    pour une saisie manuelle.
-  - Prise d'appel : localisation, nature, priorité P1 à P3, requérant, motif ; puis **créer l'événement**,
-    **clore sans suite** (renseignement, réorientation, malveillant…) ou **mettre en attente**.
-  - Événements : liste par priorité, fiche, modification, **chronologie** (messages, engagements, statuts),
-    clôture avec compte rendu. Notification à tous les postes pour un P1.
-  - **Équipages** : indicatif, type, effectif ; engagement sur un événement, statuts Disponible / Engagé /
-    Sur place / Indisponible / Hors service. Tout se met à jour en temps réel sur tous les postes.
-- **PTS** (police technique et scientifique), même écran que MEO-FIC :
-  - **FAED** (signalisations, empreintes) et **FNAEG** (profils ADN) d'une personne.
-  - **FIJAIS** et **FIJAIT** : inscriptions avec décision, juridiction, obligations, fin d'inscription ;
-    bandeau violet sur la fiche.
-  - **Traces** relevées sur les scènes (papillaires ou ADN), puis **rapprochement** avec une personne.
-- Les autres applications (GÉOOPS, Main courante, LRPPN, NEO, Video Manager, PVe, Mugshot, Garde à vue,
-  Armurerie) affichent « arrive dans une prochaine version ».
+L'ancienne version (MEO-FIC, PEGASE 0.1, PTS) est conservée sur la branche `v0-archive`.
+
+## Version 0.2 — socle
+
+- **Ouverture de session Windows 7** : connexion Discord, rôle SAPHIR obligatoire (`1544429010191261778`),
+  revérifié toutes les 5 minutes et en temps réel.
+- **Première connexion** : NOM (en majuscules) et Prénom, demandés une seule fois. Le serveur crée la fiche agent
+  (référence `AG-000001`, matricule automatique) au statut « Profil à compléter » avec le profil *Agent*.
+- **Statuts** : Profil à compléter, Actif, Suspendu, Inactif, Archivé. Un compte suspendu, inactif ou archivé
+  ne peut plus ouvrir de session ; son historique reste.
+- **Profils et permissions** : 11 profils fournis (Agent, Chef de bord, Opérateur CIC, TN, Accueil, Enquêteur,
+  OPJ, Responsable de service, Responsable RH, Documentaliste, Administrateur technique), cumulables. Chaque
+  application n'apparaît qu'avec au moins une de ses permissions. Le serveur revérifie tout, même en appel direct.
+- **Ressources humaines** : exige en plus le rôle Discord RH (`1544426429666689044`), contrôlé côté serveur.
+- **Bureau Windows 7** : menu Démarrer avec recherche, barre des tâches Aero, fenêtres déplaçables et
+  redimensionnables, zone de notification, notifications en bulle. Vue téléphone sur les petits écrans.
+- **Administration** : comptes (profils, statut avec motif et confirmation), profils (permissions par module),
+  paramètres centraux (version affichée, format du RIO à 7 chiffres…), historique des modifications et journal
+  des accès. Garde-fou : impossible de retirer le dernier administrateur actif.
+- **Centre de paramètres** : fiche de l'agent, profils, applications accessibles, version.
+- Les modules métier (RH, Main courante, PÉGASE, CHEOPS, LRPPN, NEO, PVe…) arrivent dans les phases suivantes ;
+  leur icône indique déjà la phase prévue.
+- Icônes d'applications provisoires : remplacer les fichiers de `src/SAPHIR.App/Assets/Icons/` (mêmes noms).
 
 ## Arborescence
 
 ```text
-src/SAPHIR.Shared    Contrats communs (connexion, applications, MEO-FIC)
-src/SAPHIR.Server    Serveur : Discord OAuth, WebSocket, API MEO-FIC, MariaDB
-src/SAPHIR.App       Interface commune : écrans, bureau, vue mobile, applications
-src/SAPHIR.Desktop   Exécutable Windows + macOS
-src/SAPHIR.iOS       iPhone + iPad
-src/SAPHIR.Android   Android (APK)
+src/SAPHIR.Shared    Contrats communs (applications, permissions, profils, session, administration)
+src/SAPHIR.Server    Serveur : Discord OAuth, WebSocket, API du socle, MariaDB, migrations
+src/SAPHIR.App       Interface commune (ouverture de session, bureau Windows 7, vue téléphone, applications)
+src/SAPHIR.Desktop   Windows et macOS
+src/SAPHIR.iOS       iPhone / iPad
+src/SAPHIR.Android   Android
+src/SAPHIR.Tests     Tests (contrats, règles du socle)
+tools/SAPHIR.Screenshots  Captures d'écran avec données fictives (CI)
+API-SOCLE.md         Routes de l'API du socle
 ```
 
 ## Mise en route
 
 ### 1. Application Discord
 
-Dans le [portail développeur Discord](https://discord.com/developers/applications), réutiliser l'application
-d'ARGOS (ou en créer une) et ajouter l'adresse de retour OAuth2 :
+Dans le [portail développeur Discord](https://discord.com/developers/applications), ajouter l'adresse de retour
+OAuth2 :
 
 ```text
 http://46.105.78.32:8091/auth/discord/callback
 ```
 
-### 2. Bases de données (MariaDB, sur le VPS)
+### 2. Base de données (MariaDB, sur le VPS)
 
 ```sql
 CREATE DATABASE saphir CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 CREATE USER 'saphir'@'localhost' IDENTIFIED BY 'mot-de-passe-saphir';
 GRANT ALL PRIVILEGES ON saphir.* TO 'saphir'@'localhost';
-
--- Lecture seule de la base FiveM (remplacer « fivem » par le nom de ta base)
-CREATE USER 'saphir_ro'@'localhost' IDENTIFIED BY 'mot-de-passe-lecture';
-GRANT SELECT ON fivem.* TO 'saphir_ro'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-Les tables SAPHIR (`saphir_*` pour MEO-FIC, `pegase_*` pour PEGASE, `pts_*` pour PTS) sont créées
-automatiquement au démarrage du serveur.
+Les tables sont créées au démarrage du serveur par des migrations numérotées (jamais de suppression). Si la base
+est injoignable, le serveur démarre quand même et réessaie toutes les 30 secondes.
 
 ### 3. Serveur
 
@@ -87,51 +75,31 @@ Créer `src/SAPHIR.Server/appsettings.Local.json` (jamais versionné) :
 
 ```json
 {
-  "SAPHIR": { "AccessKey": "une-longue-cle-aleatoire" },
+  "SAPHIR": {
+    "AccessKey": "une-longue-cle-aleatoire",
+    "AdminDiscordIds": [ "560037927695024139" ]
+  },
   "Discord": {
     "ClientId": "…",
     "ClientSecret": "…",
-    "PublicBaseUrl": "http://46.105.78.32:8091",
-    "RequiredRoleId": "ID du rôle Police",
-    "LevelRoles": {
-      "meo-fic": "ID du rôle MEO-FIC",
-      "superviseur": "ID des rôles chef de poste, officier (séparés par des virgules)",
-      "administration": "ID du rôle développeur"
-    }
+    "PublicBaseUrl": "http://46.105.78.32:8091"
   },
   "Database": {
-    "Saphir": "Server=127.0.0.1;Database=saphir;User ID=saphir;Password=mot-de-passe-saphir",
-    "FiveM": "Server=127.0.0.1;Database=fivem;User ID=saphir_ro;Password=mot-de-passe-lecture",
-    "Framework": "esx"
+    "Saphir": "Server=127.0.0.1;Database=saphir;User ID=saphir;Password=mot-de-passe-saphir"
   }
 }
 ```
 
-- `Framework` : `esx`, `qbcore`, ou `aucun` (pas de lecture FiveM).
-- Rôles d'application disponibles dans `LevelRoles` : `meo-fic`, `scientifique`, `pegase`, `geoops`,
-  `main-courante`, `lrppn`, `neo`, `bodycam`, `pve`, `mugshot`, `garde-a-vue`, `armurerie`.
-  Laisser vide = application ouverte à tous les agents. `administration` voit tout.
-
-Puis :
+Les comptes Discord de `AdminDiscordIds` reçoivent le profil *Administrateur technique* à leur première
+connexion. Le serveur, les rôles et la guilde sont déjà renseignés dans `appsettings.json`.
 
 ```bash
 dotnet run --project src/SAPHIR.Server
 ```
 
-Le serveur écoute sur le port **8091** (ARGOS reste sur 8090, SIMCALL sur 8080).
+Le serveur écoute sur le port **8091** (ARGOS sur 8090, SIMCALL sur 8080).
 
-### 4. Lien avec SIMCALL (PEGASE)
-
-SIMCALL 0.7.3 ou plus (PR « Lien SAPHIR » sur le dépôt SIMCALL). Dans `C:\SIMCALL\Server\appsettings.json` :
-
-```json
-"Saphir": { "Url": "http://127.0.0.1:8091", "Key": "la même valeur que SAPHIR:AccessKey" }
-```
-
-Puis redémarrer le service SIMCALL. Au décroché d'un 17, la prise d'appel s'ouvre sur le poste SAPHIR de
-l'opérateur (même compte Discord, rôle `pegase`).
-
-### 5. Poste ordinateur
+### 4. Poste ordinateur
 
 ```bash
 dotnet run --project src/SAPHIR.Desktop
@@ -140,7 +108,7 @@ dotnet run --project src/SAPHIR.Desktop
 SAPHIR s'ouvre en plein écran ; **F11** bascule en fenêtre. Pour viser un serveur de test, placer un
 `saphir.local.json` à côté de l'exécutable : `{ "ServerUrl": "http://127.0.0.1:8091" }`.
 
-### 6. iPhone / iPad et Android
+### 5. iPhone / iPad et Android
 
 ```bash
 dotnet workload install ios android
@@ -148,65 +116,14 @@ dotnet build src/SAPHIR.iOS -c Release -f net9.0-ios -r iossimulator-arm64
 dotnet publish src/SAPHIR.Android -c Release -f net9.0-android
 ```
 
-Identifiant d'application : `fr.vdms.saphir` (profil de provisionnement à créer sur le compte Apple Developer).
+Identifiant d'application : `fr.vdms.saphir`.
 
-## Ce que lit SAPHIR dans la base FiveM
-
-| | ESX | QBCore |
-|---|---|---|
-| Identités | `users` (identifier, firstname, lastname, dateofbirth, sex, height, phone_number) | `players` (citizenid, charinfo) |
-| Véhicules | `owned_vehicles` (+ noms de modèles via `vehicles`) | `player_vehicles` |
-| Permis | `user_licenses` (drive → B, drive_bike → A, drive_truck → C) | `players.metadata.licences` |
-
-Les colonnes absentes sont ignorées. Si la base FiveM est injoignable, seules les fiches SAPHIR s'affichent.
-
-## API MEO-FIC
-
-Jeton de session Discord dans `Authorization: Bearer …`.
-
-| Méthode | Adresse | Rôle |
-|---|---|---|
-| GET | `/api/meo/personnes?q=` | Recherche (nom, prénom, date de naissance) |
-| GET | `/api/meo/personne?key=` | Fiche complète (TAJ, FPR, SNPC, véhicules) |
-| POST | `/api/meo/personnes` | Nouvelle fiche personne |
-| PUT | `/api/meo/personne/identite?key=` | Identité et signalement |
-| POST | `/api/meo/personne/taj?key=` | Inscription TAJ |
-| POST | `/api/meo/personne/fpr?key=` | Inscription FPR |
-| PUT | `/api/meo/personne/permis?key=` | SNPC |
-| POST | `/api/meo/fpr/{id}/clore` | Clôture FPR |
-| GET | `/api/meo/vehicules?q=` | Recherche par plaque |
-| GET | `/api/meo/vehicule?plaque=` | SIV, FVA, FOVeS |
-| PUT | `/api/meo/vehicule` | SIV / FVA |
-| POST | `/api/meo/vehicule/foves?plaque=` | Signalement FOVeS |
-| POST | `/api/meo/foves/{id}/clore` | Clôture FOVeS |
-| DELETE | `/api/meo/inscription/{taj\|fpr\|foves}/{id}` | Suppression (administration) |
-| GET | `/api/meo/journal` | Journal (administration) |
-
-## API PEGASE et PTS
-
-PEGASE : `GET /api/pegase/etat`, `POST /api/pegase/appels`, `GET /api/pegase/appel/{id}`,
-`POST /api/pegase/appel/{id}/evenement`, `POST /api/pegase/appel/{id}/sans-suite`, `GET|PUT /api/pegase/evenement/{id}`,
-`POST /api/pegase/evenement/{id}/message|engager|clore`, `POST /api/pegase/equipages`,
-`PUT|DELETE /api/pegase/equipage/{id}`, `POST /api/pegase/equipage/{id}/statut`.
-
-SIMCALL (clé `X-Saphir-Key`) : `POST /api/integrations/simcall/answered`, `POST /api/integrations/simcall/ended`.
-
-PTS : `GET /api/pts/personne?key=`, `POST /api/pts/personne/signalisation|inscription?key=`, `GET /api/pts/traces`
-(`?toutes=true`), `POST /api/pts/traces`, `POST /api/pts/trace/{id}/rapprocher|dissocier`,
-`DELETE /api/pts/{signalisation|inscription|trace}/{id}` (administration).
-
-## Simuler un appel 17
+## Tests et captures
 
 ```bash
-curl -X POST http://127.0.0.1:8091/api/integrations/simcall/answered \
-  -H "X-Saphir-Key: une-longue-cle-aleatoire" -H "Content-Type: application/json" \
-  -d '{"simcallCallId":"test-001","discordUserId":"TON_ID_DISCORD","operatorName":"Opérateur test","callerNumber":"0601020304","answeredAt":"2026-11-02T10:00:00Z"}'
+dotnet test src/SAPHIR.Tests
+dotnet run --project tools/SAPHIR.Screenshots -- captures
 ```
 
-## Tester une notification
-
-```bash
-curl -X POST http://127.0.0.1:8091/api/integrations/notify \
-  -H "X-Saphir-Key: une-longue-cle-aleatoire" -H "Content-Type: application/json" \
-  -d '{"type":"notify","title":"PEGASE","text":"Appel 17 entrant","appId":"pegase"}'
-```
+La compilation GitHub Actions produit le serveur, les postes Windows et macOS, lance les tests et publie les
+captures d'écran (artefact `SAPHIR-Captures`).

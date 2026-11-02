@@ -1,6 +1,6 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!--
-    Cœur commun de SAPHIR : écrans de verrouillage et de connexion, bureau Windows 10, vue mobile,
+    Cœur commun de SAPHIR : ouverture de session, bureau Windows 7, vue mobile, applications,
     connexion Discord et temps réel.
     Utilisé par :
       SAPHIR.Desktop (Windows + macOS)
@@ -17,6 +17,11 @@
   <ItemGroup>
     <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
     <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Controls.DataGrid" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <InternalsVisibleTo Include="SAPHIR.Screenshots" />
   </ItemGroup>
 
   <ItemGroup>

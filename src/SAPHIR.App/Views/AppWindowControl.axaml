@@ -2,26 +2,79 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              x:Class="Saphir.Views.AppWindowControl"
              FontFamily="{StaticResource WindowsFont}">
-    <!-- Fenêtre Windows 10 : bordure fine (accent si active), barre de titre blanche, boutons à droite. -->
+    <!-- Fenêtre Aero (Windows 7) : cadre vitré, titre à gauche, boutons réduire / agrandir / fermer en haut à droite. -->
     <UserControl.Styles>
         <Style Selector="Border#Frame">
-            <Setter Property="BorderBrush" Value="{StaticResource InactiveBorderBrush}"/>
+            <Setter Property="Background" Value="{StaticResource AeroInactiveBrush}"/>
+            <Setter Property="BorderBrush" Value="#A0566F8E"/>
             <Setter Property="BorderThickness" Value="1"/>
-            <Setter Property="BoxShadow" Value="0 7 24 0 #47000000"/>
+            <Setter Property="CornerRadius" Value="6,6,2,2"/>
+            <Setter Property="Padding" Value="7,0,7,7"/>
+            <Setter Property="BoxShadow" Value="0 4 14 0 #47000000"/>
         </Style>
         <Style Selector="Border#Frame.active">
-            <Setter Property="BorderBrush" Value="{StaticResource WindowBorderBrush}"/>
-            <Setter Property="BoxShadow" Value="0 10 32 0 #66000000"/>
+            <Setter Property="Background" Value="{StaticResource AeroActiveBrush}"/>
+            <Setter Property="BorderBrush" Value="#D02B4F7E"/>
+            <Setter Property="BoxShadow" Value="0 8 26 0 #66000000"/>
         </Style>
         <Style Selector="Border#Frame.maximized">
-            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="CornerRadius" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
             <Setter Property="BoxShadow" Value="none"/>
         </Style>
         <Style Selector="TextBlock#TitleText">
-            <Setter Property="Foreground" Value="#999999"/>
+            <Setter Property="Foreground" Value="#5A6E87"/>
+            <Setter Property="Effect">
+                <DropShadowEffect BlurRadius="10" OffsetX="0" OffsetY="0" Opacity="0.9" Color="White"/>
+            </Setter>
         </Style>
         <Style Selector="TextBlock#TitleText.active">
-            <Setter Property="Foreground" Value="#000000"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+
+        <!-- Boutons de légende Windows 7 -->
+        <Style Selector="Button.caption">
+            <Setter Property="Width" Value="27"/>
+            <Setter Property="Height" Value="20"/>
+            <Setter Property="BorderBrush" Value="#99536A86"/>
+            <Setter Property="BorderThickness" Value="1,0,0,1"/>
+            <Setter Property="Background">
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#E6F3F7FC"/>
+                    <GradientStop Offset="0.45" Color="#CCDCE7F4"/>
+                    <GradientStop Offset="0.5" Color="#B3C3D5EA"/>
+                    <GradientStop Offset="1" Color="#CCD9E6F5"/>
+                </LinearGradientBrush>
+            </Setter>
+        </Style>
+        <Style Selector="Button.caption.first">
+            <Setter Property="CornerRadius" Value="0,0,0,4"/>
+        </Style>
+        <Style Selector="Button.caption:pointerover /template/ Border#FlatRoot">
+            <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+        </Style>
+        <Style Selector="Button.caption.close">
+            <Setter Property="Width" Value="45"/>
+            <Setter Property="CornerRadius" Value="0,0,4,0"/>
+            <Setter Property="BorderThickness" Value="1,0,1,1"/>
+        </Style>
+        <Style Selector="Button.caption.close:pointerover /template/ Border#FlatRoot">
+            <Setter Property="Background" Value="{StaticResource CloseButtonBrush}"/>
+        </Style>
+        <Style Selector="Border#Frame.active Button.caption.close">
+            <Setter Property="Background" Value="{StaticResource CloseButtonBrush}"/>
+        </Style>
+        <Style Selector="Button.caption Path">
+            <Setter Property="Stroke" Value="#3B4E66"/>
+            <Setter Property="StrokeThickness" Value="1.6"/>
+            <Setter Property="Width" Value="10"/>
+            <Setter Property="Height" Value="10"/>
+        </Style>
+        <Style Selector="Button.caption.close Path">
+            <Setter Property="Stroke" Value="#5B6F87"/>
+        </Style>
+        <Style Selector="Border#Frame.active Button.caption.close Path">
+            <Setter Property="Stroke" Value="White"/>
         </Style>
         <Style Selector="Border.resize">
             <Setter Property="Background" Value="Transparent"/>
@@ -32,23 +85,19 @@
     </UserControl.Styles>
 
     <Border Name="Frame"
-            Background="White"
             Classes.active="{Binding IsActive}"
             Classes.maximized="{Binding IsMaximized}">
         <Grid>
-            <Grid RowDefinitions="31,*">
+            <Grid RowDefinitions="30,*">
                 <!-- Barre de titre : glisser pour déplacer, double-clic pour agrandir. -->
-                <Grid Name="TitleBar" Background="White" ColumnDefinitions="Auto,*,Auto">
-                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="8,0,8,0" VerticalAlignment="Center"/>
-                    <TextBlock Name="TitleText"
-                               Grid.Column="1"
-                               Classes.active="{Binding IsActive}"
-                               Text="{Binding Title}"
-                               FontSize="12"
-                               VerticalAlignment="Center"
+                <Grid Name="TitleBar" Background="Transparent" ColumnDefinitions="Auto,*,Auto">
+                    <Image Source="{Binding Icon}" Width="16" Height="16" Margin="2,0,7,0" VerticalAlignment="Center"
+                           RenderOptions.BitmapInterpolationMode="HighQuality"/>
+                    <TextBlock Name="TitleText" Grid.Column="1" Classes.active="{Binding IsActive}"
+                               Text="{Binding Title}" FontSize="12" VerticalAlignment="Center"
                                TextTrimming="CharacterEllipsis"/>
-                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top">
-                        <Button Classes="flat caption" ToolTip.Tip="Réduire" Command="{Binding MinimizeCommand}">
+                    <StackPanel Grid.Column="2" Orientation="Horizontal" VerticalAlignment="Top" Margin="0,0,-1,0">
+                        <Button Classes="flat caption first" ToolTip.Tip="Réduire" Command="{Binding MinimizeCommand}">
                             <Path Data="{StaticResource CaptionMinimize}"/>
                         </Button>
                         <Button Classes="flat caption" ToolTip.Tip="Agrandir" Command="{Binding ToggleMaximizeCommand}">
@@ -63,17 +112,20 @@
                     </StackPanel>
                 </Grid>
 
-                <ContentControl Name="Body" Grid.Row="1" ClipToBounds="True"/>
+                <!-- Zone client : bord intérieur fin, fond blanc -->
+                <Border Grid.Row="1" BorderBrush="#7A96B8" BorderThickness="1" Background="White">
+                    <ContentControl Name="Body" ClipToBounds="True"/>
+                </Border>
             </Grid>
 
             <!-- Poignées de redimensionnement (bord droit, bord bas, coin) -->
             <Border Name="ResizeRight" Classes="resize" Classes.hidden="{Binding IsMaximized}"
-                    Width="6" HorizontalAlignment="Right" Margin="0,31,-3,8" Cursor="SizeWestEast"/>
+                    Width="8" HorizontalAlignment="Right" Margin="0,30,-7,8" Cursor="SizeWestEast"/>
             <Border Name="ResizeBottom" Classes="resize" Classes.hidden="{Binding IsMaximized}"
-                    Height="6" VerticalAlignment="Bottom" Margin="0,0,8,-3" Cursor="SizeNorthSouth"/>
+                    Height="8" VerticalAlignment="Bottom" Margin="0,0,8,-7" Cursor="SizeNorthSouth"/>
             <Border Name="ResizeCorner" Classes="resize" Classes.hidden="{Binding IsMaximized}"
-                    Width="14" Height="14" HorizontalAlignment="Right" VerticalAlignment="Bottom"
-                    Margin="0,0,-3,-3" Cursor="BottomRightCorner"/>
+                    Width="16" Height="16" HorizontalAlignment="Right" VerticalAlignment="Bottom"
+                    Margin="0,0,-7,-7" Cursor="BottomRightCorner"/>
         </Grid>
     </Border>
 </UserControl>

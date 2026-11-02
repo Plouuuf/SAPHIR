@@ -1,0 +1,53 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.FirstLoginView">
+    <!-- Première connexion : NOM et prénom, une seule fois. Fenêtre de configuration façon Windows 7. -->
+    <Border HorizontalAlignment="Center" VerticalAlignment="Center" Width="520" CornerRadius="6"
+            Background="{StaticResource AeroActiveBrush}" BorderBrush="#99FFFFFF" BorderThickness="1" Padding="7"
+            BoxShadow="0 10 40 0 #80000000">
+        <Grid RowDefinitions="Auto,*">
+            <StackPanel Orientation="Horizontal" Spacing="8" Margin="4,2,0,8">
+                <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Width="18" Height="18"/>
+                <TextBlock Text="Configuration de SAPHIR" Foreground="{StaticResource TitleTextBrush}" FontSize="12" VerticalAlignment="Center"/>
+            </StackPanel>
+            <Border Grid.Row="1" Background="White" BorderBrush="#7A96B8" BorderThickness="1">
+                <Grid RowDefinitions="*,Auto">
+                    <StackPanel Margin="28,22,28,20" Spacing="12">
+                        <TextBlock Classes="instruction" Text="Bienvenue dans SAPHIR. Indique ton identité."/>
+                        <TextBlock Classes="muted" Text="C'est ta première connexion. Ces informations ne te seront plus demandées ; le service RH complétera ensuite ta fiche (RIO, grade, service, unité, fonction)."/>
+
+                        <Grid ColumnDefinitions="110,*" RowDefinitions="Auto,Auto" Margin="0,8,0,0">
+                            <TextBlock Classes="label" Text="NOM :" VerticalAlignment="Center"/>
+                            <TextBox Grid.Column="1" Text="{Binding FirstNom}" Watermark="DUPONT" MaxLength="60"/>
+                            <TextBlock Grid.Row="1" Classes="label" Text="Prénom :" VerticalAlignment="Center" Margin="0,10,0,0"/>
+                            <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding FirstPrenom}" Watermark="Jean" MaxLength="60" Margin="0,10,0,0"/>
+                        </Grid>
+
+                        <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8">
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="muted" Text="Ton identité sera enregistrée ainsi :"/>
+                                <TextBlock Text="{Binding FirstPreview}" FontSize="15" FontWeight="SemiBold" Foreground="{StaticResource TitleTextBrush}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border IsVisible="{Binding HasFirstError}" Background="#FFF4F4" BorderBrush="#E3B4B4" BorderThickness="1" Padding="10,6">
+                            <StackPanel Orientation="Horizontal" Spacing="8">
+                                <PathIcon Data="{StaticResource IconWarning}" Width="16" Height="16" Foreground="#C7503B"/>
+                                <TextBlock Text="{Binding FirstError}" TextWrapping="Wrap" MaxWidth="400" FontSize="12"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Barre de boutons grise, comme les assistants Windows 7 -->
+                    <Border Grid.Row="1" Background="{StaticResource PanelBrush}" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="14,10">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <ProgressBar IsIndeterminate="True" Width="80" IsVisible="{Binding IsBusy}" VerticalAlignment="Center"/>
+                            <Button Classes="default" Content="Valider" Command="{Binding SubmitFirstLoginCommand}"/>
+                            <Button Content="Annuler" Command="{Binding CancelFirstLoginCommand}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Border>
+</UserControl>

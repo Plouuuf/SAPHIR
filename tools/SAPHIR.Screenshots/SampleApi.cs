@@ -1,161 +1,95 @@
 using System.Net;
-using System.Text;
+using System.Net.Http.Json;
 using System.Text.Json;
 using Saphir.Shared.Contracts;
 
 namespace Saphir.Screenshots;
 
-/// <summary>Serveur SAPHIR simulé : réponses d'exemple pour chaque adresse appelée par les écrans.</summary>
+/// <summary>Faux serveur SAPHIR pour les captures : données fictives, aucune écriture.</summary>
 public sealed class SampleApi : HttpMessageHandler
 {
+    public const string Version = "SAPHIR - v0.2.0.0";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
-    private static readonly DateTimeOffset Now = DateTimeOffset.UtcNow;
+    private static readonly DateTimeOffset Now = new(2026, 11, 2, 9, 41, 0, TimeSpan.FromHours(1));
+
+    public static readonly AgentDto Admin = new(1, "AG-000001", "560037927695024139", "DURAND", "Jean-Pierre",
+        "1234567", "94000001", "Brigadier-chef", "CSP de Créteil", "BPS / BAC", "Chef de bord", AgentStatuts.Actif,
+        Now.AddDays(-12), Now.AddHours(-2));
+
+    private static readonly List<AgentDto> Agents =
+    [
+        Admin,
+        new(2, "AG-000002", "301245778812340001", "GIRARD", "Valentin", "2045871", "94000002", "Commandant", "CSP de Créteil", "Direction", "Adjoint au chef de service", AgentStatuts.Actif, Now.AddDays(-11), Now.AddDays(-1)),
+        new(3, "AG-000003", "301245778812340002", "TABOULOT", "Louis", "3301458", "94000003", "Major", "CSP de Créteil", "BPS / BAC", "Chef d'unité", AgentStatuts.Actif, Now.AddDays(-10), Now.AddDays(-3)),
+        new(4, "AG-000004", "301245778812340003", "BORDINI", "Nolan", "4410256", "94000004", "Major", "CSP de Créteil", "CSI", "Chef d'unité", AgentStatuts.Actif, Now.AddDays(-9), Now.AddDays(-2)),
+        new(5, "AG-000005", "301245778812340004", "MARTIN", "Léa", null, "94000005", null, null, null, null, AgentStatuts.ProfilACompleter, Now.AddHours(-5), Now.AddHours(-5)),
+        new(6, "AG-000006", "301245778812340005", "NGUYEN", "Thomas", "5120447", "94000006", "Gardien de la paix", "CSP de Créteil", "BPS / BAC", "Équipier", AgentStatuts.Suspendu, Now.AddDays(-8), Now.AddDays(-1)),
+    ];
+
+    private static readonly Dictionary<long, string[]> AgentProfils = new()
+    {
+        [1] = [DefaultProfiles.AdministrateurTechnique, "chef-de-bord"],
+        [2] = ["responsable-service", "opj"],
+        [3] = ["chef-de-bord", "agent"],
+        [4] = ["operateur-cic", "agent"],
+        [5] = [],
+        [6] = ["agent"],
+    };
+
+    public static SessionInfoDto Session(bool premiereConnexion = false) => new(
+        premiereConnexion ? null : Admin, premiereConnexion, true,
+        premiereConnexion ? Array.Empty<string>() : AgentProfils[1],
+        premiereConnexion ? Array.Empty<string>() : Permissions.All.Select(p => p.Code).OrderBy(c => c, StringComparer.Ordinal).ToList(),
+        Version, null);
 
     protected override Task<HttpResponseMessage> SendAsync(HttpRequestMessage request, CancellationToken cancellationToken)
     {
-        var path = request.RequestUri!.AbsolutePath.Trim('/');
+        var path = request.RequestUri!.AbsolutePath.TrimStart('/');
         object? body = path switch
         {
-            "api/meo/personnes" => People(),
-            "api/meo/personne" => Person(),
-            "api/meo/vehicules" => Vehicles(),
-            "api/meo/vehicule" => Vehicle(),
-            "api/meo/journal" => Journal(),
-            "api/pegase/etat" => PegaseState(),
-            "api/pts/personne" => PtsPerson(),
-            "api/pts/traces" => Traces(),
-            _ when path.StartsWith("api/pegase/evenement/", StringComparison.Ordinal) => EventDetail(),
-            _ when path.StartsWith("api/pegase/appel/", StringComparison.Ordinal) => Call(),
-            _ => null
+            "api/version" => new { version = Version },
+            "api/session" => Session(),
+            "api/admin/profils" => Profils(),
+            "api/admin/comptes" => Agents.Select(a => new CompteDto(a, AgentProfils[a.Id], a.MajLe)).ToList(),
+            "api/admin/parametres" => Parametres(),
+            "api/admin/historique" => Historique(),
+            "api/admin/journal" => Journal(),
+            _ => null,
         };
 
         var response = body is null
-            ? new HttpResponseMessage(HttpStatusCode.NotFound) { Content = new StringContent("{\"error\":\"Introuvable.\"}", Encoding.UTF8, "application/json") }
-            : new HttpResponseMessage(HttpStatusCode.OK) { Content = new StringContent(JsonSerializer.Serialize(body, body.GetType(), Json), Encoding.UTF8, "application/json") };
+            ? new HttpResponseMessage(HttpStatusCode.NotFound) { Content = JsonContent.Create(new { error = "Route d'exemple absente." }) }
+            : new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(body, body.GetType(), options: Json) };
         return Task.FromResult(response);
     }
 
-    // ===== MEO-FIC =====
+    private static List<ProfilDto> Profils()
+        => DefaultProfiles.All.Select((p, i) => new ProfilDto(i + 1, p.Code, p.Nom, p.Description, p.Permissions, true,
+            AgentProfils.Values.Count(v => v.Contains(p.Code)))).ToList();
 
-    private static List<PersonSummaryDto> People() =>
+    private static List<ParametreDto> Parametres() =>
     [
-        new("f:char1:7a3f", "MARCHETTI", "Lucas", "14/03/1996", "M", "FiveM", true, 2, "Suspendu"),
-        new("f:char1:91bc", "MARCHETTI", "Léa", "02/11/1999", "F", "FiveM", false, 0, "Valide"),
-        new("s:42", "MARCHETTI", "Enzo", "21/07/2004", "M", "SAPHIR", false, 1, null)
+        new(ParametresCles.Version, "0.2.0.0", "Version affichée", "Affichée « SAPHIR - v0.2.0.0 » sur l'ouverture de session et le bureau.", true),
+        new(ParametresCles.NomOrganisation, "Commissariat central de Créteil", "Nom de l'organisation", null, true),
+        new(ParametresCles.RioFormat, @"^\d{7}$", "Format du RIO", "Expression régulière : 7 chiffres.", true),
+        new(ParametresCles.RioExemple, "1234567", "Exemple de RIO", "Montré aux agents RH lors de l'attribution.", true),
     ];
 
-    private static PersonDetailDto Person() => new(
-        "f:char1:7a3f", 12, "char1:7a3f", "FiveM + SAPHIR",
-        new IdentityDto("MARCHETTI", "Lucas", "14/03/1996", "Marseille (13)", "M", "Française",
-            "12 rue des Écoles, 94000 Créteil", "06 12 34 56 78", "182 cm",
-            "Corpulence athlétique, cheveux bruns courts, tatouage tribal avant-bras droit", "« Luca », « Le Marseillais »"),
-        [
-            new TajEntryDto(31, "Mis en cause", "Vol avec violence", "7151", "28/10/2026", "Centre commercial Créteil Soleil",
-                "Commissariat de Créteil", "2026/004512", "Arrachage de sac à main sur une femme âgée, fuite à pied vers le métro.",
-                "Brigadier DURAND", Now.AddDays(-5)),
-            new TajEntryDto(18, "Mis en cause", "Conduite sans permis", "11013", "02/09/2026", "RN 186, Créteil",
-                "Brigade motocycliste 94", "2026/003107", null, "Gardien de la paix LEROY", Now.AddDays(-61))
-        ],
-        [
-            new FprEntryDto(7, "PJ — Recherche judiciaire", "Interpeller et aviser l'autorité", "OPJ de permanence, SDPJ 94 — 01 45 17 00 00",
-                "Recherché dans le cadre d'une série de vols avec violence sur le secteur Créteil / Maisons-Alfort.",
-                true, true, true, "Lieutenant MOREAU", Now.AddDays(-3), null, null)
-        ],
-        new PermisDto("19AB34567", "B", 0, "Suspendu", "18/06/2015", "Suspension administrative de 6 mois", "Brigadier DURAND", Now.AddDays(-20)),
-        [
-            new VehicleSummaryDto("GH-482-KT", "Peugeot", "308", "Gris", "MARCHETTI Lucas", "FiveM + SAPHIR", false),
-            new VehicleSummaryDto("FT-119-ZA", "Yamaha", "MT-07", "Noir", "MARCHETTI Lucas", "FiveM", true)
-        ]);
-
-    private static List<VehicleSummaryDto> Vehicles() =>
+    private static List<HistoriqueDto> Historique() =>
     [
-        new("FT-119-ZA", "Yamaha", "MT-07", "Noir", "MARCHETTI Lucas", "FiveM", true),
-        new("FT-542-BD", "Renault", "Clio", "Blanc", "NGUYEN Thomas", "FiveM", false)
+        new(6, Now.AddMinutes(-12), "DURAND Jean-Pierre", "agent", "AG-000006", "Statut", "statut", AgentStatuts.Actif, AgentStatuts.Suspendu, "Absence prolongée non justifiée"),
+        new(5, Now.AddMinutes(-40), "DURAND Jean-Pierre", "agent", "AG-000004", "Profils", "profils", "agent", "operateur-cic, agent", null),
+        new(4, Now.AddHours(-2), "DURAND Jean-Pierre", "parametre", ParametresCles.NomOrganisation, "Modification", "valeur", "SAPHIR", "Commissariat central de Créteil", null),
+        new(3, Now.AddHours(-5), "MARTIN Léa", "agent", "AG-000005", "Création", null, null, null, "Première connexion"),
+        new(2, Now.AddDays(-9), "BORDINI Nolan", "agent", "AG-000004", "Création", null, null, null, "Première connexion"),
     ];
 
-    private static VehicleDetailDto Vehicle() => new(
-        "FT-119-ZA",
-        new SivDto("Yamaha", "MT-07", "Noir", "JYARM321000123456", "04/04/2021", "MARCHETTI Lucas", "f:char1:7a3f",
-            "Non soumis", null, "FiveM + SAPHIR"),
-        new FvaDto("Contrat expiré", "Assurance Mutuelle du Val-de-Marne", "AMV-2021-88412", "30/09/2026"),
-        [
-            new FovesEntryDto(5, "Recherche judiciaire", "Interpeller et aviser l'autorité",
-                "Moto utilisée lors du vol avec violence du 28/10 à Créteil Soleil, deux occupants casqués.",
-                true, "Brigadier DURAND", Now.AddDays(-5), null, null)
-        ]);
-
-    private static List<AuditEntryDto> Journal() =>
+    private static List<JournalAccesDto> Journal() =>
     [
-        new(Now.AddMinutes(-3), "Brigadier DURAND", "Consultation personne", "MARCHETTI Lucas"),
-        new(Now.AddMinutes(-9), "Gardien LEROY", "Consultation véhicule", "FT-119-ZA"),
-        new(Now.AddHours(-2), "Lieutenant MOREAU", "Inscription FPR", "MARCHETTI Lucas — PJ — Recherche judiciaire")
-    ];
-
-    // ===== PEGASE =====
-
-    private static EvenementDto Event1() => new(108, "2026-00108", "Rixe", 1, "Place Salvador Allende", "Créteil",
-        "Devant la sortie du métro, ligne 8", "Mme KACI", "06 44 55 66 77",
-        "Une dizaine d'individus se battent, l'un aurait un couteau. Un blessé au sol.",
-        EvenementStatuts.SurPlace, "Opérateur BERNARD", Now.AddMinutes(-18), null, null, null, ["PS 94-1", "BAC N 94"]);
-
-    private static PegaseStateDto PegaseState() => new(
-        [
-            Event1(),
-            new EvenementDto(109, "2026-00109", "Cambriolage en cours", 1, "14 allée des Tilleuls", "Maisons-Alfort", null,
-                "M. PETIT", "06 98 76 54 32", "Bruit de vitre brisée chez le voisin absent, deux silhouettes à l'intérieur.",
-                EvenementStatuts.Attente, "Opérateur BERNARD", Now.AddMinutes(-4), null, null, null, []),
-            new EvenementDto(105, "2026-00105", "Accident de la circulation", 2, "Avenue du Général de Gaulle", "Créteil",
-                "Hauteur n° 80", null, null, "Accrochage VL / deux-roues, conducteur du deux-roues conscient.",
-                EvenementStatuts.Engage, "Opérateur BERNARD", Now.AddMinutes(-35), null, null, null, ["PS 94-2"]),
-            new EvenementDto(101, "2026-00101", "Tapage / nuisances", 3, "3 rue Juliette Savar", "Créteil", "Bât. B, 4e étage",
-                "Anonyme", null, "Musique forte depuis 23 h.", EvenementStatuts.Attente, "Opérateur BERNARD", Now.AddMinutes(-52),
-                null, null, null, [])
-        ],
-        [
-            new EquipageDto(1, "PS 94-1", "Police secours", "GPX DURAND, GPX LEROY — VL 2", EquipageStatuts.SurPlace, 108, "2026-00108", Now),
-            new EquipageDto(2, "BAC N 94", "BAC", "BRI MOREAU + 2 — VL banalisé", EquipageStatuts.Engage, 108, "2026-00108", Now),
-            new EquipageDto(3, "PS 94-2", "Police secours", "GPX MARTIN, ADS COLIN — VL 5", EquipageStatuts.Engage, 105, "2026-00105", Now),
-            new EquipageDto(4, "MOTO 94", "Brigade motocycliste", "BRI FAURE", EquipageStatuts.Disponible, null, null, Now),
-            new EquipageDto(5, "CYNO 94", "Unité cynophile", "GPX ROUX et « Rex »", EquipageStatuts.Indisponible, null, null, Now)
-        ],
-        [new AppelDto(42, "a1b2c3", "06 71 22 33 44", "Opérateur BERNARD", "1", Now.AddSeconds(-47), null, AppelStatuts.EnCours, null, null)]);
-
-    private static EvenementDetailDto EventDetail() => new(
-        Event1(),
-        [
-            new PegaseMessageDto(1, Now.AddMinutes(-18), "Opérateur BERNARD", "creation", "Création de l'événement — Rixe (P1 — Urgence absolue), appel n° 40 du 06 44 55 66 77."),
-            new PegaseMessageDto(2, Now.AddMinutes(-17), "Opérateur BERNARD", "engagement", "Engagement de PS 94-1 (Police secours)."),
-            new PegaseMessageDto(3, Now.AddMinutes(-16), "Opérateur BERNARD", "engagement", "Engagement de BAC N 94 (BAC)."),
-            new PegaseMessageDto(4, Now.AddMinutes(-11), "Opérateur BERNARD", "statut", "PS 94-1 : sur place."),
-            new PegaseMessageDto(5, Now.AddMinutes(-9), "PS 94-1", "info", "Un blessé léger à l'arcade, BSPP demandée. Deux individus en fuite vers le lac, survêtement noir.")
-        ],
-        new AppelDto(40, "x9y8", "06 44 55 66 77", "Opérateur BERNARD", "1", Now.AddMinutes(-19), Now.AddMinutes(-18), AppelStatuts.Evenement, null, 108));
-
-    private static AppelDto Call() => new(42, "a1b2c3", "06 71 22 33 44", "Opérateur BERNARD", "1", Now.AddSeconds(-47), null, AppelStatuts.EnCours, null, null);
-
-    // ===== PTS =====
-
-    private static PtsPersonDto PtsPerson() => new(
-        "f:char1:7a3f",
-        [
-            new SignalisationDto(3, PtsFichiers.Faed, "IDPP-94-2026-00871", "28/10/2026", "SLPT Créteil", "Vol avec violence, procédure 2026/004512", null, "Technicien PTS GARNIER", Now.AddDays(-5)),
-            new SignalisationDto(4, PtsFichiers.Fnaeg, "FNAEG-2026-115204", "28/10/2026", "SLPT Créteil", "Prélèvement buccal en garde à vue", null, "Technicien PTS GARNIER", Now.AddDays(-5))
-        ],
-        [
-            new InscriptionDto(2, PtsFichiers.Fijais, "Violences volontaires aggravées", "Condamnation définitive", "12/05/2024",
-                "Tribunal judiciaire de Créteil", "Justifier de son adresse tous les ans", "12/05/2044", null, "Greffe — transmission", Now.AddDays(-120))
-        ],
-        [
-            new TraceDto(9, PtsFichiers.Faed, "T-2026-0412", "Vol avec violence Créteil Soleil", "Rétroviseur gauche de la Yamaha FT-119-ZA",
-                "29/10/2026", "Trace papillaire exploitable, index droit.", "f:char1:7a3f", "MARCHETTI Lucas", "Technicien PTS GARNIER", Now.AddDays(-1),
-                "Technicien PTS GARNIER", Now.AddDays(-4))
-        ]);
-
-    private static List<TraceDto> Traces() =>
-    [
-        new(11, PtsFichiers.Fnaeg, "T-2026-0431", "Cambriolage Maisons-Alfort", "14 allée des Tilleuls, poignée de la porte-fenêtre",
-            "02/11/2026", "Trace de contact, profil partiel.", null, null, null, null, "Technicien PTS GARNIER", Now.AddHours(-1)),
-        new(10, PtsFichiers.Faed, "T-2026-0425", "Vol de véhicule Créteil", "Portière conducteur, Renault Clio FT-542-BD",
-            "31/10/2026", "Deux traces digitales, une exploitable.", null, null, null, null, "Technicien PTS GARNIER", Now.AddDays(-2))
+        new(9, Now.AddMinutes(-2), "DURAND Jean-Pierre", "Ouverture de session", "SAPHIR", "Autorisé"),
+        new(8, Now.AddMinutes(-15), "NGUYEN Thomas", "Ouverture de session", "SAPHIR", "Refusé : compte suspendu"),
+        new(7, Now.AddMinutes(-31), "MARTIN Léa", "Accès", "Ressources humaines", "Refusé : rôle RH absent"),
+        new(6, Now.AddHours(-1), "GIRARD Valentin", "Ouverture de session", "SAPHIR", "Autorisé"),
+        new(5, Now.AddHours(-3), "Inconnu (Discord 4410…)", "Ouverture de session", "SAPHIR", "Refusé : rôle SAPHIR absent"),
     ];
 }

@@ -7,6 +7,17 @@ on:
   workflow_dispatch:
 
 jobs:
+  tests:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Tests (contrats et règles du socle)
+        run: dotnet test src/SAPHIR.Tests -c Release
+
   serveur-et-windows:
     runs-on: ubuntu-latest
     steps:

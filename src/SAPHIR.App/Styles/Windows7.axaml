@@ -1,0 +1,345 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!--
+        Thème Windows 7 modernisé, commun à tout SAPHIR : boutons, champs, onglets, tableaux,
+        puis les éléments du bureau (barre des tâches, menu Démarrer).
+    -->
+
+    <!-- ===================== Boutons Windows 7 (par défaut) ===================== -->
+    <Style Selector="Button">
+        <Setter Property="Background" Value="{StaticResource ButtonBrush}"/>
+        <Setter Property="BorderBrush" Value="#707070"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Foreground" Value="#000000"/>
+        <Setter Property="Padding" Value="14,4"/>
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="MinWidth" Value="76"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="HorizontalContentAlignment" Value="Center"/>
+        <Setter Property="VerticalContentAlignment" Value="Center"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Root"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}">
+                    <Border Name="Inner" BorderBrush="#B3FFFFFF" BorderThickness="1" CornerRadius="2" Padding="{TemplateBinding Padding}">
+                        <ContentPresenter Name="PART_ContentPresenter"
+                                          Content="{TemplateBinding Content}"
+                                          ContentTemplate="{TemplateBinding ContentTemplate}"
+                                          Foreground="{TemplateBinding Foreground}"
+                                          HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                          VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                    </Border>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button:pointerover /template/ Border#Root">
+        <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+        <Setter Property="BorderBrush" Value="#3C7FB1"/>
+    </Style>
+    <Style Selector="Button:pressed /template/ Border#Root">
+        <Setter Property="Background" Value="{StaticResource ButtonPressedBrush}"/>
+        <Setter Property="BorderBrush" Value="#2C628B"/>
+    </Style>
+    <Style Selector="Button:disabled /template/ Border#Root">
+        <Setter Property="Background" Value="#F4F4F4"/>
+        <Setter Property="BorderBrush" Value="#ADB2B5"/>
+    </Style>
+    <Style Selector="Button:disabled">
+        <Setter Property="Foreground" Value="#838383"/>
+    </Style>
+    <!-- Bouton par défaut d'une boîte de dialogue (cadre bleu) -->
+    <Style Selector="Button.default /template/ Border#Root">
+        <Setter Property="BorderBrush" Value="#3C7FB1"/>
+    </Style>
+    <Style Selector="Button.small">
+        <Setter Property="Padding" Value="8,2"/>
+        <Setter Property="MinWidth" Value="0"/>
+    </Style>
+
+    <!-- Lien bleu, comme dans les panneaux de Windows 7 -->
+    <Style Selector="Button.link">
+        <Setter Property="Foreground" Value="{StaticResource LinkBrush}"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Content}" Background="Transparent"
+                                  Foreground="{TemplateBinding Foreground}" Padding="{TemplateBinding Padding}"/>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.link:pointerover">
+        <Setter Property="Foreground" Value="#3399FF"/>
+    </Style>
+
+    <!-- Bouton plat : fond et bordure seuls (barre des tâches, menus, bureau). Bordure nommée FlatRoot :
+         les effets des boutons Windows 7 (Border#Root) ne s'y appliquent pas. -->
+    <Style Selector="Button.flat">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="0"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="0"/>
+        <Setter Property="MinWidth" Value="0"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="CornerRadius" Value="0"/>
+        <Setter Property="Cursor" Value="Hand"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="FlatRoot"
+                        Background="{TemplateBinding Background}"
+                        BorderBrush="{TemplateBinding BorderBrush}"
+                        BorderThickness="{TemplateBinding BorderThickness}"
+                        CornerRadius="{TemplateBinding CornerRadius}"
+                        Padding="{TemplateBinding Padding}">
+                    <ContentPresenter Name="PART_ContentPresenter"
+                                      Content="{TemplateBinding Content}"
+                                      ContentTemplate="{TemplateBinding ContentTemplate}"
+                                      Foreground="{TemplateBinding Foreground}"
+                                      HorizontalAlignment="{TemplateBinding HorizontalContentAlignment}"
+                                      VerticalAlignment="{TemplateBinding VerticalContentAlignment}"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="Button.flat:disabled /template/ Border#FlatRoot">
+        <Setter Property="Opacity" Value="0.5"/>
+    </Style>
+
+    <!-- ===================== Champs de saisie ===================== -->
+    <Style Selector="TextBox">
+        <Setter Property="BorderBrush" Value="#ABADB3"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="2"/>
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="Padding" Value="5,3"/>
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="#7EB4EA"/>
+        <Setter Property="Background" Value="White"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+        <Setter Property="BorderBrush" Value="#3399FF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="Background" Value="White"/>
+    </Style>
+    <Style Selector="ComboBox">
+        <Setter Property="BorderBrush" Value="#707070"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="24"/>
+        <Setter Property="Background" Value="{StaticResource ButtonBrush}"/>
+    </Style>
+    <Style Selector="CheckBox">
+        <Setter Property="FontSize" Value="12"/>
+    </Style>
+
+    <!-- ===================== Onglets Windows 7 ===================== -->
+    <Style Selector="TabControl.win7">
+        <Setter Property="Padding" Value="0"/>
+    </Style>
+    <Style Selector="TabControl.win7 /template/ ContentPresenter#PART_SelectedContentHost">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#898C95"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="TabControl.win7 TabItem">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="0"/>
+        <Setter Property="Padding" Value="12,4"/>
+        <Setter Property="Margin" Value="0,2,-1,0"/>
+        <Setter Property="Template">
+            <ControlTemplate>
+                <Border Name="Root" BorderBrush="#898C95" BorderThickness="1,1,1,0" CornerRadius="3,3,0,0"
+                        Padding="{TemplateBinding Padding}">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                            <GradientStop Offset="0" Color="#F3F3F3"/>
+                            <GradientStop Offset="0.5" Color="#EBEBEB"/>
+                            <GradientStop Offset="0.5" Color="#DDDDDD"/>
+                            <GradientStop Offset="1" Color="#CDCDCD"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <ContentPresenter Name="PART_ContentPresenter" Content="{TemplateBinding Header}"
+                                      ContentTemplate="{TemplateBinding HeaderTemplate}" Foreground="Black"/>
+                </Border>
+            </ControlTemplate>
+        </Setter>
+    </Style>
+    <Style Selector="TabControl.win7 TabItem:pointerover /template/ Border#Root">
+        <Setter Property="Background" Value="{StaticResource ButtonHoverBrush}"/>
+        <Setter Property="BorderBrush" Value="#3C7FB1"/>
+    </Style>
+    <Style Selector="TabControl.win7 TabItem:selected">
+        <Setter Property="Margin" Value="-2,0,-3,-1"/>
+        <Setter Property="ZIndex" Value="1"/>
+    </Style>
+    <Style Selector="TabControl.win7 TabItem:selected /template/ Border#Root">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#898C95"/>
+        <Setter Property="Padding" Value="14,6,14,5"/>
+    </Style>
+
+    <!-- ===================== Tableaux ===================== -->
+    <Style Selector="DataGrid">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#828790"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="GridLinesVisibility" Value="Horizontal"/>
+        <Setter Property="HorizontalGridLinesBrush" Value="#EDEDED"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="RowHeight" Value="24"/>
+        <Setter Property="IsReadOnly" Value="True"/>
+        <Setter Property="SelectionMode" Value="Single"/>
+        <Setter Property="CanUserResizeColumns" Value="True"/>
+        <Setter Property="CanUserSortColumns" Value="True"/>
+    </Style>
+    <Style Selector="DataGridColumnHeader">
+        <Setter Property="Background" Value="{StaticResource HeaderBrush}"/>
+        <Setter Property="Foreground" Value="#4C607A"/>
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="MinHeight" Value="26"/>
+        <Setter Property="Padding" Value="8,0"/>
+        <Setter Property="SeparatorBrush" Value="#D5D5D5"/>
+    </Style>
+    <Style Selector="DataGridRow:selected /template/ Rectangle#BackgroundRectangle">
+        <Setter Property="Fill" Value="#CCE8FF"/>
+        <Setter Property="Opacity" Value="1"/>
+    </Style>
+    <Style Selector="DataGridCell">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="Black"/>
+    </Style>
+
+    <!-- ===================== Textes des panneaux ===================== -->
+    <Style Selector="TextBlock.instruction">
+        <Setter Property="FontSize" Value="15"/>
+        <Setter Property="Foreground" Value="{StaticResource InstructionBrush}"/>
+    </Style>
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="#3C3C3C"/>
+    </Style>
+    <Style Selector="TextBlock.muted">
+        <Setter Property="FontSize" Value="11.5"/>
+        <Setter Property="Foreground" Value="#6D6D6D"/>
+        <Setter Property="TextWrapping" Value="Wrap"/>
+    </Style>
+    <Style Selector="TextBlock.groupheader">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="#1E395B"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <!-- ===================== Bureau ===================== -->
+    <Style Selector="Button.taskbar">
+        <Setter Property="Width" Value="56"/>
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="CornerRadius" Value="3"/>
+        <Setter Property="Margin" Value="1,0"/>
+    </Style>
+    <Style Selector="Button.taskbar:pointerover /template/ Border#FlatRoot">
+        <Setter Property="Background" Value="#33FFFFFF"/>
+        <Setter Property="BorderBrush" Value="#66FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.taskbar.open /template/ Border#FlatRoot">
+        <Setter Property="Background" Value="#1AFFFFFF"/>
+        <Setter Property="BorderBrush" Value="#40FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.taskbar.active /template/ Border#FlatRoot">
+        <Setter Property="Background" Value="#4DFFFFFF"/>
+        <Setter Property="BorderBrush" Value="#99FFFFFF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <Style Selector="Button.tray">
+        <Setter Property="Height" Value="40"/>
+        <Setter Property="Padding" Value="5,0"/>
+        <Setter Property="CornerRadius" Value="2"/>
+    </Style>
+    <Style Selector="Button.tray:pointerover /template/ Border#FlatRoot">
+        <Setter Property="Background" Value="#26FFFFFF"/>
+    </Style>
+
+    <!-- Menu Démarrer : colonne de gauche (blanche) -->
+    <Style Selector="Button.startitem">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Foreground" Value="Black"/>
+        <Setter Property="Padding" Value="6,3"/>
+        <Setter Property="Margin" Value="4,1"/>
+        <Setter Property="CornerRadius" Value="3"/>
+    </Style>
+    <Style Selector="Button.startitem:pointerover /template/ Border#FlatRoot">
+        <Setter Property="Background" Value="#E3EFFB"/>
+        <Setter Property="BorderBrush" Value="#B8D6FB"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+    <!-- Menu Démarrer : colonne de droite (vitrée) -->
+    <Style Selector="Button.startlink">
+        <Setter Property="HorizontalAlignment" Value="Stretch"/>
+        <Setter Property="HorizontalContentAlignment" Value="Left"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="10,6"/>
+        <Setter Property="Margin" Value="4,1"/>
+        <Setter Property="CornerRadius" Value="3"/>
+    </Style>
+    <Style Selector="Button.startlink:pointerover /template/ Border#FlatRoot">
+        <Setter Property="Background" Value="#335C8BC7"/>
+        <Setter Property="BorderBrush" Value="#8CC4E3FF"/>
+        <Setter Property="BorderThickness" Value="1"/>
+    </Style>
+
+    <!-- Icônes du bureau -->
+    <Style Selector="Border.desktopicon">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="BorderBrush" Value="Transparent"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="3"/>
+    </Style>
+    <Style Selector="Border.desktopicon:pointerover">
+        <Setter Property="Background" Value="#26CCE8FF"/>
+        <Setter Property="BorderBrush" Value="#4DCCE8FF"/>
+    </Style>
+    <Style Selector="Border.desktopicon.selected">
+        <Setter Property="Background" Value="#4D99D1FF"/>
+        <Setter Property="BorderBrush" Value="#99CCE8FF"/>
+    </Style>
+
+    <!-- Anneau d'attente (« Bienvenue ») -->
+    <Style Selector="Arc.spinner">
+        <Setter Property="Stroke" Value="White"/>
+        <Setter Property="StrokeThickness" Value="3"/>
+        <Setter Property="StartAngle" Value="0"/>
+        <Setter Property="SweepAngle" Value="270"/>
+        <Setter Property="StrokeLineCap" Value="Round"/>
+        <Style.Animations>
+            <Animation Duration="0:0:1.1" IterationCount="Infinite">
+                <KeyFrame Cue="0%">
+                    <Setter Property="RenderTransform" Value="rotate(0deg)"/>
+                </KeyFrame>
+                <KeyFrame Cue="100%">
+                    <Setter Property="RenderTransform" Value="rotate(360deg)"/>
+                </KeyFrame>
+            </Animation>
+        </Style.Animations>
+    </Style>
+
+    <!-- Téléphone -->
+    <Style Selector="Button.mobileicon">
+        <Setter Property="Background" Value="Transparent"/>
+    </Style>
+    <Style Selector="Button.mobileicon:pressed">
+        <Setter Property="RenderTransform" Value="scale(0.94)"/>
+    </Style>
+</Styles>

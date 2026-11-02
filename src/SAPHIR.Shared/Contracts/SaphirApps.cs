@@ -1,39 +1,51 @@
 namespace Saphir.Shared.Contracts;
 
-/// <summary>
-/// Identifiants des applications du bureau SAPHIR. Chaque identifiant est aussi le nom du niveau d'accès
-/// à configurer dans Discord:LevelRoles (un rôle Discord par application).
-/// </summary>
+/// <summary>Applications du bureau SAPHIR.</summary>
 public static class SaphirApps
 {
-    // Fichiers (MEO-FIC : TAJ, FPR, SNPC, FOVeS, SIV, FVA)
-    public const string MeoFic = "meo-fic";
-
-    // Police technique et scientifique (FAED, FNAEG, FIJAIS, FIJAIT)
-    public const string Scientifique = "scientifique";
-
-    // Opérations
+    // Modules principaux
+    public const string Cheops = "cheops";
     public const string Pegase = "pegase";
-    public const string GeoOps = "geoops";
     public const string MainCourante = "main-courante";
-
-    // Judiciaire
     public const string Lrppn = "lrppn";
+    public const string Rh = "rh";
 
-    // Terminal NEO (Tchap, annuaire, messagerie, MRZ, notes)
+    // Applications complémentaires
     public const string Neo = "neo";
-
-    // Moyens
-    public const string Bodycam = "bodycam";
     public const string Pve = "pve";
+    public const string Tchap = "tchap";
+    public const string Annuaire = "annuaire";
+    public const string Messagerie = "messagerie";
+    public const string Mrz = "mrz";
+    public const string Notes = "notes";
+    public const string Bodycam = "bodycam";
 
-    // Applications auxiliaires
-    public const string Mugshot = "mugshot";
-    public const string GardeAVue = "garde-a-vue";
-    public const string Armurerie = "armurerie";
+    // Système
+    public const string Administration = "administration";
+    public const string Parametres = "parametres";
 
     public static readonly IReadOnlyList<string> All =
     [
-        MeoFic, Scientifique, Pegase, GeoOps, MainCourante, Lrppn, Neo, Bodycam, Pve, Mugshot, GardeAVue, Armurerie
+        Cheops, Pegase, MainCourante, Lrppn, Rh,
+        Neo, Pve, Tchap, Annuaire, Messagerie, Mrz, Notes, Bodycam,
+        Administration, Parametres
     ];
+
+    /// <summary>
+    /// Une application apparaît sur le bureau si l'agent a au moins une permission de son module.
+    /// RH exige en plus le rôle Discord RH ; Paramètres est ouvert à tous.
+    /// </summary>
+    public static bool CanOpen(string appId, IReadOnlyCollection<string> permissions, bool roleRh)
+    {
+        if (appId == Parametres)
+            return true;
+        if (appId == Rh && !roleRh)
+            return false;
+        var module = appId switch
+        {
+            Administration => "admin.",
+            _ => appId + "."
+        };
+        return permissions.Any(p => p.StartsWith(module, StringComparison.Ordinal));
+    }
 }

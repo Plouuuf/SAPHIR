@@ -1,19 +1,33 @@
 <UserControl xmlns="https://github.com/avaloniaui"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             x:Class="Saphir.Views.Apps.PlaceholderAppView"
-             Background="White">
-    <!-- Contenu provisoire d'une application pas encore développée. DataContext : AppTileViewModel. -->
-    <Grid>
-        <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10" Margin="24">
-            <Image Source="{Binding Icon}" Width="96" Height="96" HorizontalAlignment="Center"/>
-            <TextBlock Text="{Binding Title}" FontSize="24" FontWeight="SemiBold" Foreground="#1F1F1F"
-                       HorizontalAlignment="Center" Margin="0,8,0,0"/>
-            <TextBlock Text="{Binding Subtitle}" FontSize="15" Foreground="#5D5D5D" HorizontalAlignment="Center"/>
-            <Border Background="#F2F2F2" BorderBrush="#E0E0E0" BorderThickness="1" Padding="16,10" Margin="0,12,0,0"
-                    HorizontalAlignment="Center">
-                <TextBlock Text="Cette application arrive dans une prochaine version de SAPHIR."
-                           FontSize="13" Foreground="#3B3B3B" TextWrapping="Wrap" TextAlignment="Center"/>
+             x:Class="Saphir.Views.Apps.PlaceholderAppView">
+    <!-- Module pas encore livré. DataContext : AppTileViewModel. Mise en page « panneau de configuration » de Windows 7. -->
+    <Grid ColumnDefinitions="210,*">
+        <Border BorderBrush="#C8D5E7" BorderThickness="0,0,1,0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#F4F8FD"/>
+                    <GradientStop Offset="1" Color="#DCE6F4"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Margin="16,18" Spacing="6">
+                <TextBlock Classes="groupheader" Text="SAPHIR"/>
+                <TextBlock Text="{Binding Title}" FontSize="12" Foreground="Black"/>
+                <TextBlock Classes="muted" Text="{Binding Subtitle}"/>
+            </StackPanel>
+        </Border>
+        <StackPanel Grid.Column="1" Margin="30,26" Spacing="12" HorizontalAlignment="Left" MaxWidth="560">
+            <StackPanel Orientation="Horizontal" Spacing="16">
+                <Image Source="{Binding Icon}" Width="64" Height="64"/>
+                <StackPanel VerticalAlignment="Center" Spacing="2">
+                    <TextBlock Classes="instruction" Text="{Binding Title}" FontSize="18"/>
+                    <TextBlock Classes="muted" Text="{Binding Subtitle}"/>
+                </StackPanel>
+            </StackPanel>
+            <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="14,10">
+                <TextBlock Text="{Binding PhaseText}" TextWrapping="Wrap" FontSize="12.5" Foreground="Black"/>
             </Border>
+            <TextBlock Classes="muted" Text="Tes profils SAPHIR t'en donnent déjà l'accès : l'icône restera à sa place quand le module sera livré."/>
         </StackPanel>
     </Grid>
 </UserControl>

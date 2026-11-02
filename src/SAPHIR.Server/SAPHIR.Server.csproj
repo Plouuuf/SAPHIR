@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk.Web">
   <!--
-    Serveur SAPHIR : connexion Discord par rôle, temps réel (WebSocket) et données métier
-    (MEO-FIC : TAJ, FPR, SNPC, FOVeS, SIV, FVA) dans MariaDB, avec lecture de la base FiveM.
+    Serveur SAPHIR : connexion Discord par rôle, temps réel (WebSocket), socle (agents, profils, permissions,
+    paramètres, historique, journal des accès) dans MariaDB avec migrations numérotées.
     Lancement local : voir README.md.
   -->
   <PropertyGroup>
@@ -10,7 +10,7 @@
     <RootNamespace>Saphir.Server</RootNamespace>
   </PropertyGroup>
   <ItemGroup>
-    <!-- MariaDB : base SAPHIR et lecture de la base FiveM. -->
+    <!-- MariaDB : base SAPHIR. -->
     <PackageReference Include="MySqlConnector" Version="2.4.0" />
   </ItemGroup>
   <ItemGroup>

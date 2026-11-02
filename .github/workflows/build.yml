@@ -56,10 +56,44 @@ jobs:
           dotnet publish src/SAPHIR.Desktop -c Release -r osx-arm64 --self-contained true
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/macos
 
+      - name: Application SAPHIR.app
+        run: |
+          APP=artifacts/SAPHIR.app
+          mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+          cp -R artifacts/macos/. "$APP/Contents/MacOS/"
+          chmod +x "$APP/Contents/MacOS/SAPHIR"
+          ICONSET=artifacts/SAPHIR.iconset
+          mkdir -p "$ICONSET"
+          for s in 16 32 128 256 512; do
+            sips -z $s $s src/SAPHIR.App/Assets/saphir-icon.png --out "$ICONSET/icon_${s}x${s}.png" >/dev/null
+            d=$((s*2)); [ $d -le 512 ] && sips -z $d $d src/SAPHIR.App/Assets/saphir-icon.png --out "$ICONSET/icon_${s}x${s}@2x.png" >/dev/null
+          done
+          iconutil -c icns "$ICONSET" -o "$APP/Contents/Resources/SAPHIR.icns"
+          VERSION=$(grep -oE '<Version>[^<]+' Directory.Build.props | cut -d'>' -f2)
+          cat > "$APP/Contents/Info.plist" <<PLIST
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0"><dict>
+            <key>CFBundleName</key><string>SAPHIR</string>
+            <key>CFBundleDisplayName</key><string>SAPHIR</string>
+            <key>CFBundleIdentifier</key><string>fr.vdms.saphir</string>
+            <key>CFBundleExecutable</key><string>SAPHIR</string>
+            <key>CFBundleIconFile</key><string>SAPHIR</string>
+            <key>CFBundlePackageType</key><string>APPL</string>
+            <key>CFBundleShortVersionString</key><string>$VERSION</string>
+            <key>CFBundleVersion</key><string>${{ github.run_number }}</string>
+            <key>LSMinimumSystemVersion</key><string>12.0</string>
+            <key>NSHighResolutionCapable</key><true/>
+          </dict></plist>
+          PLIST
+          sed -i '' 's/^          //' "$APP/Contents/Info.plist"
+          codesign --force --deep -s - "$APP"
+          (cd artifacts && ditto -c -k --keepParent SAPHIR.app SAPHIR-macOS.zip)
+
       - uses: actions/upload-artifact@v4
         with:
           name: SAPHIR-macOS
-          path: artifacts/macos
+          path: artifacts/SAPHIR-macOS.zip
 
   captures:
     runs-on: ubuntu-latest
@@ -101,6 +135,11 @@ jobs:
           dotnet publish src/SAPHIR.Desktop -c Release -r win-x64 --self-contained true
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/windows
 
+      - uses: actions/download-artifact@v4
+        with:
+          name: SAPHIR-macOS
+          path: artifacts
+
       - name: Version
         id: version
         run: echo "version=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props)" >> "$GITHUB_OUTPUT"
@@ -116,3 +155,4 @@ jobs:
           files: |
             artifacts/SAPHIR-server-win-x64.zip
             artifacts/windows/SAPHIR.exe
+            artifacts/SAPHIR-macOS.zip

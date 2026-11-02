@@ -13,6 +13,8 @@ public static class AppContentFactory
     public static Control Create(AppTileViewModel app) => app.Id switch
     {
         SaphirApps.MeoFic => new MeoFicView { DataContext = new MeoFicViewModel() },
+        SaphirApps.Scientifique => new MeoFicView { DataContext = new MeoFicViewModel(MeoMode.Pts) },
+        SaphirApps.Pegase => new PegaseView { DataContext = new PegaseViewModel() },
         _ => new PlaceholderAppView { DataContext = app }
     };
 }

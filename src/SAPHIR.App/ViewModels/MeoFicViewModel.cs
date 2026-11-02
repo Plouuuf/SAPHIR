@@ -51,6 +51,9 @@ public sealed class EntryCard
     public bool CanClose => CloseCommand is not null;
     public bool CanDelete => DeleteCommand is not null;
     public RelayCommand? CloseCommand { get; init; }
+
+    /// <summary>Libellé du bouton d'action (« Clore » par défaut ; « Rapprocher » pour une trace).</summary>
+    public string CloseLabel { get; init; } = "Clore";
     public RelayCommand? DeleteCommand { get; init; }
 }
 
@@ -84,21 +87,44 @@ public sealed class MeoFicViewModel : ViewModelBase
     private PermisForm _permisForm = new();
     private VehicleForm _vehicleForm = new();
     private FovesForm _fovesForm = new();
+    private SignalisationForm _signalisationForm = new();
+    private InscriptionForm _inscriptionForm = new();
+    private TraceForm _traceForm = new();
 
-    public MeoFicViewModel()
+    private PtsPersonDto? _ptsData;
+    private bool _showIdentifiedTraces;
+    private TraceDto? _traceToMatch;
+    private bool _subscribed;
+
+    public MeoFicViewModel(MeoMode mode = MeoMode.Fichiers)
     {
-        PersonTabs =
-        [
-            new MeoFileTab(MeoFile.Taj, "TAJ", "Antécédents judiciaires", SelectTab),
-            new MeoFileTab(MeoFile.Fpr, "FPR", "Personnes recherchées", SelectTab),
-            new MeoFileTab(MeoFile.Snpc, "SNPC", "Permis de conduire", SelectTab)
-        ];
-        VehicleTabs =
-        [
-            new MeoFileTab(MeoFile.Foves, "FOVeS", "Objets et véhicules signalés", SelectTab),
-            new MeoFileTab(MeoFile.Siv, "SIV", "Immatriculation des véhicules", SelectTab),
-            new MeoFileTab(MeoFile.Fva, "FVA", "Véhicules assurés", SelectTab)
-        ];
+        Mode = mode;
+        if (mode == MeoMode.Pts)
+        {
+            PersonTabs =
+            [
+                new MeoFileTab(MeoFile.Faed, "FAED", "Empreintes digitales", SelectTab),
+                new MeoFileTab(MeoFile.Fnaeg, "FNAEG", "Empreintes génétiques (ADN)", SelectTab),
+                new MeoFileTab(MeoFile.Fijais, "FIJAIS", "Auteurs d'infractions sexuelles ou violentes", SelectTab),
+                new MeoFileTab(MeoFile.Fijait, "FIJAIT", "Auteurs d'infractions terroristes", SelectTab)
+            ];
+            VehicleTabs = [new MeoFileTab(MeoFile.Traces, "TRACES", "Traces relevées et rapprochements", SelectTab)];
+        }
+        else
+        {
+            PersonTabs =
+            [
+                new MeoFileTab(MeoFile.Taj, "TAJ", "Antécédents judiciaires", SelectTab),
+                new MeoFileTab(MeoFile.Fpr, "FPR", "Personnes recherchées", SelectTab),
+                new MeoFileTab(MeoFile.Snpc, "SNPC", "Permis de conduire", SelectTab)
+            ];
+            VehicleTabs =
+            [
+                new MeoFileTab(MeoFile.Foves, "FOVeS", "Objets et véhicules signalés", SelectTab),
+                new MeoFileTab(MeoFile.Siv, "SIV", "Immatriculation des véhicules", SelectTab),
+                new MeoFileTab(MeoFile.Fva, "FVA", "Véhicules assurés", SelectTab)
+            ];
+        }
         AdminTabs = [new MeoFileTab(MeoFile.Journal, "JOURNAL", "Consultations et inscriptions", SelectTab)];
 
         _selectedTab = PersonTabs[0];
@@ -119,6 +145,58 @@ public sealed class MeoFicViewModel : ViewModelBase
         OpenTitulaireCommand = new RelayCommand(() => _ = OpenTitulaireAsync());
         RefreshCommand = new RelayCommand(() => _ = RefreshAsync());
         BackToResultsCommand = new RelayCommand(() => ShowDetailOnCompact = false);
+
+        NewSignalisationCommand = new RelayCommand(() => OpenForm(MeoForm.Signalisation));
+        NewInscriptionCommand = new RelayCommand(() => OpenForm(MeoForm.Inscription));
+        NewTraceCommand = new RelayCommand(() => OpenForm(MeoForm.Trace));
+        MatchTraceHereCommand = new RelayCommand(() => _ = MatchTraceHereAsync());
+        CancelMatchCommand = new RelayCommand(() => TraceToMatch = null);
+
+        if (mode == MeoMode.Pts)
+        {
+            SaphirSession.Realtime += OnRealtime;
+            _subscribed = true;
+        }
+    }
+
+    // =====================================================================
+    // Mode (MEO-FIC ou PTS)
+    // =====================================================================
+
+    public MeoMode Mode { get; }
+    public bool IsPts => Mode == MeoMode.Pts;
+    public bool IsFichiers => Mode == MeoMode.Fichiers;
+    public string AppTitle => IsPts ? "PTS — Police technique et scientifique" : "MEO-FIC";
+    public string SecondGroupTitle => IsPts ? "SCÈNES" : "VÉHICULES";
+    public bool CanEditIdentity => IsFichiers;
+
+    /// <summary>Fenêtre de nouveau affichée (PTS) : reprend l'écoute du temps réel.</summary>
+    public void Resume()
+    {
+        if (!IsPts || _subscribed)
+            return;
+        _subscribed = true;
+        SaphirSession.Realtime += OnRealtime;
+        if (IsTracesMode)
+            _ = LoadTracesAsync();
+    }
+
+    public void Suspend()
+    {
+        if (!_subscribed)
+            return;
+        _subscribed = false;
+        SaphirSession.Realtime -= OnRealtime;
+    }
+
+    private void OnRealtime(RealtimeMessage message)
+    {
+        if (message.Type != RealtimeTypes.PtsChanged)
+            return;
+        if (IsTracesMode)
+            _ = LoadTracesAsync();
+        else if (IsPersonMode && Person is not null && Form == MeoForm.None)
+            _ = LoadPtsDataAsync(Person.Key);
     }
 
     // =====================================================================
@@ -136,10 +214,12 @@ public sealed class MeoFicViewModel : ViewModelBase
 
     public MeoFile SelectedFile => _selectedTab.File;
     public string SelectedFileTitle => $"{_selectedTab.Code} — {_selectedTab.Label}";
-    public bool IsPersonMode => SelectedFile is MeoFile.Taj or MeoFile.Fpr or MeoFile.Snpc;
+    public bool IsPersonMode => SelectedFile is MeoFile.Taj or MeoFile.Fpr or MeoFile.Snpc
+        or MeoFile.Faed or MeoFile.Fnaeg or MeoFile.Fijais or MeoFile.Fijait;
+    public bool IsTracesMode => SelectedFile == MeoFile.Traces;
     public bool IsVehicleMode => SelectedFile is MeoFile.Foves or MeoFile.Siv or MeoFile.Fva;
     public bool IsJournalMode => SelectedFile == MeoFile.Journal;
-    public bool IsSearchMode => !IsJournalMode;
+    public bool IsSearchMode => !IsJournalMode && !IsTracesMode;
 
     public string SearchWatermark => IsPersonMode ? "Nom, prénom ou date de naissance" : "Plaque d'immatriculation";
 
@@ -227,6 +307,11 @@ public sealed class MeoFicViewModel : ViewModelBase
         {
             if (!SetProperty(ref _person, value))
                 return;
+            if (_ptsData is not null && _ptsData.Key != value?.Key)
+            {
+                _ptsData = null;
+                RebuildPts();
+            }
             RebuildPerson();
             RaiseDetailState();
         }
@@ -263,6 +348,67 @@ public sealed class MeoFicViewModel : ViewModelBase
     public bool ShowTaj => ShowPersonDetail && SelectedFile == MeoFile.Taj;
     public bool ShowFpr => ShowPersonDetail && SelectedFile == MeoFile.Fpr;
     public bool ShowSnpc => ShowPersonDetail && SelectedFile == MeoFile.Snpc;
+    public bool ShowFaed => ShowPersonDetail && SelectedFile == MeoFile.Faed;
+    public bool ShowFnaeg => ShowPersonDetail && SelectedFile == MeoFile.Fnaeg;
+    public bool ShowFijais => ShowPersonDetail && SelectedFile == MeoFile.Fijais;
+    public bool ShowFijait => ShowPersonDetail && SelectedFile == MeoFile.Fijait;
+    public bool ShowPersonVehicles => IsFichiers && HasPersonVehicles;
+
+    // ----- PTS : fichiers de la personne -----
+
+    public ObservableCollection<EntryCard> FaedCards { get; } = [];
+    public ObservableCollection<EntryCard> FnaegCards { get; } = [];
+    public ObservableCollection<EntryCard> FijaisCards { get; } = [];
+    public ObservableCollection<EntryCard> FijaitCards { get; } = [];
+    public ObservableCollection<EntryCard> PersonFaedTraces { get; } = [];
+    public ObservableCollection<EntryCard> PersonFnaegTraces { get; } = [];
+    public bool HasFaed => FaedCards.Count > 0;
+    public bool HasFnaeg => FnaegCards.Count > 0;
+    public bool HasFijais => FijaisCards.Count > 0;
+    public bool HasFijait => FijaitCards.Count > 0;
+    public bool HasPersonFaedTraces => PersonFaedTraces.Count > 0;
+    public bool HasPersonFnaegTraces => PersonFnaegTraces.Count > 0;
+
+    /// <summary>Bandeau : personne inscrite au FIJAIS ou au FIJAIT (affiché sur tous les fichiers PTS).</summary>
+    public string? PtsAlert { get; private set; }
+    public bool HasPtsAlert => PtsAlert is not null;
+
+    // ----- PTS : traces -----
+
+    public ObservableCollection<EntryCard> TraceCards { get; } = [];
+    public bool HasTraces => TraceCards.Count > 0;
+    public bool ShowTraces => IsTracesMode && Form == MeoForm.None;
+
+    /// <summary>Afficher aussi les traces déjà identifiées.</summary>
+    public bool ShowIdentifiedTraces
+    {
+        get => _showIdentifiedTraces;
+        set
+        {
+            if (SetProperty(ref _showIdentifiedTraces, value))
+                _ = LoadTracesAsync();
+        }
+    }
+
+    /// <summary>Trace en attente de rapprochement : l'agent cherche la personne puis valide sur sa fiche.</summary>
+    public TraceDto? TraceToMatch
+    {
+        get => _traceToMatch;
+        private set
+        {
+            if (!SetProperty(ref _traceToMatch, value))
+                return;
+            OnPropertyChanged(nameof(IsMatchingTrace));
+            OnPropertyChanged(nameof(MatchBanner));
+            OnPropertyChanged(nameof(CanMatchHere));
+        }
+    }
+
+    public bool IsMatchingTrace => TraceToMatch is not null;
+    public string MatchBanner => TraceToMatch is null
+        ? string.Empty
+        : $"Rapprochement de la trace {TraceToMatch.Fichier} {TraceToMatch.Reference} : recherche la personne, ouvre sa fiche puis valide.";
+    public bool CanMatchHere => IsMatchingTrace && HasPerson && IsPersonMode;
 
     // =====================================================================
     // Fiche véhicule
@@ -303,10 +449,12 @@ public sealed class MeoFicViewModel : ViewModelBase
     public bool ShowSiv => ShowVehicleDetail && SelectedFile == MeoFile.Siv;
     public bool ShowFva => ShowVehicleDetail && SelectedFile == MeoFile.Fva;
 
-    public bool ShowEmpty => Form == MeoForm.None && !IsJournalMode &&
+    public bool ShowEmpty => Form == MeoForm.None && !IsJournalMode && !IsTracesMode &&
                              !(IsPersonMode && HasPerson) && !(IsVehicleMode && HasVehicle);
 
-    public string EmptyText => IsPersonMode
+    public string EmptyText => IsPersonMode && IsPts
+        ? "Recherche une personne par son nom pour consulter le " + _selectedTab.Code + "."
+        : IsPersonMode
         ? "Recherche une personne par son nom pour consulter le " + _selectedTab.Code + "."
         : "Recherche un véhicule par sa plaque pour consulter le " + _selectedTab.Code + ".";
 
@@ -332,6 +480,17 @@ public sealed class MeoFicViewModel : ViewModelBase
     public bool IsPermisForm => Form == MeoForm.Permis;
     public bool IsVehicleForm => Form == MeoForm.Vehicle;
     public bool IsFovesForm => Form == MeoForm.Foves;
+    public bool IsSignalisationForm => Form == MeoForm.Signalisation;
+    public bool IsInscriptionForm => Form == MeoForm.Inscription;
+    public bool IsTraceForm => Form == MeoForm.Trace;
+
+    public SignalisationForm SignalisationForm { get => _signalisationForm; private set => SetProperty(ref _signalisationForm, value); }
+    public InscriptionForm InscriptionForm { get => _inscriptionForm; private set => SetProperty(ref _inscriptionForm, value); }
+    public TraceForm TraceForm { get => _traceForm; private set => SetProperty(ref _traceForm, value); }
+
+    public IReadOnlyList<string> FichiersSignalisation => PtsReferentiel.FichiersSignalisation;
+    public IReadOnlyList<string> PtsDecisions => PtsReferentiel.Decisions;
+    public IReadOnlyList<string> PtsObligations => PtsReferentiel.Obligations;
 
     public string FormTitle => Form switch
     {
@@ -342,6 +501,9 @@ public sealed class MeoFicViewModel : ViewModelBase
         MeoForm.Permis => "Permis de conduire (SNPC) — " + PersonTitle,
         MeoForm.Vehicle => _editExistingVehicle && HasVehicle ? "SIV / FVA — " + VehicleTitle : "Nouveau véhicule (SIV / FVA)",
         MeoForm.Foves => "Signalement FOVeS — " + FovesForm.Plaque,
+        MeoForm.Signalisation => $"Signalisation {SignalisationForm.Fichier} — " + PersonTitle,
+        MeoForm.Inscription => $"Inscription au {InscriptionForm.Fichier} — " + PersonTitle,
+        MeoForm.Trace => "Nouvelle trace relevée",
         _ => string.Empty
     };
 
@@ -379,6 +541,11 @@ public sealed class MeoFicViewModel : ViewModelBase
     public RelayCommand OpenTitulaireCommand { get; }
     public RelayCommand RefreshCommand { get; }
     public RelayCommand BackToResultsCommand { get; }
+    public RelayCommand NewSignalisationCommand { get; }
+    public RelayCommand NewInscriptionCommand { get; }
+    public RelayCommand NewTraceCommand { get; }
+    public RelayCommand MatchTraceHereCommand { get; }
+    public RelayCommand CancelMatchCommand { get; }
 
     // =====================================================================
     // Logique
@@ -410,6 +577,8 @@ public sealed class MeoFicViewModel : ViewModelBase
         OnPropertyChanged(nameof(IsPersonMode));
         OnPropertyChanged(nameof(IsVehicleMode));
         OnPropertyChanged(nameof(IsJournalMode));
+        OnPropertyChanged(nameof(IsTracesMode));
+        OnPropertyChanged(nameof(CanMatchHere));
         OnPropertyChanged(nameof(IsSearchMode));
         OnPropertyChanged(nameof(SearchWatermark));
         OnPropertyChanged(nameof(EmptyText));
@@ -417,6 +586,8 @@ public sealed class MeoFicViewModel : ViewModelBase
 
         if (IsJournalMode)
             _ = LoadJournalAsync();
+        else if (IsTracesMode)
+            _ = LoadTracesAsync();
     }
 
     private async Task SearchAsync()
@@ -472,6 +643,8 @@ public sealed class MeoFicViewModel : ViewModelBase
         {
             Form = MeoForm.None;
             Person = await api.GetAsync<PersonDetailDto>("api/meo/personne?key=" + ApiClient.Q(key));
+            if (IsPts)
+                await LoadPtsDataCoreAsync(api, Person.Key);
             ShowDetailOnCompact = true;
         });
     }
@@ -507,6 +680,7 @@ public sealed class MeoFicViewModel : ViewModelBase
     private Task RefreshAsync()
     {
         if (IsJournalMode) return LoadJournalAsync();
+        if (IsTracesMode) return LoadTracesAsync();
         if (IsPersonMode && Person is not null) return LoadPersonAsync(Person.Key);
         if (IsVehicleMode && Vehicle is not null) return LoadVehicleAsync(Vehicle.Plaque);
         return SearchAsync();
@@ -556,6 +730,15 @@ public sealed class MeoFicViewModel : ViewModelBase
                 VehicleForm = _editExistingVehicle && Vehicle is not null
                     ? VehicleForm.From(Vehicle)
                     : new VehicleForm { Plaque = SearchText.Trim().ToUpperInvariant() };
+                break;
+            case MeoForm.Signalisation:
+                SignalisationForm = new SignalisationForm { Fichier = SelectedFile == MeoFile.Fnaeg ? PtsFichiers.Fnaeg : PtsFichiers.Faed };
+                break;
+            case MeoForm.Inscription:
+                InscriptionForm = new InscriptionForm { Fichier = SelectedFile == MeoFile.Fijait ? PtsFichiers.Fijait : PtsFichiers.Fijais };
+                break;
+            case MeoForm.Trace:
+                TraceForm = new TraceForm();
                 break;
             case MeoForm.Foves:
                 FovesForm = new FovesForm { Plaque = Vehicle?.Plaque ?? SearchText.Trim().ToUpperInvariant() };
@@ -624,6 +807,24 @@ public sealed class MeoFicViewModel : ViewModelBase
                     InfoText = "Véhicule enregistré au SIV / FVA.";
                     break;
                 }
+                case MeoForm.Signalisation when Person is not null:
+                    await api.SendAsync(HttpMethod.Post, "api/pts/personne/signalisation?key=" + ApiClient.Q(Person.Key), SignalisationForm.ToInput());
+                    Form = MeoForm.None;
+                    await LoadPtsDataCoreAsync(api, Person.Key);
+                    InfoText = $"Signalisation {SignalisationForm.Fichier} enregistrée.";
+                    break;
+                case MeoForm.Inscription when Person is not null:
+                    await api.SendAsync(HttpMethod.Post, "api/pts/personne/inscription?key=" + ApiClient.Q(Person.Key), InscriptionForm.ToInput());
+                    Form = MeoForm.None;
+                    await LoadPtsDataCoreAsync(api, Person.Key);
+                    InfoText = $"Inscription au {InscriptionForm.Fichier} enregistrée.";
+                    break;
+                case MeoForm.Trace:
+                    await api.PostAsync<CreatedId>("api/pts/traces", TraceForm.ToInput());
+                    Form = MeoForm.None;
+                    await LoadTracesCoreAsync(api);
+                    InfoText = "Trace enregistrée.";
+                    break;
                 case MeoForm.Foves:
                 {
                     var plate = FovesForm.Plaque;
@@ -672,6 +873,16 @@ public sealed class MeoFicViewModel : ViewModelBase
 
     private async Task RefreshDetailAsync(ApiClient api)
     {
+        if (IsTracesMode)
+        {
+            await LoadTracesCoreAsync(api);
+            return;
+        }
+        if (IsPts && IsPersonMode && Person is not null)
+        {
+            await LoadPtsDataCoreAsync(api, Person.Key);
+            return;
+        }
         if (IsPersonMode && Person is not null)
             Person = await api.GetAsync<PersonDetailDto>("api/meo/personne?key=" + ApiClient.Q(Person.Key));
         else if (IsVehicleMode && Vehicle is not null)
@@ -708,6 +919,177 @@ public sealed class MeoFicViewModel : ViewModelBase
     // =====================================================================
     // Construction des fiches
     // =====================================================================
+
+    // =====================================================================
+    // PTS
+    // =====================================================================
+
+    private async Task LoadPtsDataAsync(string key)
+    {
+        var api = SaphirSession.Api;
+        if (api is null)
+            return;
+        await RunAsync(() => LoadPtsDataCoreAsync(api, key));
+    }
+
+    private async Task LoadPtsDataCoreAsync(ApiClient api, string key)
+    {
+        _ptsData = await api.GetAsync<PtsPersonDto>("api/pts/personne?key=" + ApiClient.Q(key));
+        RebuildPts();
+    }
+
+    private async Task LoadTracesAsync()
+    {
+        var api = SaphirSession.Api;
+        if (api is null || !IsPts)
+            return;
+        await RunAsync(() => LoadTracesCoreAsync(api));
+    }
+
+    private async Task LoadTracesCoreAsync(ApiClient api)
+    {
+        var traces = await api.GetAsync<List<TraceDto>>("api/pts/traces" + (ShowIdentifiedTraces ? "?toutes=true" : string.Empty));
+        TraceCards.Clear();
+        foreach (var trace in traces)
+            TraceCards.Add(BuildTraceCard(trace, allowMatch: true));
+        ResultsInfo = traces.Count + (ShowIdentifiedTraces ? " trace(s)" : " trace(s) non identifiée(s)");
+        OnPropertyChanged(nameof(HasTraces));
+    }
+
+    private async Task MatchTraceHereAsync()
+    {
+        var api = SaphirSession.Api;
+        var trace = TraceToMatch;
+        var person = Person;
+        if (api is null || trace is null || person is null)
+            return;
+        await RunAsync(async () =>
+        {
+            await api.SendAsync(HttpMethod.Post, $"api/pts/trace/{trace.Id}/rapprocher", new RapprochementInput(person.Key));
+            TraceToMatch = null;
+            await LoadPtsDataCoreAsync(api, person.Key);
+            InfoText = $"Trace {trace.Reference} rapprochée de {PersonTitle}.";
+        });
+    }
+
+    private void StartMatch(TraceDto trace)
+    {
+        TraceToMatch = trace;
+        SelectTab(PersonTabs[trace.Fichier == PtsFichiers.Fnaeg ? 1 : 0]);
+        InfoText = "Recherche la personne à rapprocher, puis valide sur sa fiche.";
+    }
+
+    private async Task UnmatchAsync(long traceId)
+    {
+        var api = SaphirSession.Api;
+        if (api is null)
+            return;
+        await RunAsync(async () =>
+        {
+            await api.SendAsync(HttpMethod.Post, $"api/pts/trace/{traceId}/dissocier");
+            await RefreshDetailAsync(api);
+            InfoText = "Rapprochement annulé.";
+        });
+    }
+
+    private async Task DeletePtsAsync(string kind, long id)
+    {
+        var api = SaphirSession.Api;
+        if (api is null)
+            return;
+        await RunAsync(async () =>
+        {
+            await api.SendAsync(HttpMethod.Delete, $"api/pts/{kind}/{id}");
+            await RefreshDetailAsync(api);
+            InfoText = "Élément supprimé.";
+        });
+    }
+
+    private EntryCard BuildTraceCard(TraceDto t, bool allowMatch)
+    {
+        var id = t.Id;
+        return new EntryCard
+        {
+            Title = $"{(t.Fichier == PtsFichiers.Fnaeg ? "Trace ADN" : "Trace papillaire")} {t.Reference}",
+            Badge = t.EstIdentifiee ? "IDENTIFIÉE" : "NON IDENTIFIÉE",
+            IsAlert = !t.EstIdentifiee,
+            Fields = Rows(("Affaire", t.Affaire), ("Lieu", t.Lieu), ("Prélevée le", t.DatePrelevement),
+                ("Rapprochée de", t.PersonneNom),
+                ("Rapprochement", t.RapprocheLe is { } at ? $"{t.RapprochePar}, le {FormatDate(at)}" : null)),
+            Details = t.Description,
+            Footer = $"Enregistrée par {t.Auteur} le {FormatDate(t.CreeLe)}",
+            CloseLabel = t.EstIdentifiee ? "Dissocier" : "Rapprocher",
+            CloseCommand = t.EstIdentifiee
+                ? new RelayCommand(() => _ = UnmatchAsync(id))
+                : allowMatch ? new RelayCommand(() => StartMatch(t)) : null,
+            DeleteCommand = IsAdmin ? new RelayCommand(() => _ = DeletePtsAsync("trace", id)) : null
+        };
+    }
+
+    private void RebuildPts()
+    {
+        FaedCards.Clear();
+        FnaegCards.Clear();
+        FijaisCards.Clear();
+        FijaitCards.Clear();
+        PersonFaedTraces.Clear();
+        PersonFnaegTraces.Clear();
+        PtsAlert = null;
+
+        if (_ptsData is { } data)
+        {
+            var admin = IsAdmin;
+            foreach (var sig in data.Signalisations)
+            {
+                var id = sig.Id;
+                var card = new EntryCard
+                {
+                    Title = (sig.Fichier == PtsFichiers.Fnaeg ? "Profil génétique " : "Signalisation n° ") + sig.Reference,
+                    Badge = sig.Fichier,
+                    Fields = Rows(("Date", sig.DateSignalisation), ("Service", sig.Service), ("Affaire / motif", sig.Motif)),
+                    Details = sig.Details,
+                    Footer = $"Enregistré par {sig.Auteur} le {FormatDate(sig.CreeLe)}",
+                    DeleteCommand = admin ? new RelayCommand(() => _ = DeletePtsAsync("signalisation", id)) : null
+                };
+                (sig.Fichier == PtsFichiers.Fnaeg ? FnaegCards : FaedCards).Add(card);
+            }
+
+            foreach (var ins in data.Inscriptions)
+            {
+                var id = ins.Id;
+                var card = new EntryCard
+                {
+                    Title = ins.Infraction,
+                    Badge = ins.Fichier,
+                    IsAlert = true,
+                    Fields = Rows(("Décision", ins.Decision), ("Date de décision", ins.DateDecision), ("Juridiction", ins.Juridiction),
+                        ("Obligations", ins.Obligations), ("Fin d'inscription", ins.FinInscription)),
+                    Details = ins.Details,
+                    Footer = $"Inscrit par {ins.Auteur} le {FormatDate(ins.CreeLe)}",
+                    DeleteCommand = admin ? new RelayCommand(() => _ = DeletePtsAsync("inscription", id)) : null
+                };
+                (ins.Fichier == PtsFichiers.Fijait ? FijaitCards : FijaisCards).Add(card);
+            }
+
+            foreach (var trace in data.Traces)
+                (trace.Fichier == PtsFichiers.Fnaeg ? PersonFnaegTraces : PersonFaedTraces).Add(BuildTraceCard(trace, allowMatch: false));
+
+            var files = data.Inscriptions.Select(i => i.Fichier).Distinct().OrderBy(f => f, StringComparer.Ordinal).ToList();
+            if (files.Count > 0)
+            {
+                var obligations = data.Inscriptions.Select(i => i.Obligations).FirstOrDefault(o => !string.IsNullOrWhiteSpace(o));
+                PtsAlert = "PERSONNE INSCRITE AU " + string.Join(" ET AU ", files) +
+                           (obligations is null ? string.Empty : " — " + obligations);
+            }
+        }
+
+        foreach (var name in new[]
+                 {
+                     nameof(HasFaed), nameof(HasFnaeg), nameof(HasFijais), nameof(HasFijait),
+                     nameof(HasPersonFaedTraces), nameof(HasPersonFnaegTraces), nameof(PtsAlert), nameof(HasPtsAlert)
+                 })
+            OnPropertyChanged(name);
+    }
 
     private void RebuildPerson()
     {
@@ -806,6 +1188,8 @@ public sealed class MeoFicViewModel : ViewModelBase
         OnPropertyChanged(nameof(HasFpr));
         OnPropertyChanged(nameof(HasPermis));
         OnPropertyChanged(nameof(HasPersonVehicles));
+        OnPropertyChanged(nameof(ShowPersonVehicles));
+        OnPropertyChanged(nameof(CanMatchHere));
     }
 
     private void RebuildVehicle()
@@ -878,7 +1262,10 @@ public sealed class MeoFicViewModel : ViewModelBase
                      nameof(ShowPersonDetail), nameof(ShowTaj), nameof(ShowFpr), nameof(ShowSnpc),
                      nameof(ShowVehicleDetail), nameof(ShowFoves), nameof(ShowSiv), nameof(ShowFva), nameof(ShowEmpty),
                      nameof(IsFormOpen), nameof(IsNewPersonForm), nameof(IsIdentityForm), nameof(IsTajForm), nameof(IsFprForm),
-                     nameof(IsPermisForm), nameof(IsVehicleForm), nameof(IsFovesForm), nameof(FormTitle)
+                     nameof(IsPermisForm), nameof(IsVehicleForm), nameof(IsFovesForm), nameof(FormTitle),
+                     nameof(ShowFaed), nameof(ShowFnaeg), nameof(ShowFijais), nameof(ShowFijait), nameof(ShowTraces),
+                     nameof(IsSignalisationForm), nameof(IsInscriptionForm), nameof(IsTraceForm), nameof(CanMatchHere),
+                     nameof(ShowPersonVehicles)
                  })
             OnPropertyChanged(name);
     }

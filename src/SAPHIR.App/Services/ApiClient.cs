@@ -129,5 +129,21 @@ public static class SaphirSession
     {
         Api = null;
         User = null;
+        PendingCallId = null;
+    }
+
+    /// <summary>Messages temps réel du serveur, relayés aux applications ouvertes (PEGASE, PTS…).</summary>
+    public static event Action<RealtimeMessage>? Realtime;
+
+    public static void Publish(RealtimeMessage message) => Realtime?.Invoke(message);
+
+    /// <summary>Appel 17 décroché à ouvrir dans PEGASE (consommé par la première fenêtre PEGASE qui le lit).</summary>
+    public static long? PendingCallId { get; set; }
+
+    public static long? TakePendingCall()
+    {
+        var id = PendingCallId;
+        PendingCallId = null;
+        return id;
     }
 }

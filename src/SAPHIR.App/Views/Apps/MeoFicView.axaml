@@ -157,7 +157,7 @@
                     <Grid ColumnDefinitions="*,Auto">
                         <TextBlock Classes="muted" Text="{Binding Footer}" VerticalAlignment="Center"/>
                         <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
-                            <Button Classes="secondary small" Content="Clore" IsVisible="{Binding CanClose}" Command="{Binding CloseCommand}"/>
+                            <Button Classes="secondary small" Content="{Binding CloseLabel}" IsVisible="{Binding CanClose}" Command="{Binding CloseCommand}"/>
                             <Button Classes="danger" Content="Supprimer" IsVisible="{Binding CanDelete}" Command="{Binding DeleteCommand}"/>
                         </StackPanel>
                     </Grid>
@@ -182,7 +182,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto">
                 <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Width="30" Height="30" Margin="0,0,10,0"/>
                 <StackPanel Grid.Column="1" VerticalAlignment="Center">
-                    <TextBlock Text="MEO-FIC" Foreground="White" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding AppTitle}" Foreground="White" FontWeight="Bold" FontSize="15"/>
                     <TextBlock Text="{Binding SelectedFileTitle}" Foreground="#B8C7E0" FontSize="12"/>
                 </StackPanel>
                 <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
@@ -219,7 +219,7 @@
                     <StackPanel Margin="0,0,0,12">
                         <TextBlock Classes="section" Text="PERSONNES"/>
                         <ItemsControl ItemsSource="{Binding PersonTabs}" ItemTemplate="{StaticResource TabTemplate}"/>
-                        <TextBlock Classes="section" Text="VÉHICULES"/>
+                        <TextBlock Classes="section" Text="{Binding SecondGroupTitle}"/>
                         <ItemsControl ItemsSource="{Binding VehicleTabs}" ItemTemplate="{StaticResource TabTemplate}"/>
                         <StackPanel IsVisible="{Binding IsAdmin}">
                             <TextBlock Classes="section" Text="ADMINISTRATION"/>
@@ -251,6 +251,12 @@
                                 IsVisible="{Binding IsVehicleMode}" Command="{Binding NewFovesCommand}"/>
                         <Button Classes="secondary small" Content="Actualiser" Margin="0,0,6,6"
                                 IsVisible="{Binding IsJournalMode}" Command="{Binding RefreshCommand}"/>
+                        <Button Classes="secondary small" Content="Nouvelle trace" Margin="0,0,6,6"
+                                IsVisible="{Binding IsTracesMode}" Command="{Binding NewTraceCommand}"/>
+                        <Button Classes="secondary small" Content="Actualiser" Margin="0,0,6,6"
+                                IsVisible="{Binding IsTracesMode}" Command="{Binding RefreshCommand}"/>
+                        <CheckBox Content="Afficher les traces identifiées" FontSize="12" Margin="0,0,6,6"
+                                  IsVisible="{Binding IsTracesMode}" IsChecked="{Binding ShowIdentifiedTraces}"/>
                     </WrapPanel>
 
                     <TextBlock Grid.Row="2" Classes="muted" Text="{Binding ResultsInfo}" Margin="14,0,14,6"/>
@@ -311,7 +317,9 @@
                     </ListBox>
 
                     <TextBlock Grid.Row="3" Classes="muted" Margin="14,4" IsVisible="{Binding IsJournalMode}"
-                               Text="Journal des consultations et inscriptions MEO-FIC, du plus récent au plus ancien."/>
+                               Text="Journal des consultations et inscriptions, du plus récent au plus ancien."/>
+                    <TextBlock Grid.Row="3" Classes="muted" Margin="14,4" IsVisible="{Binding IsTracesMode}"
+                               Text="Traces papillaires et ADN relevées sur les scènes. « Rapprocher » attribue une trace à une personne identifiée."/>
                 </Grid>
             </Border>
 
@@ -332,6 +340,19 @@
 
                 <ScrollViewer Grid.Row="3">
                     <StackPanel Margin="20,16,20,24" Spacing="12">
+
+                        <!-- ===== Rapprochement de trace en cours (PTS) ===== -->
+                        <Border Background="#E3ECFA" BorderBrush="#1E4FA0" BorderThickness="1" CornerRadius="4" Padding="14,10"
+                                IsVisible="{Binding IsMatchingTrace}">
+                            <StackPanel Spacing="8">
+                                <TextBlock Text="{Binding MatchBanner}" TextWrapping="Wrap" FontWeight="SemiBold" Foreground="#0B2A5B"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Classes="primary small" Content="Rapprocher à cette personne" IsVisible="{Binding CanMatchHere}"
+                                            Command="{Binding MatchTraceHereCommand}"/>
+                                    <Button Classes="secondary small" Content="Annuler le rapprochement" Command="{Binding CancelMatchCommand}"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
 
                         <!-- ===== Rien d'affiché ===== -->
                         <StackPanel IsVisible="{Binding ShowEmpty}" HorizontalAlignment="Center" Margin="0,60,0,0" Spacing="10">
@@ -438,6 +459,50 @@
                                     <TextBox Text="{Binding Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90"/></StackPanel>
                             </StackPanel>
 
+                            <!-- PTS : signalisation FAED / FNAEG -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsSignalisationForm}" DataContext="{Binding SignalisationForm}" Spacing="10">
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Fichier"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.FichiersSignalisation}" SelectedItem="{Binding Fichier}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Référence * (n° de signalisation ou de profil)"/><TextBox Text="{Binding Reference}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Date *"/><TextBox Text="{Binding DateSignalisation}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Service"/><TextBox Text="{Binding Service}"/></StackPanel>
+                                </UniformGrid>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Affaire / motif de la signalisation"/><TextBox Text="{Binding Motif}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Observations"/>
+                                    <TextBox Text="{Binding Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"/></StackPanel>
+                            </StackPanel>
+
+                            <!-- PTS : inscription FIJAIS / FIJAIT -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsInscriptionForm}" DataContext="{Binding InscriptionForm}" Spacing="10">
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Infraction *"/><TextBox Text="{Binding Infraction}"/></StackPanel>
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Décision *"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PtsDecisions}" SelectedItem="{Binding Decision}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Date de la décision"/><TextBox Text="{Binding DateDecision}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Juridiction"/><TextBox Text="{Binding Juridiction}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Fin d'inscription"/><TextBox Text="{Binding FinInscription}"/></StackPanel>
+                                </UniformGrid>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Obligations"/>
+                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PtsObligations}" SelectedItem="{Binding Obligations}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Observations"/>
+                                    <TextBox Text="{Binding Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"/></StackPanel>
+                            </StackPanel>
+
+                            <!-- PTS : nouvelle trace -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsTraceForm}" DataContext="{Binding TraceForm}" Spacing="10">
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Type de trace"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.FichiersSignalisation}" SelectedItem="{Binding Fichier}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Référence * (scellé, n° de trace)"/><TextBox Text="{Binding Reference}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Affaire"/><TextBox Text="{Binding Affaire}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Prélevée le"/><TextBox Text="{Binding DatePrelevement}"/></StackPanel>
+                                </UniformGrid>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Lieu du prélèvement"/><TextBox Text="{Binding Lieu}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Description (support, emplacement, qualité)"/>
+                                    <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"/></StackPanel>
+                            </StackPanel>
+
                             <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
                                 <Button Classes="primary" Content="Enregistrer" Command="{Binding SaveFormCommand}" IsEnabled="{Binding !IsBusy}"/>
                                 <Button Classes="secondary" Content="Annuler" Command="{Binding CancelFormCommand}"/>
@@ -446,6 +511,9 @@
 
                         <!-- ===== Fiche personne ===== -->
                         <StackPanel IsVisible="{Binding ShowPersonDetail}" Spacing="12">
+                            <Border Background="#6A1B9A" CornerRadius="4" Padding="14,10" IsVisible="{Binding HasPtsAlert}">
+                                <TextBlock Text="{Binding PtsAlert}" Foreground="White" FontWeight="Bold" TextWrapping="Wrap"/>
+                            </Border>
                             <Border Background="#C62828" CornerRadius="4" Padding="14,10" IsVisible="{Binding HasPersonAlert}">
                                 <StackPanel Spacing="3">
                                     <TextBlock Text="{Binding PersonAlert}" Foreground="White" FontWeight="Bold" TextWrapping="Wrap"/>
@@ -459,7 +527,7 @@
                                     <TextBlock Classes="muted" Text="{Binding PersonSubtitle}"/>
                                 </StackPanel>
                                 <Button Grid.Column="1" Classes="secondary small" Content="Identité / signalement" VerticalAlignment="Top"
-                                        Command="{Binding EditIdentityCommand}"/>
+                                        Command="{Binding EditIdentityCommand}" IsVisible="{Binding CanEditIdentity}"/>
                             </Grid>
 
                             <Border Classes="card">
@@ -498,8 +566,52 @@
                                 </Border>
                             </StackPanel>
 
+                            <!-- PTS : FAED -->
+                            <StackPanel IsVisible="{Binding ShowFaed}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Fichier automatisé des empreintes digitales (FAED)" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Nouvelle signalisation" Command="{Binding NewSignalisationCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Aucune signalisation au FAED." IsVisible="{Binding !HasFaed}"/>
+                                <ItemsControl ItemsSource="{Binding FaedCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                                <TextBlock Classes="h2" Text="Traces papillaires rapprochées" IsVisible="{Binding HasPersonFaedTraces}"/>
+                                <ItemsControl ItemsSource="{Binding PersonFaedTraces}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
+                            <!-- PTS : FNAEG -->
+                            <StackPanel IsVisible="{Binding ShowFnaeg}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Fichier national automatisé des empreintes génétiques (FNAEG)" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Nouveau profil ADN" Command="{Binding NewSignalisationCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Aucun profil génétique enregistré." IsVisible="{Binding !HasFnaeg}"/>
+                                <ItemsControl ItemsSource="{Binding FnaegCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                                <TextBlock Classes="h2" Text="Traces ADN rapprochées" IsVisible="{Binding HasPersonFnaegTraces}"/>
+                                <ItemsControl ItemsSource="{Binding PersonFnaegTraces}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
+                            <!-- PTS : FIJAIS -->
+                            <StackPanel IsVisible="{Binding ShowFijais}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Auteurs d'infractions sexuelles ou violentes (FIJAIS)" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Inscrire au FIJAIS" Command="{Binding NewInscriptionCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Cette personne n'est pas inscrite au FIJAIS." IsVisible="{Binding !HasFijais}"/>
+                                <ItemsControl ItemsSource="{Binding FijaisCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
+                            <!-- PTS : FIJAIT -->
+                            <StackPanel IsVisible="{Binding ShowFijait}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Auteurs d'infractions terroristes (FIJAIT)" VerticalAlignment="Center" TextWrapping="Wrap"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Inscrire au FIJAIT" Command="{Binding NewInscriptionCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Cette personne n'est pas inscrite au FIJAIT." IsVisible="{Binding !HasFijait}"/>
+                                <ItemsControl ItemsSource="{Binding FijaitCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
                             <!-- Véhicules de la personne -->
-                            <StackPanel IsVisible="{Binding HasPersonVehicles}" Spacing="6">
+                            <StackPanel IsVisible="{Binding ShowPersonVehicles}" Spacing="6">
                                 <TextBlock Classes="h2" Text="Véhicules connus"/>
                                 <ItemsControl ItemsSource="{Binding PersonVehicles}">
                                     <ItemsControl.ItemTemplate>
@@ -583,6 +695,13 @@
                                     <ItemsControl ItemsSource="{Binding FvaRows}" ItemTemplate="{StaticResource FieldRowTemplate}"/>
                                 </Border>
                             </StackPanel>
+                        </StackPanel>
+
+                        <!-- ===== PTS : traces ===== -->
+                        <StackPanel IsVisible="{Binding ShowTraces}" Spacing="8">
+                            <TextBlock Classes="h1" Text="Traces relevées"/>
+                            <TextBlock Classes="muted" Text="Aucune trace à afficher." IsVisible="{Binding !HasTraces}"/>
+                            <ItemsControl ItemsSource="{Binding TraceCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
                         </StackPanel>
 
                         <!-- ===== Journal (administration) ===== -->

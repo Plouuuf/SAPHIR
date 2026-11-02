@@ -30,6 +30,18 @@ public partial class MeoFicView : UserControl
         UpdateLayoutMode();
     }
 
+    protected override void OnAttachedToVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnAttachedToVisualTree(e);
+        _vm?.Resume();
+    }
+
+    protected override void OnDetachedFromVisualTree(VisualTreeAttachmentEventArgs e)
+    {
+        base.OnDetachedFromVisualTree(e);
+        _vm?.Suspend();
+    }
+
     protected override void OnPropertyChanged(AvaloniaPropertyChangedEventArgs change)
     {
         base.OnPropertyChanged(change);
@@ -39,7 +51,8 @@ public partial class MeoFicView : UserControl
 
     private void OnViewModelPropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        if (e.PropertyName is nameof(MeoFicViewModel.ShowDetailOnCompact) or nameof(MeoFicViewModel.IsJournalMode))
+        if (e.PropertyName is nameof(MeoFicViewModel.ShowDetailOnCompact) or nameof(MeoFicViewModel.IsJournalMode)
+            or nameof(MeoFicViewModel.IsTracesMode))
             UpdateLayoutMode();
     }
 
@@ -64,7 +77,7 @@ public partial class MeoFicView : UserControl
             return;
         }
 
-        var journal = _vm?.IsJournalMode == true;
+        var journal = _vm?.IsJournalMode == true || _vm?.IsTracesMode == true;
         var showDetail = journal || _vm?.ShowDetailOnCompact == true;
         columns[0].Width = new GridLength(0);
         columns[1].Width = showDetail ? new GridLength(0) : new GridLength(1, GridUnitType.Star);

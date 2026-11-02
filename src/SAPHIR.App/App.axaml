@@ -6,6 +6,7 @@
     <Application.Styles>
         <FluentTheme />
         <StyleInclude Source="avares://SAPHIR.App/Styles/Windows10.axaml" />
+        <StyleInclude Source="avares://SAPHIR.App/Styles/SaphirApps.axaml" />
     </Application.Styles>
 
     <Application.Resources>

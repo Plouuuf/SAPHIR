@@ -21,6 +21,25 @@ public sealed class MeoFicStore(IOptionsMonitor<DatabaseOptions> options, FiveMR
 
     private Task<MySqlConnection> OpenAsync(CancellationToken ct) => Sql.OpenAsync(ConnectionString, ct);
 
+    /// <summary>Pour PTS : identifiant SAPHIR d'une personne (fiche créée au besoin pour un personnage FiveM).</summary>
+    public Task<long?> ResolvePersonIdAsync(MySqlConnection connection, string key, AgentContext agent, CancellationToken ct)
+        => EnsurePersonIdAsync(connection, key, agent, ct);
+
+    /// <summary>Pour PTS : identifiant SAPHIR existant d'une personne, sans rien créer.</summary>
+    public async Task<long?> FindPersonIdAsync(MySqlConnection connection, string key, CancellationToken ct)
+        => (await LoadPersonAsync(connection, key, ct)).Row?.Id;
+
+    /// <summary>Clé publique (« f:… » ou « s:… ») d'une fiche SAPHIR.</summary>
+    public static string PublicKey(long id, string? fivemId) => fivemId is null ? SaphirPrefix + id : FivemPrefix + fivemId;
+
+    /// <summary>« NOM Prénom » d'une fiche SAPHIR.</summary>
+    public static Task<string> PersonNameAsync(MySqlConnection connection, long personId, CancellationToken ct)
+        => PersonLabelAsync(connection, personId, ct);
+
+    /// <summary>Trace dans le journal (connexion déjà ouverte).</summary>
+    public static Task WriteJournalAsync(MySqlConnection connection, AgentContext agent, string action, string target, CancellationToken ct)
+        => LogAsync(connection, agent, action, target, ct);
+
     public async Task InitializeAsync(CancellationToken ct)
     {
         await using var connection = await OpenAsync(ct);

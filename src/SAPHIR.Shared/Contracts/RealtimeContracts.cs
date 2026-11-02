@@ -22,4 +22,13 @@ public static class RealtimeTypes
 
     /// <summary>Notification à afficher (coin de l'écran sur ordinateur, bandeau sur téléphone).</summary>
     public const string Notify = "notify";
+
+    /// <summary>Les données de PEGASE ont changé : les postes rechargent l'état.</summary>
+    public const string PegaseChanged = "pegase-changed";
+
+    /// <summary>Ouvrir la prise d'appel PEGASE de l'appel indiqué (Text = identifiant), au décroché d'un 17.</summary>
+    public const string OpenCall = "open-call";
+
+    /// <summary>Traces PTS modifiées (rapprochement) : les postes PTS rechargent.</summary>
+    public const string PtsChanged = "pts-changed";
 }

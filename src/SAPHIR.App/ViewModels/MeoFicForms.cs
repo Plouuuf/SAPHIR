@@ -6,10 +6,13 @@ namespace Saphir.ViewModels;
 // Formulaires de MEO-FIC. Champs simples liés en TwoWay ; pour vider un formulaire,
 // le ViewModel en crée simplement un nouveau.
 
-public enum MeoFile { Taj, Fpr, Snpc, Foves, Siv, Fva, Journal }
+public enum MeoFile { Taj, Fpr, Snpc, Foves, Siv, Fva, Journal, Faed, Fnaeg, Fijais, Fijait, Traces }
+
+/// <summary>MEO-FIC (fichiers de police) ou PTS (police technique et scientifique) : même écran, fichiers différents.</summary>
+public enum MeoMode { Fichiers, Pts }
 
 /// <summary>Formulaire ouvert dans le volet de détail.</summary>
-public enum MeoForm { None, NewPerson, Identity, Taj, Fpr, Permis, Vehicle, Foves }
+public enum MeoForm { None, NewPerson, Identity, Taj, Fpr, Permis, Vehicle, Foves, Signalisation, Inscription, Trace }
 
 public sealed class IdentityForm
 {
@@ -146,4 +149,42 @@ public sealed class FovesForm
     public string? Details { get; set; }
 
     public FovesInput ToInput() => new(Motif, Conduite, Details);
+}
+
+public sealed class SignalisationForm
+{
+    public string Fichier { get; set; } = PtsFichiers.Faed;
+    public string Reference { get; set; } = string.Empty;
+    public string DateSignalisation { get; set; } = DateTime.Now.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("fr-FR"));
+    public string? Service { get; set; }
+    public string? Motif { get; set; }
+    public string? Details { get; set; }
+
+    public SignalisationInput ToInput() => new(Fichier, Reference, DateSignalisation, Service, Motif, Details);
+}
+
+public sealed class InscriptionForm
+{
+    public string Fichier { get; set; } = PtsFichiers.Fijais;
+    public string Infraction { get; set; } = string.Empty;
+    public string Decision { get; set; } = PtsReferentiel.Decisions[0];
+    public string? DateDecision { get; set; }
+    public string? Juridiction { get; set; }
+    public string? Obligations { get; set; } = PtsReferentiel.Obligations[0];
+    public string? FinInscription { get; set; }
+    public string? Details { get; set; }
+
+    public InscriptionInput ToInput() => new(Fichier, Infraction, Decision, DateDecision, Juridiction, Obligations, FinInscription, Details);
+}
+
+public sealed class TraceForm
+{
+    public string Fichier { get; set; } = PtsFichiers.Faed;
+    public string Reference { get; set; } = string.Empty;
+    public string? Affaire { get; set; }
+    public string? Lieu { get; set; }
+    public string? DatePrelevement { get; set; } = DateTime.Now.ToString("dd/MM/yyyy", CultureInfo.GetCultureInfo("fr-FR"));
+    public string? Description { get; set; }
+
+    public TraceInput ToInput() => new(Fichier, Reference, Affaire, Lieu, DatePrelevement, Description);
 }

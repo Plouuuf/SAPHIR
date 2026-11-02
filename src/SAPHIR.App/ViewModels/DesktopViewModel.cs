@@ -286,8 +286,23 @@ public sealed class DesktopViewModel : ViewModelBase
         if (message.Type == RealtimeTypes.Notify)
         {
             var app = message.AppId is null ? null : Apps.FirstOrDefault(a => a.Id == message.AppId);
-            ShowNotification(message.Title ?? "SAPHIR", message.Text ?? string.Empty, app?.Icon);
+            // Une notification d'application n'est montrée qu'aux agents qui y ont accès.
+            if (message.AppId is null || app is not null)
+                ShowNotification(message.Title ?? "SAPHIR", message.Text ?? string.Empty, app?.Icon);
+            return;
         }
+
+        if (message.Type == RealtimeTypes.OpenCall)
+        {
+            // Décroché d'un 17 sur SIMCALL : PEGASE s'ouvre sur la prise d'appel.
+            var pegase = Apps.FirstOrDefault(a => a.Id == SaphirApps.Pegase);
+            if (pegase is null || !long.TryParse(message.Text, out var callId))
+                return;
+            SaphirSession.PendingCallId = callId;
+            OpenApp(pegase);
+        }
+
+        SaphirSession.Publish(message);
     }
 
     public void ShowNotification(string title, string text, Bitmap? icon = null)

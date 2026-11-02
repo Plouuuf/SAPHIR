@@ -1,0 +1,121 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+    <!-- Styles communs des applications SAPHIR (MEO-FIC, PEGASE, PTS…). Classes réservées aux applications. -->
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#5B6B82"/>
+            <Setter Property="Margin" Value="14,16,0,6"/>
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#5B6B82"/>
+        </Style>
+        <Style Selector="TextBlock.value">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="TextBlock.h1">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.h2">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.muted">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#6B7A90"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!-- Onglets de fichiers (colonne de gauche et barre du téléphone) -->
+        <Style Selector="Button.meotab">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+        <Style Selector="Button.meotab:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="#D5DEEA"/>
+        </Style>
+        <Style Selector="Button.meotab.selected /template/ Border#Root">
+            <Setter Property="Background" Value="#1E4FA0"/>
+        </Style>
+        <Style Selector="Button.meotab.selected">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Boutons d'action -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#1E4FA0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2A62C0"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#173F80"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#C3CDDB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E3B4B4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Foreground" Value="#B3261E"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.small">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Foreground" Value="#1E4FA0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Cartes -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D9E0EA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="14,12"/>
+        </Style>
+        <Style Selector="Border.card.alert">
+            <Setter Property="BorderBrush" Value="#C62828"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="Border.card.closed">
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <Style Selector="Border.badge">
+            <Setter Property="Background" Value="#E7ECF3"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+        <Style Selector="Border.badge.alert">
+            <Setter Property="Background" Value="#C62828"/>
+        </Style>
+        <Style Selector="Border.badge.alert TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+</Styles>

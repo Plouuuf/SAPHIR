@@ -42,6 +42,8 @@ public static class Program
         builder.Services.Configure<DatabaseOptions>(builder.Configuration.GetSection("Database"));
         builder.Services.AddSingleton<FiveMReader>();
         builder.Services.AddSingleton<MeoFicStore>();
+        builder.Services.AddSingleton<PegaseStore>();
+        builder.Services.AddSingleton<PtsStore>();
 
         var app = builder.Build();
 
@@ -138,6 +140,8 @@ public static class Program
         });
 
         app.MapMeoFic();
+        app.MapPegase();
+        app.MapPts();
 
         // ===== Intégrations serveur à serveur (clé SAPHIR:AccessKey dans l'en-tête X-Saphir-Key) =====
 
@@ -154,6 +158,30 @@ public static class Program
                 ? await hub.BroadcastAsync(notification, context.RequestAborted)
                 : await hub.SendToUserAsync(userId, notification, context.RequestAborted);
             return Results.Ok(new { sent });
+        });
+
+        // SIMCALL : décroché d'un 17 → fiche d'appel PEGASE ouverte sur le poste de l'opérateur.
+        app.MapPost("/api/integrations/simcall/answered", async (HttpContext context, SimcallCallAnswered message, PegaseStore pegase) =>
+        {
+            if (!HasIntegrationKey(context, accessKey))
+                return Results.Unauthorized();
+            if (string.IsNullOrWhiteSpace(message.SimcallCallId) || string.IsNullOrWhiteSpace(message.DiscordUserId))
+                return Results.BadRequest(new { error = "Appel SIMCALL incomplet." });
+            if (!meoFic.IsConfigured)
+                return Results.Json(new { error = "Base SAPHIR non configurée." }, statusCode: StatusCodes.Status503ServiceUnavailable);
+            var call = await pegase.SimcallAnsweredAsync(message, context.RequestAborted);
+            return Results.Ok(new { id = call.Id });
+        });
+
+        // SIMCALL : raccroché → durée de l'appel figée.
+        app.MapPost("/api/integrations/simcall/ended", async (HttpContext context, SimcallCallEnded message, PegaseStore pegase) =>
+        {
+            if (!HasIntegrationKey(context, accessKey))
+                return Results.Unauthorized();
+            if (!meoFic.IsConfigured)
+                return Results.Json(new { error = "Base SAPHIR non configurée." }, statusCode: StatusCodes.Status503ServiceUnavailable);
+            await pegase.SimcallEndedAsync(message, context.RequestAborted);
+            return Results.NoContent();
         });
 
         await app.RunAsync();

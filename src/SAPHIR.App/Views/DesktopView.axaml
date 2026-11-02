@@ -135,7 +135,7 @@
 
             <!-- ===================== Menu Démarrer ===================== -->
             <Border IsVisible="{Binding IsStartMenuOpen}" HorizontalAlignment="Left" VerticalAlignment="Bottom"
-                    Width="430" Height="500" MaxHeight="{Binding #WorkLayer.Bounds.Height}"
+                    Width="470" Height="500" MaxHeight="{Binding #WorkLayer.Bounds.Height}"
                     CornerRadius="7,7,0,0" Padding="6,6,6,0" Background="{StaticResource StartRightBrush}"
                     BorderBrush="#80FFFFFF" BorderThickness="1,1,1,0" BoxShadow="0 0 18 0 #80000000">
                 <Grid ColumnDefinitions="262,*" RowDefinitions="*,46">

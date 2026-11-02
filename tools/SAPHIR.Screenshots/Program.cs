@@ -67,9 +67,8 @@ SaphirSession.SetInfo(SampleApi.Session());
 {
     var vm = new AdministrationViewModel();
     Pump();
-    vm.SelectedCompte = vm.Comptes.FirstOrDefault(c => c.Nom == "BORDINI");
-    var view = new AdministrationView { DataContext = vm };
-    Capture(view, 1280, 820, "06-admin-comptes.png");
+    Capture(new AdministrationView { DataContext = vm }, 1280, 820, "06-admin-comptes.png",
+        () => vm.SelectedCompte = vm.Comptes.FirstOrDefault(c => c.Nom == "BORDINI"));
 
     vm.SelectedProfil = vm.Profils.FirstOrDefault(p => p.Code == "chef-de-bord");
     Capture(new AdministrationView { DataContext = vm }, 1280, 820, "07-admin-profils.png", () => SelectTab(1));

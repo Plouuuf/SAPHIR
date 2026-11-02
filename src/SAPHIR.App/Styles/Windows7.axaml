@@ -326,10 +326,10 @@
         <Style.Animations>
             <Animation Duration="0:0:1.1" IterationCount="Infinite">
                 <KeyFrame Cue="0%">
-                    <Setter Property="RenderTransform" Value="rotate(0deg)"/>
+                    <Setter Property="StartAngle" Value="0"/>
                 </KeyFrame>
                 <KeyFrame Cue="100%">
-                    <Setter Property="RenderTransform" Value="rotate(360deg)"/>
+                    <Setter Property="StartAngle" Value="360"/>
                 </KeyFrame>
             </Animation>
         </Style.Animations>

@@ -76,3 +76,43 @@ jobs:
         with:
           name: SAPHIR-Captures
           path: artifacts/captures
+
+  publication:
+    # Version publiée à chaque push sur main : le VPS l'installe avec deploy/install-serveur.ps1.
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    needs: [tests, serveur-et-windows, macos]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 9.0.x
+
+      - name: Serveur Windows (VPS)
+        run: |
+          dotnet publish src/SAPHIR.Server -c Release -r win-x64 --self-contained true -o artifacts/server-win
+          cp deploy/install-serveur.ps1 artifacts/server-win/
+          (cd artifacts/server-win && zip -qr ../SAPHIR-server-win-x64.zip .)
+
+      - name: Poste Windows
+        run: >
+          dotnet publish src/SAPHIR.Desktop -c Release -r win-x64 --self-contained true
+          -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/windows
+
+      - name: Version
+        id: version
+        run: echo "version=$(grep -oP '(?<=<Version>)[^<]+' Directory.Build.props)" >> "$GITHUB_OUTPUT"
+
+      - uses: softprops/action-gh-release@v2
+        with:
+          tag_name: build-${{ github.run_number }}
+          name: SAPHIR ${{ steps.version.outputs.version }} (build ${{ github.run_number }})
+          make_latest: true
+          body: |
+            Serveur (VPS Windows) : dans PowerShell administrateur
+            `irm https://raw.githubusercontent.com/Plouuuf/SAPHIR/main/deploy/install-serveur.ps1 | iex`
+          files: |
+            artifacts/SAPHIR-server-win-x64.zip
+            artifacts/windows/SAPHIR.exe

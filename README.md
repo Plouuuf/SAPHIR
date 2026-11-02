@@ -57,6 +57,21 @@ OAuth2 :
 http://46.105.78.32:8091/auth/discord/callback
 ```
 
+### Installation automatique sur le VPS Windows
+
+Dans PowerShell ouvert **en administrateur** :
+
+```powershell
+irm https://raw.githubusercontent.com/Plouuuf/SAPHIR/main/deploy/install-serveur.ps1 | iex
+```
+
+La première fois, le script télécharge la dernière version publiée, crée la base `saphir` et son utilisateur (il
+demande le mot de passe root de MariaDB), reprend l'application Discord d'ARGOS si elle est dans `C:\ARGOS`,
+écrit `C:\SAPHIR\appsettings.Local.json`, ouvre le port 8091, crée la tâche planifiée « SAPHIR Server » et lance
+le serveur. Ensuite, la même commande sert à mettre à jour (les réglages sont conservés).
+
+Les étapes manuelles ci-dessous restent valables pour une installation à la main.
+
 ### 2. Base de données (MariaDB, sur le VPS)
 
 ```sql

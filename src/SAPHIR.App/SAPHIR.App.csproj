@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!--
+    Cœur commun de SAPHIR : écrans de verrouillage et de connexion, bureau Windows 10, vue mobile,
+    connexion Discord et temps réel.
+    Utilisé par :
+      SAPHIR.Desktop (Windows + macOS)
+      SAPHIR.iOS     (iPhone et iPad)
+      SAPHIR.Android (téléphones et tablettes Android)
+  -->
+  <PropertyGroup>
+    <TargetFramework>net9.0</TargetFramework>
+    <AssemblyName>SAPHIR.App</AssemblyName>
+    <RootNamespace>Saphir</RootNamespace>
+    <AvaloniaUseCompiledBindingsByDefault>false</AvaloniaUseCompiledBindingsByDefault>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="$(AvaloniaVersion)" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="$(AvaloniaVersion)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\SAPHIR.Shared\SAPHIR.Shared.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\**" />
+    <!-- Adresse du serveur par défaut, intégrée à l'application (toutes plateformes). -->
+    <EmbeddedResource Include="client.defaults.json" LogicalName="SAPHIR.client.defaults.json" />
+  </ItemGroup>
+</Project>

@@ -1,0 +1,23 @@
+# Compilation
+bin/
+obj/
+artifacts/
+.vs/
+.idea/
+*.user
+.DS_Store
+
+# Données du serveur (sessions Discord chiffrées)
+src/SAPHIR.Server/data/
+
+# Secrets locaux : NE JAMAIS VERSIONNER
+appsettings.Local.json
+saphir.local.json
+*private*.pem
+
+# Signature Android
+*.keystore
+*.jks
+
+# Import temporaire du socle ARGOS
+.import/

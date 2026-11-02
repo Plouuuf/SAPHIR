@@ -1,0 +1,617 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.MeoFicView"
+             Background="#F3F5F8"
+             Foreground="#1F2937">
+    <!-- MEO-FIC : consultation des fichiers. DataContext : MeoFicViewModel. -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.section">
+            <Setter Property="FontSize" Value="11"/>
+            <Setter Property="FontWeight" Value="Bold"/>
+            <Setter Property="Foreground" Value="#5B6B82"/>
+            <Setter Property="Margin" Value="14,16,0,6"/>
+        </Style>
+        <Style Selector="TextBlock.label">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#5B6B82"/>
+        </Style>
+        <Style Selector="TextBlock.value">
+            <Setter Property="FontSize" Value="13"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+        <Style Selector="TextBlock.h1">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.h2">
+            <Setter Property="FontSize" Value="15"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+        <Style Selector="TextBlock.muted">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="#6B7A90"/>
+            <Setter Property="TextWrapping" Value="Wrap"/>
+        </Style>
+
+        <!-- Onglets de fichiers (colonne de gauche et barre du téléphone) -->
+        <Style Selector="Button.meotab">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="Padding" Value="14,7"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+        <Style Selector="Button.meotab:pointerover /template/ Border#Root">
+            <Setter Property="Background" Value="#D5DEEA"/>
+        </Style>
+        <Style Selector="Button.meotab.selected /template/ Border#Root">
+            <Setter Property="Background" Value="#1E4FA0"/>
+        </Style>
+        <Style Selector="Button.meotab.selected">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <!-- Boutons d'action -->
+        <Style Selector="Button.primary">
+            <Setter Property="Background" Value="#1E4FA0"/>
+            <Setter Property="Foreground" Value="White"/>
+            <Setter Property="Padding" Value="14,6"/>
+            <Setter Property="CornerRadius" Value="3"/>
+        </Style>
+        <Style Selector="Button.primary:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#2A62C0"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.primary:pressed /template/ ContentPresenter#PART_ContentPresenter">
+            <Setter Property="Background" Value="#173F80"/>
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+        <Style Selector="Button.secondary">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#C3CDDB"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="12,5"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Foreground" Value="#1F2937"/>
+        </Style>
+        <Style Selector="Button.danger">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#E3B4B4"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="CornerRadius" Value="3"/>
+            <Setter Property="Foreground" Value="#B3261E"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.small">
+            <Setter Property="Padding" Value="10,4"/>
+            <Setter Property="FontSize" Value="12"/>
+        </Style>
+        <Style Selector="Button.link">
+            <Setter Property="Background" Value="Transparent"/>
+            <Setter Property="BorderThickness" Value="0"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Foreground" Value="#1E4FA0"/>
+            <Setter Property="Cursor" Value="Hand"/>
+        </Style>
+
+        <!-- Cartes -->
+        <Style Selector="Border.card">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D9E0EA"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="4"/>
+            <Setter Property="Padding" Value="14,12"/>
+        </Style>
+        <Style Selector="Border.card.alert">
+            <Setter Property="BorderBrush" Value="#C62828"/>
+            <Setter Property="BorderThickness" Value="2"/>
+        </Style>
+        <Style Selector="Border.card.closed">
+            <Setter Property="Opacity" Value="0.7"/>
+        </Style>
+        <Style Selector="Border.badge">
+            <Setter Property="Background" Value="#E7ECF3"/>
+            <Setter Property="CornerRadius" Value="2"/>
+            <Setter Property="Padding" Value="6,2"/>
+            <Setter Property="VerticalAlignment" Value="Top"/>
+        </Style>
+        <Style Selector="Border.badge.alert">
+            <Setter Property="Background" Value="#C62828"/>
+        </Style>
+        <Style Selector="Border.badge.alert TextBlock">
+            <Setter Property="Foreground" Value="White"/>
+        </Style>
+
+        <Style Selector="TextBox">
+            <Setter Property="MinHeight" Value="30"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+        <Style Selector="ComboBox">
+            <Setter Property="HorizontalAlignment" Value="Stretch"/>
+            <Setter Property="FontSize" Value="13"/>
+        </Style>
+    </UserControl.Styles>
+
+    <UserControl.Resources>
+        <!-- Ligne « libellé : valeur » -->
+        <DataTemplate x:Key="FieldRowTemplate">
+            <Grid ColumnDefinitions="170,*" Margin="0,3">
+                <TextBlock Classes="label" Text="{Binding Label}"/>
+                <TextBlock Grid.Column="1" Classes="value" Text="{Binding Value}"/>
+            </Grid>
+        </DataTemplate>
+
+        <!-- Inscription (TAJ, FPR, FOVeS) -->
+        <DataTemplate x:Key="EntryCardTemplate">
+            <Border Classes="card" Classes.alert="{Binding IsAlert}" Classes.closed="{Binding IsClosed}" Margin="0,0,0,10">
+                <StackPanel Spacing="6">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="h2" Text="{Binding Title}" TextWrapping="Wrap"/>
+                        <Border Grid.Column="1" Classes="badge" Classes.alert="{Binding IsAlert}" Margin="10,0,0,0"
+                                IsVisible="{Binding HasBadge}">
+                            <TextBlock Text="{Binding Badge}" FontSize="11" FontWeight="Bold"/>
+                        </Border>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding Fields}" ItemTemplate="{StaticResource FieldRowTemplate}"/>
+                    <TextBlock Classes="value" Text="{Binding Details}" IsVisible="{Binding HasDetails}" Foreground="#374151"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="muted" Text="{Binding Footer}" VerticalAlignment="Center"/>
+                        <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="6">
+                            <Button Classes="secondary small" Content="Clore" IsVisible="{Binding CanClose}" Command="{Binding CloseCommand}"/>
+                            <Button Classes="danger" Content="Supprimer" IsVisible="{Binding CanDelete}" Command="{Binding DeleteCommand}"/>
+                        </StackPanel>
+                    </Grid>
+                </StackPanel>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate x:Key="TabTemplate">
+            <Button Classes="flat meotab" Classes.selected="{Binding IsSelected}" Command="{Binding SelectCommand}">
+                <StackPanel Spacing="1">
+                    <TextBlock Text="{Binding Code}" FontWeight="Bold" FontSize="13"/>
+                    <TextBlock Text="{Binding Label}" FontSize="11" Opacity="0.8" TextWrapping="Wrap"/>
+                </StackPanel>
+            </Button>
+        </DataTemplate>
+    </UserControl.Resources>
+
+    <Grid RowDefinitions="Auto,Auto,*">
+
+        <!-- ===================== En-tête ===================== -->
+        <Border Background="#0B2A5B" Padding="14,9">
+            <Grid ColumnDefinitions="Auto,*,Auto">
+                <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Width="30" Height="30" Margin="0,0,10,0"/>
+                <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                    <TextBlock Text="MEO-FIC" Foreground="White" FontWeight="Bold" FontSize="15"/>
+                    <TextBlock Text="{Binding SelectedFileTitle}" Foreground="#B8C7E0" FontSize="12"/>
+                </StackPanel>
+                <StackPanel Grid.Column="2" Orientation="Horizontal" Spacing="12" VerticalAlignment="Center">
+                    <ProgressBar IsIndeterminate="True" Width="70" IsVisible="{Binding IsBusy}" Foreground="#76B9ED"/>
+                    <TextBlock Text="{Binding AgentName}" Foreground="White" FontSize="12" VerticalAlignment="Center"/>
+                </StackPanel>
+            </Grid>
+        </Border>
+
+        <!-- ===================== Onglets (téléphone) ===================== -->
+        <ScrollViewer Name="CompactTabs" Grid.Row="1" IsVisible="False"
+                      HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled" Background="#E7ECF3">
+            <ItemsControl ItemsSource="{Binding AllTabs}">
+                <ItemsControl.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <StackPanel Orientation="Horizontal"/>
+                    </ItemsPanelTemplate>
+                </ItemsControl.ItemsPanel>
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Button Classes="flat meotab" Classes.selected="{Binding IsSelected}" Command="{Binding SelectCommand}">
+                            <TextBlock Text="{Binding Code}" FontWeight="Bold" FontSize="13"/>
+                        </Button>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+        </ScrollViewer>
+
+        <Grid Name="BodyGrid" Grid.Row="2" ColumnDefinitions="200,300,*">
+
+            <!-- ===================== Fichiers ===================== -->
+            <Border Name="Sidebar" Background="#E7ECF3" BorderBrush="#D3DBE6" BorderThickness="0,0,1,0">
+                <ScrollViewer>
+                    <StackPanel Margin="0,0,0,12">
+                        <TextBlock Classes="section" Text="PERSONNES"/>
+                        <ItemsControl ItemsSource="{Binding PersonTabs}" ItemTemplate="{StaticResource TabTemplate}"/>
+                        <TextBlock Classes="section" Text="VÉHICULES"/>
+                        <ItemsControl ItemsSource="{Binding VehicleTabs}" ItemTemplate="{StaticResource TabTemplate}"/>
+                        <StackPanel IsVisible="{Binding IsAdmin}">
+                            <TextBlock Classes="section" Text="ADMINISTRATION"/>
+                            <ItemsControl ItemsSource="{Binding AdminTabs}" ItemTemplate="{StaticResource TabTemplate}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+
+            <!-- ===================== Recherche et résultats ===================== -->
+            <Border Name="ResultsPane" Grid.Column="1" Background="White" BorderBrush="#D3DBE6" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,Auto,Auto,*">
+                    <Grid ColumnDefinitions="*,Auto" Margin="12,12,12,6" IsVisible="{Binding IsSearchMode}">
+                        <TextBox Text="{Binding SearchText}" Watermark="{Binding SearchWatermark}">
+                            <TextBox.KeyBindings>
+                                <KeyBinding Gesture="Enter" Command="{Binding SearchCommand}"/>
+                            </TextBox.KeyBindings>
+                        </TextBox>
+                        <Button Grid.Column="1" Classes="primary" Content="Rechercher" Margin="6,0,0,0"
+                                Command="{Binding SearchCommand}"/>
+                    </Grid>
+
+                    <WrapPanel Grid.Row="1" Margin="12,0,12,6">
+                        <Button Classes="secondary small" Content="Nouvelle fiche personne" Margin="0,0,6,6"
+                                IsVisible="{Binding IsPersonMode}" Command="{Binding NewPersonCommand}"/>
+                        <Button Classes="secondary small" Content="Nouveau véhicule" Margin="0,0,6,6"
+                                IsVisible="{Binding IsVehicleMode}" Command="{Binding NewVehicleCommand}"/>
+                        <Button Classes="secondary small" Content="Signaler au FOVeS" Margin="0,0,6,6"
+                                IsVisible="{Binding IsVehicleMode}" Command="{Binding NewFovesCommand}"/>
+                        <Button Classes="secondary small" Content="Actualiser" Margin="0,0,6,6"
+                                IsVisible="{Binding IsJournalMode}" Command="{Binding RefreshCommand}"/>
+                    </WrapPanel>
+
+                    <TextBlock Grid.Row="2" Classes="muted" Text="{Binding ResultsInfo}" Margin="14,0,14,6"/>
+
+                    <!-- Personnes -->
+                    <ListBox Grid.Row="3" ItemsSource="{Binding PersonResults}" SelectedItem="{Binding SelectedPersonResult}"
+                             IsVisible="{Binding IsPersonMode}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock FontWeight="SemiBold" FontSize="13">
+                                            <Run Text="{Binding Nom}"/>
+                                            <Run Text="{Binding Prenom}"/>
+                                        </TextBlock>
+                                        <TextBlock Classes="muted">
+                                            <Run Text="{Binding DateNaissance}"/>
+                                            <Run Text=" · "/>
+                                            <Run Text="{Binding Source}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4" VerticalAlignment="Center">
+                                        <Border Classes="badge alert" IsVisible="{Binding FprActif}">
+                                            <TextBlock Text="FPR" FontSize="10" FontWeight="Bold"/>
+                                        </Border>
+                                        <Border Classes="badge" IsVisible="{Binding HasTaj}">
+                                            <TextBlock FontSize="10" FontWeight="Bold">
+                                                <Run Text="TAJ "/>
+                                                <Run Text="{Binding TajCount}"/>
+                                            </TextBlock>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Véhicules -->
+                    <ListBox Grid.Row="3" ItemsSource="{Binding VehicleResults}" SelectedItem="{Binding SelectedVehicleResult}"
+                             IsVisible="{Binding IsVehicleMode}" Background="Transparent">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto" Margin="0,2">
+                                    <StackPanel Spacing="1">
+                                        <TextBlock Text="{Binding Plaque}" FontWeight="Bold" FontSize="14" FontFamily="Consolas, Menlo, monospace"/>
+                                        <TextBlock Classes="muted">
+                                            <Run Text="{Binding Modele}"/>
+                                            <Run Text=" · "/>
+                                            <Run Text="{Binding Titulaire}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                    <Border Grid.Column="1" Classes="badge alert" IsVisible="{Binding Signale}" VerticalAlignment="Center">
+                                        <TextBlock Text="FOVeS" FontSize="10" FontWeight="Bold"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <TextBlock Grid.Row="3" Classes="muted" Margin="14,4" IsVisible="{Binding IsJournalMode}"
+                               Text="Journal des consultations et inscriptions MEO-FIC, du plus récent au plus ancien."/>
+                </Grid>
+            </Border>
+
+            <!-- ===================== Fiche ===================== -->
+            <Grid Name="DetailPane" Grid.Column="2" RowDefinitions="Auto,Auto,Auto,*">
+
+                <Button Name="BackButton" Classes="link" Margin="16,10,0,0" IsVisible="False"
+                        Command="{Binding BackToResultsCommand}" Content="← Résultats"/>
+
+                <Border Grid.Row="1" Background="#FDECEC" BorderBrush="#C62828" BorderThickness="0,0,0,2" Padding="16,8"
+                        IsVisible="{Binding HasError}">
+                    <TextBlock Text="{Binding ErrorText}" Foreground="#8E1C1C" TextWrapping="Wrap"/>
+                </Border>
+                <Border Grid.Row="2" Background="#E8F5E9" BorderBrush="#2E7D32" BorderThickness="0,0,0,2" Padding="16,8"
+                        IsVisible="{Binding HasInfo}">
+                    <TextBlock Text="{Binding InfoText}" Foreground="#1B5E20" TextWrapping="Wrap"/>
+                </Border>
+
+                <ScrollViewer Grid.Row="3">
+                    <StackPanel Margin="20,16,20,24" Spacing="12">
+
+                        <!-- ===== Rien d'affiché ===== -->
+                        <StackPanel IsVisible="{Binding ShowEmpty}" HorizontalAlignment="Center" Margin="0,60,0,0" Spacing="10">
+                            <Image Source="avares://SAPHIR.App/Assets/saphir-icon.png" Width="96" Height="96" Opacity="0.85"/>
+                            <TextBlock Classes="muted" Text="{Binding EmptyText}" TextAlignment="Center" MaxWidth="360"/>
+                        </StackPanel>
+
+                        <!-- ===== Formulaires ===== -->
+                        <StackPanel IsVisible="{Binding IsFormOpen}" Spacing="12">
+                            <TextBlock Classes="h1" Text="{Binding FormTitle}" TextWrapping="Wrap"/>
+
+                            <!-- Identité -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsIdentityForm}" DataContext="{Binding IdentityForm}" Spacing="10">
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Nom *"/><TextBox Text="{Binding Nom}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Prénom(s) *"/><TextBox Text="{Binding Prenom}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Date de naissance (jj/mm/aaaa)"/><TextBox Text="{Binding DateNaissance}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Lieu de naissance"/><TextBox Text="{Binding LieuNaissance}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Sexe"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Sexes}" SelectedItem="{Binding Sexe}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Nationalité"/><TextBox Text="{Binding Nationalite}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Téléphone"/><TextBox Text="{Binding Telephone}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Taille"/><TextBox Text="{Binding Taille}"/></StackPanel>
+                                </UniformGrid>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Adresse"/><TextBox Text="{Binding Adresse}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Alias / surnoms"/><TextBox Text="{Binding Alias}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Signalement (corpulence, cheveux, tatouages, signes particuliers…)"/>
+                                    <TextBox Text="{Binding Signalement}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"/></StackPanel>
+                            </StackPanel>
+
+                            <!-- TAJ -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsTajForm}" DataContext="{Binding TajForm}" Spacing="10">
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Qualité"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.TajQualites}" SelectedItem="{Binding Qualite}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Date des faits *"/><TextBox Text="{Binding DateFaits}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Code NATINF"/><TextBox Text="{Binding Natinf}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="N° de procédure"/><TextBox Text="{Binding Procedure}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Lieu des faits"/><TextBox Text="{Binding Lieu}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Service saisi"/><TextBox Text="{Binding Service}"/></StackPanel>
+                                </UniformGrid>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Infraction *"/><TextBox Text="{Binding Infraction}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Résumé des faits"/>
+                                    <TextBox Text="{Binding Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90"/></StackPanel>
+                            </StackPanel>
+
+                            <!-- FPR -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsFprForm}" DataContext="{Binding FprForm}" Spacing="10">
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Motif de la fiche *"/>
+                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.FprMotifs}" SelectedItem="{Binding Motif}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Conduite à tenir *"/>
+                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.ConduitesATenir}" SelectedItem="{Binding Conduite}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Autorité à aviser (magistrat, service, téléphone)"/><TextBox Text="{Binding Autorite}"/></StackPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="20">
+                                    <CheckBox Content="Individu dangereux" IsChecked="{Binding Dangereux}"/>
+                                    <CheckBox Content="Susceptible d'être armé" IsChecked="{Binding Arme}"/>
+                                </StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Observations"/>
+                                    <TextBox Text="{Binding Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90"/></StackPanel>
+                            </StackPanel>
+
+                            <!-- SNPC -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsPermisForm}" DataContext="{Binding PermisForm}" Spacing="10">
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Statut *"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.PermisStatuts}" SelectedItem="{Binding Statut}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Solde de points (0 à 12)"/><TextBox Text="{Binding Points}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Catégories (ex. AM, A2, B)"/><TextBox Text="{Binding Categories}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="N° de permis"/><TextBox Text="{Binding Numero}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Délivré le"/><TextBox Text="{Binding DateObtention}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Restrictions"/><TextBox Text="{Binding Restrictions}"/></StackPanel>
+                                </UniformGrid>
+                            </StackPanel>
+
+                            <!-- SIV / FVA -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsVehicleForm}" DataContext="{Binding VehicleForm}" Spacing="10">
+                                <TextBlock Classes="h2" Text="Immatriculation (SIV)"/>
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Plaque *"/><TextBox Text="{Binding Plaque}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="N° VIN"/><TextBox Text="{Binding Vin}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Marque"/><TextBox Text="{Binding Marque}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Modèle"/><TextBox Text="{Binding Modele}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Couleur"/><TextBox Text="{Binding Couleur}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="1re mise en circulation"/><TextBox Text="{Binding DateMiseEnCirculation}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Titulaire (NOM Prénom)"/><TextBox Text="{Binding TitulaireNom}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="Contrôle technique"/><TextBox Text="{Binding ControleTechnique}"/></StackPanel>
+                                </UniformGrid>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Opposition / gage / déclaration de cession"/><TextBox Text="{Binding Opposition}"/></StackPanel>
+                                <TextBlock Classes="h2" Text="Assurance (FVA)" Margin="0,6,0,0"/>
+                                <UniformGrid Columns="2">
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Assureur"/><TextBox Text="{Binding Assureur}"/></StackPanel>
+                                    <StackPanel Margin="0,0,0,8" Spacing="3"><TextBlock Classes="label" Text="N° de contrat"/><TextBox Text="{Binding NumeroContrat}"/></StackPanel>
+                                    <StackPanel Margin="0,0,8,8" Spacing="3"><TextBlock Classes="label" Text="Valide jusqu'au (jj/mm/aaaa)"/><TextBox Text="{Binding AssuranceValideJusquau}"/></StackPanel>
+                                </UniformGrid>
+                            </StackPanel>
+
+                            <!-- FOVeS -->
+                            <StackPanel IsVisible="{Binding $parent[UserControl].DataContext.IsFovesForm}" DataContext="{Binding FovesForm}" Spacing="10">
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Motif du signalement *"/>
+                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.FovesMotifs}" SelectedItem="{Binding Motif}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Conduite à tenir *"/>
+                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.ConduitesATenir}" SelectedItem="{Binding Conduite}"/></StackPanel>
+                                <StackPanel Spacing="3"><TextBlock Classes="label" Text="Observations (circonstances, plainte, service)"/>
+                                    <TextBox Text="{Binding Details}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90"/></StackPanel>
+                            </StackPanel>
+
+                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                <Button Classes="primary" Content="Enregistrer" Command="{Binding SaveFormCommand}" IsEnabled="{Binding !IsBusy}"/>
+                                <Button Classes="secondary" Content="Annuler" Command="{Binding CancelFormCommand}"/>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- ===== Fiche personne ===== -->
+                        <StackPanel IsVisible="{Binding ShowPersonDetail}" Spacing="12">
+                            <Border Background="#C62828" CornerRadius="4" Padding="14,10" IsVisible="{Binding HasPersonAlert}">
+                                <StackPanel Spacing="3">
+                                    <TextBlock Text="{Binding PersonAlert}" Foreground="White" FontWeight="Bold" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding PersonAlertDetail}" Foreground="White" FontSize="12" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </Border>
+
+                            <Grid ColumnDefinitions="*,Auto">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Classes="h1" Text="{Binding PersonTitle}" TextWrapping="Wrap"/>
+                                    <TextBlock Classes="muted" Text="{Binding PersonSubtitle}"/>
+                                </StackPanel>
+                                <Button Grid.Column="1" Classes="secondary small" Content="Identité / signalement" VerticalAlignment="Top"
+                                        Command="{Binding EditIdentityCommand}"/>
+                            </Grid>
+
+                            <Border Classes="card">
+                                <ItemsControl ItemsSource="{Binding IdentityRows}" ItemTemplate="{StaticResource FieldRowTemplate}"/>
+                            </Border>
+
+                            <!-- TAJ -->
+                            <StackPanel IsVisible="{Binding ShowTaj}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Antécédents judiciaires (TAJ)" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Nouvelle inscription" Command="{Binding NewTajCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Aucun antécédent enregistré." IsVisible="{Binding !HasTaj}"/>
+                                <ItemsControl ItemsSource="{Binding TajCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
+                            <!-- FPR -->
+                            <StackPanel IsVisible="{Binding ShowFpr}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Fichier des personnes recherchées (FPR)" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Inscrire au FPR" Command="{Binding NewFprCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Cette personne n'est pas inscrite au FPR." IsVisible="{Binding !HasFpr}"/>
+                                <ItemsControl ItemsSource="{Binding FprCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
+                            <!-- SNPC -->
+                            <StackPanel IsVisible="{Binding ShowSnpc}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Permis de conduire (SNPC)" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Mettre à jour" Command="{Binding EditPermisCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Aucun permis de conduire connu." IsVisible="{Binding !HasPermis}"/>
+                                <Border Classes="card" IsVisible="{Binding HasPermis}">
+                                    <ItemsControl ItemsSource="{Binding PermisRows}" ItemTemplate="{StaticResource FieldRowTemplate}"/>
+                                </Border>
+                            </StackPanel>
+
+                            <!-- Véhicules de la personne -->
+                            <StackPanel IsVisible="{Binding HasPersonVehicles}" Spacing="6">
+                                <TextBlock Classes="h2" Text="Véhicules connus"/>
+                                <ItemsControl ItemsSource="{Binding PersonVehicles}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="secondary" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Margin="0,0,0,6"
+                                                    Command="{Binding $parent[UserControl].DataContext.OpenVehicleCommand}" CommandParameter="{Binding}">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <TextBlock Text="{Binding Plaque}" FontWeight="Bold" FontFamily="Consolas, Menlo, monospace" Margin="0,0,12,0"/>
+                                                    <TextBlock Grid.Column="1" Classes="muted" VerticalAlignment="Center">
+                                                        <Run Text="{Binding Marque}"/>
+                                                        <Run Text="{Binding Modele}"/>
+                                                    </TextBlock>
+                                                    <Border Grid.Column="2" Classes="badge alert" IsVisible="{Binding Signale}">
+                                                        <TextBlock Text="FOVeS" FontSize="10" FontWeight="Bold"/>
+                                                    </Border>
+                                                </Grid>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- ===== Fiche véhicule ===== -->
+                        <StackPanel IsVisible="{Binding ShowVehicleDetail}" Spacing="12">
+                            <Border Background="#C62828" CornerRadius="4" Padding="14,10" IsVisible="{Binding HasVehicleAlert}">
+                                <TextBlock Text="{Binding VehicleAlert}" Foreground="White" FontWeight="Bold" TextWrapping="Wrap"/>
+                            </Border>
+
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <!-- Plaque façon française -->
+                                <Border BorderBrush="#1F2937" BorderThickness="2" CornerRadius="4" Background="White" ClipToBounds="True"
+                                        VerticalAlignment="Top">
+                                    <Grid ColumnDefinitions="Auto,Auto">
+                                        <Border Background="#1E4FA0" Width="22">
+                                            <TextBlock Text="F" Foreground="White" FontWeight="Bold" FontSize="12"
+                                                       HorizontalAlignment="Center" VerticalAlignment="Bottom" Margin="0,0,0,3"/>
+                                        </Border>
+                                        <TextBlock Grid.Column="1" Text="{Binding VehicleTitle}" FontSize="24" FontWeight="Bold"
+                                                   FontFamily="Consolas, Menlo, monospace" Margin="12,4"/>
+                                    </Grid>
+                                </Border>
+                                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding VehicleSubtitle}" VerticalAlignment="Center" Margin="14,0"/>
+                                <Button Grid.Column="2" Classes="secondary small" Content="Modifier SIV / FVA" VerticalAlignment="Top"
+                                        Command="{Binding EditVehicleCommand}"/>
+                            </Grid>
+
+                            <!-- FOVeS -->
+                            <StackPanel IsVisible="{Binding ShowFoves}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="h2" Text="Objets et véhicules signalés (FOVeS)" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Classes="primary small" Content="Nouveau signalement" Command="{Binding NewFovesCommand}"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="Ce véhicule n'est pas signalé." IsVisible="{Binding !HasFoves}"/>
+                                <ItemsControl ItemsSource="{Binding FovesCards}" ItemTemplate="{StaticResource EntryCardTemplate}"/>
+                            </StackPanel>
+
+                            <!-- SIV -->
+                            <StackPanel IsVisible="{Binding ShowSiv}" Spacing="8">
+                                <TextBlock Classes="h2" Text="Système d'immatriculation des véhicules (SIV)"/>
+                                <Border Classes="card">
+                                    <ItemsControl ItemsSource="{Binding SivRows}" ItemTemplate="{StaticResource FieldRowTemplate}"/>
+                                </Border>
+                                <Button Classes="secondary small" Content="Consulter le titulaire" IsVisible="{Binding HasTitulaire}"
+                                        Command="{Binding OpenTitulaireCommand}"/>
+                            </StackPanel>
+
+                            <!-- FVA -->
+                            <StackPanel IsVisible="{Binding ShowFva}" Spacing="8">
+                                <TextBlock Classes="h2" Text="Fichier des véhicules assurés (FVA)"/>
+                                <Border CornerRadius="4" Padding="14,10" Background="#E8F5E9" IsVisible="{Binding IsInsured}">
+                                    <TextBlock Text="VÉHICULE ASSURÉ" Foreground="#1B5E20" FontWeight="Bold"/>
+                                </Border>
+                                <Border CornerRadius="4" Padding="14,10" Background="#FFF4E5" IsVisible="{Binding !IsInsured}">
+                                    <TextBlock Foreground="#8A4B00" FontWeight="Bold">
+                                        <Run Text="ASSURANCE : "/>
+                                        <Run Text="{Binding FvaStatus}"/>
+                                    </TextBlock>
+                                </Border>
+                                <Border Classes="card">
+                                    <ItemsControl ItemsSource="{Binding FvaRows}" ItemTemplate="{StaticResource FieldRowTemplate}"/>
+                                </Border>
+                            </StackPanel>
+                        </StackPanel>
+
+                        <!-- ===== Journal (administration) ===== -->
+                        <StackPanel IsVisible="{Binding IsJournalMode}" Spacing="6">
+                            <TextBlock Classes="h1" Text="Journal MEO-FIC"/>
+                            <Grid ColumnDefinitions="140,150,170,*" Margin="0,6,0,2">
+                                <TextBlock Classes="label" Text="Date" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="1" Classes="label" Text="Agent" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="2" Classes="label" Text="Action" FontWeight="Bold"/>
+                                <TextBlock Grid.Column="3" Classes="label" Text="Cible" FontWeight="Bold"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Journal}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#E3E8EF" BorderThickness="0,0,0,1" Padding="0,5">
+                                            <Grid ColumnDefinitions="140,150,170,*">
+                                                <TextBlock Classes="value" Text="{Binding Date}" FontSize="12"/>
+                                                <TextBlock Grid.Column="1" Classes="value" Text="{Binding Agent}" FontSize="12"/>
+                                                <TextBlock Grid.Column="2" Classes="value" Text="{Binding Action}" FontSize="12"/>
+                                                <TextBlock Grid.Column="3" Classes="value" Text="{Binding Cible}" FontSize="12"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+    </Grid>
+</UserControl>

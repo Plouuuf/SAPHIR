@@ -47,7 +47,7 @@
                             </ItemsControl.ItemTemplate>
                         </ItemsControl>
                         <TextBlock Classes="muted">
-                            <Run Text="{Binding PermissionCount}"/>
+                            <Run Text="{Binding PermissionCount, Mode=OneWay}"/>
                             <Run Text=" permission(s). Les profils sont attribués par l'administration."/>
                         </TextBlock>
 

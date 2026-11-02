@@ -115,8 +115,8 @@
                                                                 <DataTemplate>
                                                                     <CheckBox IsChecked="{Binding IsChecked}" Margin="6,0,0,0">
                                                                         <TextBlock FontSize="12" Foreground="Black">
-                                                                            <Run Text="{Binding Libelle}"/>
-                                                                            <Run Text="{Binding Code, StringFormat=' ({0})'}" Foreground="#8492A3"/>
+                                                                            <Run Text="{Binding Libelle, Mode=OneWay}"/>
+                                                                            <Run Text="{Binding Code, Mode=OneWay, StringFormat=' ({0})'}" Foreground="#8492A3"/>
                                                                         </TextBlock>
                                                                     </CheckBox>
                                                                 </DataTemplate>

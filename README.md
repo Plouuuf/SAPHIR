@@ -25,8 +25,23 @@ Plateformes : **Windows**, **macOS**, **iPhone / iPad**, **Android**. Même base
   - Passage personne → véhicules et véhicule → titulaire.
   - **Journal** de toutes les consultations et inscriptions (administration), suppression réservée à
     l'administration.
-- Les autres applications (PTS, PEGASE, GÉOOPS, Main courante, LRPPN, NEO, Video Manager, PVe, Mugshot,
-  Garde à vue, Armurerie) affichent « arrive dans une prochaine version ».
+- **PEGASE** (prise des appels 17) :
+  - Au **décroché d'un 17 sur SIMCALL**, PEGASE s'ouvre sur le poste SAPHIR de l'opérateur avec la prise d'appel
+    déjà remplie (heure, numéro du requérant, chrono de l'appel figé au raccroché). Bouton « Nouvel appel 17 »
+    pour une saisie manuelle.
+  - Prise d'appel : localisation, nature, priorité P1 à P3, requérant, motif ; puis **créer l'événement**,
+    **clore sans suite** (renseignement, réorientation, malveillant…) ou **mettre en attente**.
+  - Événements : liste par priorité, fiche, modification, **chronologie** (messages, engagements, statuts),
+    clôture avec compte rendu. Notification à tous les postes pour un P1.
+  - **Équipages** : indicatif, type, effectif ; engagement sur un événement, statuts Disponible / Engagé /
+    Sur place / Indisponible / Hors service. Tout se met à jour en temps réel sur tous les postes.
+- **PTS** (police technique et scientifique), même écran que MEO-FIC :
+  - **FAED** (signalisations, empreintes) et **FNAEG** (profils ADN) d'une personne.
+  - **FIJAIS** et **FIJAIT** : inscriptions avec décision, juridiction, obligations, fin d'inscription ;
+    bandeau violet sur la fiche.
+  - **Traces** relevées sur les scènes (papillaires ou ADN), puis **rapprochement** avec une personne.
+- Les autres applications (GÉOOPS, Main courante, LRPPN, NEO, Video Manager, PVe, Mugshot, Garde à vue,
+  Armurerie) affichent « arrive dans une prochaine version ».
 
 ## Arborescence
 
@@ -63,8 +78,8 @@ GRANT SELECT ON fivem.* TO 'saphir_ro'@'localhost';
 FLUSH PRIVILEGES;
 ```
 
-Les tables SAPHIR (`saphir_personnes`, `saphir_taj`, `saphir_fpr`, `saphir_permis`, `saphir_vehicules`,
-`saphir_foves`, `saphir_journal`) sont créées automatiquement au démarrage du serveur.
+Les tables SAPHIR (`saphir_*` pour MEO-FIC, `pegase_*` pour PEGASE, `pts_*` pour PTS) sont créées
+automatiquement au démarrage du serveur.
 
 ### 3. Serveur
 
@@ -105,7 +120,18 @@ dotnet run --project src/SAPHIR.Server
 
 Le serveur écoute sur le port **8091** (ARGOS reste sur 8090, SIMCALL sur 8080).
 
-### 4. Poste ordinateur
+### 4. Lien avec SIMCALL (PEGASE)
+
+SIMCALL 0.7.3 ou plus (PR « Lien SAPHIR » sur le dépôt SIMCALL). Dans `C:\SIMCALL\Server\appsettings.json` :
+
+```json
+"Saphir": { "Url": "http://127.0.0.1:8091", "Key": "la même valeur que SAPHIR:AccessKey" }
+```
+
+Puis redémarrer le service SIMCALL. Au décroché d'un 17, la prise d'appel s'ouvre sur le poste SAPHIR de
+l'opérateur (même compte Discord, rôle `pegase`).
+
+### 5. Poste ordinateur
 
 ```bash
 dotnet run --project src/SAPHIR.Desktop
@@ -114,7 +140,7 @@ dotnet run --project src/SAPHIR.Desktop
 SAPHIR s'ouvre en plein écran ; **F11** bascule en fenêtre. Pour viser un serveur de test, placer un
 `saphir.local.json` à côté de l'exécutable : `{ "ServerUrl": "http://127.0.0.1:8091" }`.
 
-### 5. iPhone / iPad et Android
+### 6. iPhone / iPad et Android
 
 ```bash
 dotnet workload install ios android
@@ -155,6 +181,27 @@ Jeton de session Discord dans `Authorization: Bearer …`.
 | POST | `/api/meo/foves/{id}/clore` | Clôture FOVeS |
 | DELETE | `/api/meo/inscription/{taj\|fpr\|foves}/{id}` | Suppression (administration) |
 | GET | `/api/meo/journal` | Journal (administration) |
+
+## API PEGASE et PTS
+
+PEGASE : `GET /api/pegase/etat`, `POST /api/pegase/appels`, `GET /api/pegase/appel/{id}`,
+`POST /api/pegase/appel/{id}/evenement`, `POST /api/pegase/appel/{id}/sans-suite`, `GET|PUT /api/pegase/evenement/{id}`,
+`POST /api/pegase/evenement/{id}/message|engager|clore`, `POST /api/pegase/equipages`,
+`PUT|DELETE /api/pegase/equipage/{id}`, `POST /api/pegase/equipage/{id}/statut`.
+
+SIMCALL (clé `X-Saphir-Key`) : `POST /api/integrations/simcall/answered`, `POST /api/integrations/simcall/ended`.
+
+PTS : `GET /api/pts/personne?key=`, `POST /api/pts/personne/signalisation|inscription?key=`, `GET /api/pts/traces`
+(`?toutes=true`), `POST /api/pts/traces`, `POST /api/pts/trace/{id}/rapprocher|dissocier`,
+`DELETE /api/pts/{signalisation|inscription|trace}/{id}` (administration).
+
+## Simuler un appel 17
+
+```bash
+curl -X POST http://127.0.0.1:8091/api/integrations/simcall/answered \
+  -H "X-Saphir-Key: une-longue-cle-aleatoire" -H "Content-Type: application/json" \
+  -d '{"simcallCallId":"test-001","discordUserId":"TON_ID_DISCORD","operatorName":"Opérateur test","callerNumber":"0601020304","answeredAt":"2026-11-02T10:00:00Z"}'
+```
 
 ## Tester une notification
 

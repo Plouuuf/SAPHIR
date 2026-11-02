@@ -31,7 +31,8 @@ public sealed class EvenementForm
         Description = dto.Description
     };
 
-    public EvenementInput ToInput() => new(Nature, PrioriteIndex + 1, Adresse, Commune, Complement, RequerantNom, RequerantTel, Description);
+    // Index hors liste (-1) : P2 par défaut, jamais un P1 involontaire.
+    public EvenementInput ToInput() => new(Nature, PrioriteIndex is >= 0 and <= 2 ? PrioriteIndex + 1 : 2, Adresse, Commune, Complement, RequerantNom, RequerantTel, Description);
 }
 
 public sealed class EquipageForm
@@ -134,7 +135,7 @@ public static class PegaseColors
 public sealed class PegaseViewModel : ViewModelBase, IDisposable
 {
     private readonly DispatcherTimer _clock;
-    private bool _loading;
+    private Task? _reloadTask;
     private bool _reloadPending;
     private bool _rebuildingEvents;
     private bool _subscribed;
@@ -451,18 +452,26 @@ public sealed class PegaseViewModel : ViewModelBase, IDisposable
     }
 
     /// <summary>Recharge l'état ; un changement reçu pendant le chargement en relance un juste après.</summary>
-    private async Task ReloadAsync()
+    /// <remarks>
+    /// Un appelant qui attend le rechargement (création d'événement puis sélection) attend aussi celui déjà en cours,
+    /// relancé avec le changement : sinon il reprendrait la main avant que la liste ne contienne la nouveauté.
+    /// </remarks>
+    private Task ReloadAsync()
+    {
+        if (_reloadTask is { IsCompleted: false })
+        {
+            _reloadPending = true;
+            return _reloadTask;
+        }
+        return _reloadTask = ReloadCoreAsync();
+    }
+
+    private async Task ReloadCoreAsync()
     {
         var api = SaphirSession.Api;
         if (api is null)
             return;
-        if (_loading)
-        {
-            _reloadPending = true;
-            return;
-        }
 
-        _loading = true;
         try
         {
             do
@@ -484,10 +493,6 @@ public sealed class PegaseViewModel : ViewModelBase, IDisposable
         {
             ErrorText = "Erreur inattendue : " + ex.Message;
         }
-        finally
-        {
-            _loading = false;
-        }
     }
 
     private void ApplyState(PegaseStateDto state)
@@ -508,7 +513,14 @@ public sealed class PegaseViewModel : ViewModelBase, IDisposable
         {
             var updated = state.AppelsEnCours.FirstOrDefault(c => c.Id == active.Id);
             if (updated is not null)
+            {
                 ActiveCall = updated;
+            }
+            else
+            {
+                // Absent de la liste : traité ailleurs, ou état chargé avant sa création. On vérifie.
+                _ = VerifyActiveCallAsync(active.Id);
+            }
         }
 
         var open = state.Evenements.Count(e => e.Statut != EvenementStatuts.Termine);
@@ -521,6 +533,26 @@ public sealed class PegaseViewModel : ViewModelBase, IDisposable
         OnPropertyChanged(nameof(HasPendingCalls));
         OnPropertyChanged(nameof(HasNoCrews));
         RebuildEngageable();
+    }
+
+    private async Task VerifyActiveCallAsync(long id)
+    {
+        var api = SaphirSession.Api;
+        if (api is null)
+            return;
+        try
+        {
+            var call = await api.GetAsync<AppelDto>($"api/pegase/appel/{id}");
+            if (call.Statut != AppelStatuts.EnCours && ActiveCall?.Id == id)
+            {
+                ActiveCall = null;
+                InfoText = $"L'appel n° {id} a été traité depuis un autre poste.";
+            }
+        }
+        catch (ApiException)
+        {
+            // Vérification impossible : la prise d'appel reste ouverte.
+        }
     }
 
     private void RebuildEvents()
@@ -557,6 +589,9 @@ public sealed class PegaseViewModel : ViewModelBase, IDisposable
         if (id is null)
             return;
         Tab = "evenements";
+        // Événement terminé masqué : on affiche les terminés pour pouvoir le sélectionner.
+        if (Events.All(e => e.Id != id) && _allEvents.Any(e => e.Id == id))
+            ShowClosed = true;
         var item = Events.FirstOrDefault(e => e.Id == id) ?? _allEvents.Where(e => e.Id == id).Select(e => new EventItem(e)).FirstOrDefault();
         if (item is not null)
             SelectedEvent = item;

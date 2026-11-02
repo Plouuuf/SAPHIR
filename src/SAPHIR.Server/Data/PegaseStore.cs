@@ -62,6 +62,11 @@ public sealed class PegaseStore(IOptionsMonitor<DatabaseOptions> options, Realti
     /// <summary>Décroché d'un 17 sur SIMCALL : fiche d'appel créée et ouverte sur le poste de l'opérateur.</summary>
     public async Task<AppelDto> SimcallAnsweredAsync(SimcallCallAnswered message, CancellationToken ct)
     {
+        // Identifiant tel qu'enregistré (espaces retirés, 64 caractères) : sert aussi à relire la fiche.
+        var simcallId = Sql.Clean(message.SimcallCallId, 64)!;
+        // Heure absente du message (valeur par défaut) : heure de réception.
+        var answeredAt = message.AnsweredAt == default ? DateTime.UtcNow : message.AnsweredAt.UtcDateTime;
+
         await using var connection = await OpenAsync(ct);
         await Sql.ExecuteAsync(connection,
             """
@@ -69,15 +74,15 @@ public sealed class PegaseStore(IOptionsMonitor<DatabaseOptions> options, Realti
             VALUES (@simcall, @numero, @operateur, @operateurId, @decroche, @statut)
             ON DUPLICATE KEY UPDATE operateur = VALUES(operateur), operateur_id = VALUES(operateur_id)
             """, ct,
-            ("@simcall", Sql.Clean(message.SimcallCallId, 64)),
+            ("@simcall", simcallId),
             ("@numero", Sql.Clean(message.CallerNumber, 40)),
             ("@operateur", Sql.Clean(message.OperatorName, 100) ?? "Opérateur"),
             ("@operateurId", Sql.Clean(message.DiscordUserId, 32) ?? string.Empty),
-            ("@decroche", message.AnsweredAt.UtcDateTime),
+            ("@decroche", answeredAt),
             ("@statut", AppelStatuts.EnCours));
 
         var call = (await Sql.QueryAsync(connection, "SELECT * FROM pegase_appels WHERE simcall_id = @simcall",
-            ReadCall, ct, ("@simcall", message.SimcallCallId))).First();
+            ReadCall, ct, ("@simcall", simcallId))).First();
 
         await hub.SendToUserAsync(message.DiscordUserId,
             new RealtimeMessage(RealtimeTypes.OpenCall, Text: call.Id.ToString(System.Globalization.CultureInfo.InvariantCulture), AppId: SaphirApps.Pegase), ct);
@@ -91,7 +96,8 @@ public sealed class PegaseStore(IOptionsMonitor<DatabaseOptions> options, Realti
         await using var connection = await OpenAsync(ct);
         var changed = await Sql.ExecuteAsync(connection,
             "UPDATE pegase_appels SET raccroche_le = @fin WHERE simcall_id = @simcall AND raccroche_le IS NULL", ct,
-            ("@fin", message.EndedAt.UtcDateTime), ("@simcall", message.SimcallCallId));
+            ("@fin", message.EndedAt == default ? DateTime.UtcNow : message.EndedAt.UtcDateTime),
+            ("@simcall", Sql.Clean(message.SimcallCallId, 64)));
         if (changed > 0)
             await NotifyChangedAsync(ct);
         return changed > 0;

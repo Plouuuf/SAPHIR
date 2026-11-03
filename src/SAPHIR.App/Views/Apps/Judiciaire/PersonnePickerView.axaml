@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Judiciaire.PersonnePickerView">
+    <!-- Recherche d'identité (14.2) et création d'une fiche. DataContext : PersonnePickerViewModel. -->
+    <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="8">
+        <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBox Text="{Binding Recherche}" Watermark="NOM, prénom, date de naissance (jj/mm/aaaa) ou PER-000000"/>
+                <Button Grid.Column="1" Classes="small" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="6,0,0,0"/>
+                <Button Grid.Column="2" Classes="small" Content="Nouvelle identité" Command="{Binding BasculerCreationCommand}" Margin="6,0,0,0"/>
+            </Grid>
+            <ListBox ItemsSource="{Binding Resultats}" SelectedItem="{Binding Selection}" MaxHeight="130"
+                     BorderBrush="#C8D5E7" BorderThickness="1">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black"/>
+                            <TextBlock Text="{Binding Reference}" FontSize="11" Foreground="#5B6B7C"/>
+                            <ItemsControl ItemsSource="{Binding Alertes}">
+                                <ItemsControl.ItemsPanel>
+                                    <ItemsPanelTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="3"/>
+                                    </ItemsPanelTemplate>
+                                </ItemsControl.ItemsPanel>
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Background="#C62828" CornerRadius="2" Padding="4,0">
+                                            <TextBlock Text="{Binding}" FontSize="10" Foreground="White" FontWeight="SemiBold"/>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Text="{Binding SelectionLibelle}" FontSize="12" FontWeight="SemiBold" Foreground="#1E395B" TextWrapping="Wrap"/>
+
+            <Border IsVisible="{Binding ModeCreation}" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="0,6,0,0">
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="groupheader" Text="Nouvelle identité (contrôle des doublons par le serveur)"/>
+                    <WrapPanel>
+                        <TextBox Text="{Binding Nom}" Watermark="NOM" Width="150" Margin="0,0,6,4"/>
+                        <TextBox Text="{Binding Prenom}" Watermark="Prénom" Width="150" Margin="0,0,6,4"/>
+                        <TextBox Text="{Binding Naissance}" Watermark="Né(e) le jj/mm/aaaa" Width="130" Margin="0,0,6,4"/>
+                        <TextBox Text="{Binding Lieu}" Watermark="Lieu de naissance" Width="160" Margin="0,0,6,4"/>
+                        <ComboBox ItemsSource="{Binding Sexes}" SelectedItem="{Binding Sexe}" PlaceholderText="Sexe" Width="80" Margin="0,0,6,4"/>
+                        <TextBox Text="{Binding Nationalite}" Watermark="Nationalité" Width="120" Margin="0,0,6,4"/>
+                        <Button Classes="default" Content="Créer la fiche" Command="{Binding CreerCommand}" Margin="0,0,0,4"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+        </StackPanel>
+    </Border>
+</UserControl>

@@ -1,0 +1,216 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.ActeEditeurView">
+    <!-- Éditeur d'acte LRPPN (14.4, 15). DataContext : ActeEditeurViewModel. -->
+    <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,*">
+            <Button Classes="small" Content="← Dossier" Command="{Binding RetourCommand}"/>
+            <TextBlock Grid.Column="1" Classes="instruction" Text="{Binding Entete}" Margin="10,0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+        </Grid>
+        <TextBlock Text="{Binding Etat}" FontSize="11.5" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+        <Border IsVisible="{Binding EstFige}" Background="#E7F4E4" BorderBrush="#8BC38A" BorderThickness="1" Padding="8,5">
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <PathIcon Data="{StaticResource IconLock}" Width="14" Height="14" Foreground="#2E7D32"/>
+                <TextBlock Text="{Binding Validation}" FontSize="12" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+        <Border IsVisible="{Binding AAvertissement}" Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="1" Padding="8,5">
+            <TextBlock Text="{Binding Avertissement}" FontSize="12" TextWrapping="Wrap"/>
+        </Border>
+
+        <!-- H — Validation : barre d'actions -->
+        <Border Background="{StaticResource PanelBrush}" BorderBrush="#DFDFDF" BorderThickness="1" Padding="8,6">
+            <WrapPanel>
+                <Button Content="Enregistrer brouillon" Command="{Binding EnregistrerCommand}" IsVisible="{Binding EstModifiable}" Margin="0,0,6,4"/>
+                <Button Content="Prévisualiser" Command="{Binding PrevisualiserCommand}" Margin="0,0,6,4"/>
+                <Button Content="Générer le document" Command="{Binding GenererCommand}" IsVisible="{Binding EstModifiable}" Margin="0,0,6,4"/>
+                <Button Content="Demander relecture" Command="{Binding RelectureCommand}" IsVisible="{Binding PeutRelecture}" Margin="0,0,6,4"/>
+                <Button Classes="default" Content="Valider" Command="{Binding ValiderCommand}" IsVisible="{Binding PeutValider}" Margin="0,0,6,4"/>
+                <Button Content="Exporter PDF" Command="{Binding ExporterCommand}" IsVisible="{Binding EstFige}" Margin="0,0,6,4"/>
+                <Button Content="Consulter l'historique" Command="{Binding HistoriqueCommand}" Margin="0,0,6,4"/>
+                <Button Content="Supprimer le brouillon" Command="{Binding SupprimerCommand}" IsVisible="{Binding EstBrouillon}" Margin="0,0,6,4"/>
+            </WrapPanel>
+        </Border>
+        <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding PeutCorriger}">
+            <TextBox Text="{Binding MotifCorrection}" Watermark="Corrections attendues (motif obligatoire)"/>
+            <Button Grid.Column="1" Content="Corriger (renvoyer au rédacteur)" Command="{Binding CorrigerCommand}" Margin="6,0,0,0"/>
+        </Grid>
+
+        <!-- Aperçu / texte figé -->
+        <Border IsVisible="{Binding ApercuVisible}" BorderBrush="#828790" BorderThickness="1" Background="White" Padding="12">
+            <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="groupheader" Text="Document (aperçu ou texte figé)"/>
+                    <Button Grid.Column="1" Classes="link" Content="Masquer" Command="{Binding FermerApercuCommand}"/>
+                </Grid>
+                <TextBlock Text="{Binding Apercu}" FontFamily="Consolas, Menlo, DejaVu Sans Mono, monospace" FontSize="11.5" TextWrapping="Wrap"/>
+            </StackPanel>
+        </Border>
+
+        <!-- Historique de l'acte -->
+        <Border IsVisible="{Binding HistoriqueVisible}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="8">
+            <StackPanel Spacing="6">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBlock Classes="groupheader" Text="Historique de l'acte (versions, relectures, validation)"/>
+                    <Button Grid.Column="1" Classes="link" Content="Masquer" Command="{Binding FermerHistoriqueCommand}"/>
+                </Grid>
+                <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="150">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                        <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="140"/>
+                        <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                        <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="200"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </StackPanel>
+        </Border>
+
+        <StackPanel Orientation="Horizontal" Spacing="8">
+            <TextBlock Classes="label" Text="Titre :" VerticalAlignment="Center"/>
+            <TextBox Text="{Binding TitreActe}" Width="420" IsReadOnly="{Binding EstFige}"/>
+        </StackPanel>
+
+        <!-- Sections du formulaire -->
+        <ItemsControl ItemsSource="{Binding Sections}">
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border BorderBrush="#C8D5E7" BorderThickness="1" Margin="0,0,0,8">
+                        <StackPanel>
+                            <Border Background="{StaticResource HeaderBrush}" Padding="8,4">
+                                <TextBlock Text="{Binding Titre}" FontSize="12.5" FontWeight="SemiBold" Foreground="#1E395B"/>
+                            </Border>
+                            <StackPanel Margin="10,8" Spacing="6">
+                                <!-- Personne (14.2) -->
+                                <StackPanel IsVisible="{Binding EstPersonne}" Spacing="6">
+                                    <TextBlock Classes="label" Text="{Binding $parent[UserControl].DataContext.LibellePersonne}" FontWeight="SemiBold"/>
+                                    <j:PersonnePickerView DataContext="{Binding $parent[UserControl].DataContext.PickerPersonne}"
+                                                          IsEnabled="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                    <Border IsVisible="{Binding $parent[UserControl].DataContext.ADossiersPersonne}" Background="#F7FAFD" BorderBrush="#DFDFDF" BorderThickness="1" Padding="8">
+                                        <StackPanel Spacing="4">
+                                            <TextBlock Classes="groupheader" Text="Dossiers associés (14.3) — l'identité doit être vérifiée par le rédacteur"/>
+                                            <TextBlock Text="{Binding $parent[UserControl].DataContext.DossiersPersonne}" FontSize="11.5" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </Border>
+                                </StackPanel>
+                                <!-- Mis en cause (plainte) -->
+                                <StackPanel IsVisible="{Binding EstMisEnCause}" Spacing="6">
+                                    <TextBlock Classes="label" Text="{Binding $parent[UserControl].DataContext.LibelleMisEnCause}" FontWeight="SemiBold"/>
+                                    <j:PersonnePickerView DataContext="{Binding $parent[UserControl].DataContext.PickerMisEnCause}"
+                                                          IsEnabled="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                </StackPanel>
+                                <!-- Agents (référentiel RH) -->
+                                <StackPanel IsVisible="{Binding EstAgents}" Spacing="6">
+                                    <TextBlock Classes="label" Text="Agents (NOM, RIO, grade et service issus du référentiel RH, figés à la validation)" FontWeight="SemiBold"/>
+                                    <ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Agents}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <WrapPanel Margin="0,0,0,2">
+                                                    <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.RolesAgents}" SelectedItem="{Binding Role}" Width="160" Margin="0,0,4,4"
+                                                              IsEnabled="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                                    <TextBox Text="{Binding Libelle}" Width="190" Margin="0,0,4,4" IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                    <TextBox Text="{Binding Rio}" Watermark="RIO" Width="90" Margin="0,0,4,4" IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                    <TextBox Text="{Binding Grade}" Watermark="Grade" Width="130" Margin="0,0,4,4" IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                    <TextBox Text="{Binding Service}" Watermark="Service" Width="170" Margin="0,0,4,4" IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                    <Button Classes="small" Content="Retirer" Margin="0,0,0,4"
+                                                            Command="{Binding $parent[UserControl].DataContext.RetirerAgentCommand}" CommandParameter="{Binding}"
+                                                            IsVisible="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                                </WrapPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <WrapPanel IsVisible="{Binding $parent[UserControl].DataContext.EstModifiable}">
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.AgentsDisponibles}"
+                                                  SelectedItem="{Binding $parent[UserControl].DataContext.AgentAAjouter}" PlaceholderText="Agent du référentiel RH" Width="260" Margin="0,0,4,4">
+                                            <ComboBox.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock Text="{Binding Libelle}"/>
+                                                </DataTemplate>
+                                            </ComboBox.ItemTemplate>
+                                        </ComboBox>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.RolesAgents}"
+                                                  SelectedItem="{Binding $parent[UserControl].DataContext.RoleAAjouter}" Width="160" Margin="0,0,4,4"/>
+                                        <Button Classes="small" Content="Ajouter l'agent" Command="{Binding $parent[UserControl].DataContext.AjouterAgentCommand}" Margin="0,0,4,4"/>
+                                        <Button Classes="small" Content="Intervenant hors référentiel" Command="{Binding $parent[UserControl].DataContext.AjouterAgentLibreCommand}" Margin="0,0,0,4"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                                <!-- Champs -->
+                                <ItemsControl ItemsSource="{Binding Champs}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="200,*" Margin="0,0,0,4">
+                                                <TextBlock Classes="label" Text="{Binding Libelle}" TextWrapping="Wrap" VerticalAlignment="Top" Margin="0,4,8,0"/>
+                                                <Panel Grid.Column="1">
+                                                    <TextBox IsVisible="{Binding EstTexte}" Text="{Binding Valeur}" Watermark="{Binding Indice}" MaxWidth="520" HorizontalAlignment="Left" MinWidth="220"
+                                                             IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                    <TextBox IsVisible="{Binding EstLong}" Text="{Binding Valeur}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="54"
+                                                             IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                    <ComboBox IsVisible="{Binding EstChoix}" ItemsSource="{Binding Choix}" SelectedItem="{Binding Valeur}" MinWidth="220"
+                                                              IsEnabled="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                                </Panel>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <!-- Questions / réponses (audition) -->
+                                <StackPanel IsVisible="{Binding EstQuestions}" Spacing="6">
+                                    <ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Questions}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Border BorderBrush="#DFDFDF" BorderThickness="0,0,0,1" Padding="0,4">
+                                                    <Grid ColumnDefinitions="*,Auto" RowDefinitions="Auto,Auto">
+                                                        <TextBox Text="{Binding Question}" Watermark="Question" TextWrapping="Wrap" AcceptsReturn="True"
+                                                                 IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                        <TextBox Grid.Row="1" Text="{Binding Reponse}" Watermark="Réponse" TextWrapping="Wrap" AcceptsReturn="True" MinHeight="44" Margin="0,4,0,0"
+                                                                 IsReadOnly="{Binding $parent[UserControl].DataContext.EstFige}"/>
+                                                        <Button Grid.Column="1" Classes="small" Content="Retirer" Margin="6,0,0,0" VerticalAlignment="Top"
+                                                                Command="{Binding $parent[UserControl].DataContext.RetirerQuestionCommand}" CommandParameter="{Binding}"
+                                                                IsVisible="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                                    </Grid>
+                                                </Border>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                    <Button Classes="small" Content="Ajouter une question" Command="{Binding $parent[UserControl].DataContext.AjouterQuestionCommand}"
+                                            IsVisible="{Binding $parent[UserControl].DataContext.EstModifiable}" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                                <!-- Pièces jointes -->
+                                <StackPanel IsVisible="{Binding EstPieces}" Spacing="4">
+                                    <TextBlock Classes="label" Text="Pièces et scellés de la procédure joints à l'acte" FontWeight="SemiBold"/>
+                                    <ItemsControl ItemsSource="{Binding $parent[UserControl].DataContext.Pieces}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <CheckBox IsChecked="{Binding Coche}" Content="{Binding Libelle}"
+                                                          IsEnabled="{Binding $parent[UserControl].DataContext.EstModifiable}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+
+        <!-- Mentions (acte validé) -->
+        <StackPanel IsVisible="{Binding EstFige}" Spacing="6">
+            <TextBlock Classes="groupheader" Text="Mentions ajoutées après validation"/>
+            <ItemsControl ItemsSource="{Binding Mentions}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock FontSize="12" TextWrapping="Wrap" Margin="0,2">
+                            <Run Text="{Binding Auteur, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text="{Binding Texte, Mode=OneWay, StringFormat=' : {0}'}"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding PeutMention}">
+                <TextBox Text="{Binding NouvelleMention}" Watermark="Nouvelle mention (l'acte lui-même reste inchangé)"/>
+                <Button Grid.Column="1" Content="Ajouter la mention" Command="{Binding MentionCommand}" Margin="6,0,0,0"/>
+            </Grid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

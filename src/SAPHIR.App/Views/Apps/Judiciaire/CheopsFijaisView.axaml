@@ -1,0 +1,63 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsFijaisView">
+    <!-- FIJAISV / FIJAIT (12.9). DataContext : FijaisViewModel. -->
+    <StackPanel Spacing="8">
+        <TextBlock Classes="instruction" Text="{Binding Titre}"/>
+        <Border Background="#FDECEA" BorderBrush="#C62828" BorderThickness="1" Padding="8,5">
+            <TextBlock FontSize="12" TextWrapping="Wrap" Foreground="#8E0000"
+                       Text="Recherche habilitée : chaque consultation est journalisée. Aucune inscription automatique depuis une interpellation : seules les décisions judiciaires fictives sont inscrites."/>
+        </Border>
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="NOM, prénom, PER-… ou FIJ-…" Width="260" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Content="Inscrire une décision" Command="{Binding BasculerInscriptionCommand}" IsVisible="{Binding PeutInscrire}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <Border IsVisible="{Binding ModeInscription}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <j:PersonnePickerView DataContext="{Binding Picker}"/>
+                <WrapPanel>
+                    <TextBox Text="{Binding DecisionRef}" Watermark="Référence de la décision" Width="180" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Juridiction}" Watermark="Juridiction" Width="220" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Infraction}" Watermark="Infraction" Width="220" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding DecisionLe}" Watermark="Décision le jj/mm/aaaa" Width="150" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding FinInscription}" Watermark="Fin d'inscription" Width="130" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding ServiceGestionnaire}" Watermark="Service gestionnaire" Width="200" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <TextBox Text="{Binding Obligations}" Watermark="Obligations" AcceptsReturn="True" TextWrapping="Wrap"/>
+                <TextBox Text="{Binding Restrictions}" Watermark="Restrictions de consultation" AcceptsReturn="True" TextWrapping="Wrap"/>
+                <Button Classes="default" Content="Inscrire" Command="{Binding InscrireCommand}" HorizontalAlignment="Right"/>
+            </StackPanel>
+        </Border>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="150">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                <DataGridTextColumn Header="Identité" Binding="{Binding Identite}" Width="*"/>
+                <DataGridTextColumn Header="Décision" Binding="{Binding Decision}" Width="160"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="150"/>
+                <DataGridTextColumn Header="Fin" Binding="{Binding Fin}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel IsVisible="{Binding ADetail}" Spacing="6">
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                <TextBlock Text="{Binding DetailTexte}" FontSize="12" TextWrapping="Wrap"/>
+            </Border>
+            <WrapPanel IsVisible="{Binding PeutInscrire}">
+                <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding NouveauStatut}" PlaceholderText="Nouveau statut" Width="200" Margin="0,0,6,6"/>
+                <TextBox Text="{Binding Motif}" Watermark="Motif (obligatoire)" Width="260" Margin="0,0,6,6"/>
+                <Button Content="Changer le statut" Command="{Binding ChangerStatutCommand}" Margin="0,0,0,6"/>
+            </WrapPanel>
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="110">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -10,10 +10,10 @@ public static class AppCatalog
 {
     public static readonly IReadOnlyList<AppDefinition> All =
     [
-        new(SaphirApps.Cheops, "CHEOPS", "Fichiers de police", "Icons/cheops.png", true, 6),
+        new(SaphirApps.Cheops, "CHEOPS", "Fichiers de police", "Icons/cheops.png", true, null),
         new(SaphirApps.Pegase, "PÉGASE", "Appels et interventions (CIC)", "Icons/pegase.png", true, 5),
         new(SaphirApps.MainCourante, "MAIN COURANTE", "Vacations, équipages, mentions", "Icons/main-courante.png", true, 4),
-        new(SaphirApps.Lrppn, "LRPPN", "Procédures et procès-verbaux", "Icons/lrppn.png", true, 7),
+        new(SaphirApps.Lrppn, "LRPPN", "Procédures et procès-verbaux", "Icons/lrppn.png", true, null),
         new(SaphirApps.Rh, "RESSOURCES HUMAINES", "Personnel, carrières, documents", "Icons/rh.png", true, null),
 
         new(SaphirApps.Neo, "NEO", "Terminal mobile", "Icons/neo.png", false, null),

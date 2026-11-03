@@ -1,0 +1,80 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsTajView">
+    <!-- TAJ (12.1). DataContext : TajViewModel. -->
+    <StackPanel Spacing="8">
+        <Border Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="1" Padding="8,5">
+            <TextBlock FontSize="12" TextWrapping="Wrap" Text="Une présence au TAJ ne doit pas être assimilée à une condamnation. Consultation journalisée."/>
+        </Border>
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="NOM, prénom, alias ou PER-…" Width="220" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Naissance}" Watermark="Né(e) le jj/mm/aaaa" Width="130" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Reference}" Watermark="Référence TAJ" Width="120" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Procedure}" Watermark="N° de procédure" Width="130" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="150">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                <DataGridTextColumn Header="Identité" Binding="{Binding Identite}" Width="*"/>
+                <DataGridTextColumn Header="Faits" Binding="{Binding Faits}" Width="60"/>
+                <DataGridTextColumn Header="Dernier fait" Binding="{Binding Dernier}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel IsVisible="{Binding AFiche}" Spacing="6">
+            <TextBlock Classes="instruction" Text="{Binding Fiche.Personne.Libelle}"/>
+            <TextBlock FontSize="12" TextWrapping="Wrap">
+                <Run Text="{Binding Fiche.Personne.Reference, Mode=OneWay}" FontWeight="SemiBold"/>
+                <Run Text="{Binding Fiche.Personne.Adresse, Mode=OneWay, StringFormat='   Adresse : {0}'}"/>
+            </TextBlock>
+            <TextBlock FontSize="12" Text="{Binding Fiche.Personne.Signalement, StringFormat='Signalement : {0}'}" TextWrapping="Wrap"/>
+            <TextBlock Classes="groupheader" Text="Faits associés"/>
+            <DataGrid ItemsSource="{Binding Faits}" SelectedItem="{Binding FaitSelection}" AutoGenerateColumns="False" Height="170">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Réf." Binding="{Binding Reference}" Width="95"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                    <DataGridTextColumn Header="Qualité" Binding="{Binding Qualite}" Width="95"/>
+                    <DataGridTextColumn Header="Faits" Binding="{Binding Faits}" Width="*"/>
+                    <DataGridTextColumn Header="Procédure" Binding="{Binding Procedure}" Width="95"/>
+                    <DataGridTextColumn Header="Service d'origine" Binding="{Binding Service}" Width="150"/>
+                    <DataGridTextColumn Header="Suite" Binding="{Binding Suite}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Grid ColumnDefinitions="*,*,Auto" IsVisible="{Binding PeutInscrire}">
+                <TextBox Text="{Binding NouvelleSuite}" Watermark="Suite autorisée du fait sélectionné"/>
+                <TextBox Grid.Column="1" Text="{Binding MotifSuite}" Watermark="Motif" Margin="6,0,0,0"/>
+                <Button Grid.Column="2" Content="Enregistrer la suite" Command="{Binding ModifierSuiteCommand}" Margin="6,0,0,0"/>
+            </Grid>
+
+            <Border IsVisible="{Binding PeutInscrire}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+                <StackPanel Spacing="4">
+                    <TextBlock Classes="groupheader" Text="Inscription manuelle (OPJ) — les validations LRPPN inscrivent automatiquement le mis en cause"/>
+                    <WrapPanel>
+                        <ComboBox ItemsSource="{Binding Qualites}" SelectedItem="{Binding QualiteSaisie}" Width="130" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding FaitsSaisie}" Watermark="Faits" Width="260" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding Natinf}" Watermark="NATINF" Width="80" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding FaitsLe}" Watermark="jj/mm/aaaa hh:mm" Width="130" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding Lieu}" Watermark="Lieu" Width="200" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding Service}" Watermark="Service" Width="160" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding ProcedureNumero}" Watermark="N° procédure" Width="110" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding Suite}" Watermark="Suite" Width="160" Margin="0,0,6,6"/>
+                        <Button Content="Inscrire" Command="{Binding AjouterCommand}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                </StackPanel>
+            </Border>
+
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="120">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

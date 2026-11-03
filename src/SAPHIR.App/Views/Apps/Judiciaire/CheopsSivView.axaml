@@ -1,0 +1,88 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsSivView">
+    <!-- SIV (12.4). DataContext : SivViewModel. -->
+    <StackPanel Spacing="8">
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="Plaque ou VIN" Width="220" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Content="Nouveau véhicule" Command="{Binding NouveauCommand}" IsVisible="{Binding PeutEcrire}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="140">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="120"/>
+                <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="*"/>
+                <DataGridTextColumn Header="Couleur" Binding="{Binding Couleur}" Width="80"/>
+                <DataGridTextColumn Header="Titulaire" Binding="{Binding Titulaire}" Width="170"/>
+                <DataGridTextColumn Header="Alertes" Binding="{Binding Alertes}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Border IsVisible="{Binding ModeEdition}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="{Binding TitreEdition}"/>
+                <WrapPanel>
+                    <TextBox Text="{Binding Immat}" Watermark="Immatriculation" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Vin}" Watermark="VIN" Width="180" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Marque}" Watermark="Marque" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Modele}" Watermark="Modèle" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Version}" Watermark="Version" Width="150" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Categorie}" PlaceholderText="Catégorie" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Couleur}" Watermark="Couleur" Width="100" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Mec}" Watermark="1re mise en circulation" Width="160" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Situations}" SelectedItem="{Binding Situation}" Width="170" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <TextBlock Classes="label" Text="Titulaire administratif (identité SAPHIR ou texte libre)"/>
+                <j:PersonnePickerView DataContext="{Binding Titulaire}"/>
+                <WrapPanel>
+                    <TextBox Text="{Binding TitulaireLibre}" Watermark="Titulaire (société, texte libre)" Width="240" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Adresse}" Watermark="Adresse" Width="300" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Motif}" Watermark="Motif (historique)" Width="200" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button Content="Annuler" Command="{Binding AnnulerCommand}"/>
+                    <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+
+        <StackPanel IsVisible="{Binding AFiche}" Spacing="6">
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding FicheTexte}" FontSize="12" TextWrapping="Wrap"/>
+                    <Button Classes="small" Content="Modifier le véhicule" Command="{Binding ModifierCommand}" IsVisible="{Binding PeutEcrire}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+            <TextBlock Classes="groupheader" Text="Assurances (FVA)"/>
+            <DataGrid ItemsSource="{Binding Assurances}" AutoGenerateColumns="False" Height="90">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Assureur" Binding="{Binding Assureur}" Width="*"/>
+                    <DataGridTextColumn Header="Contrat" Binding="{Binding Contrat}" Width="130"/>
+                    <DataGridTextColumn Header="Couverture" Binding="{Binding Periode}" Width="180"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                    <DataGridTextColumn Header="Situation" Binding="{Binding Couverture}" Width="90"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Classes="groupheader" Text="Signalements (FOVeS)"/>
+            <DataGrid ItemsSource="{Binding Signalements}" AutoGenerateColumns="False" Height="80">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                    <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="*"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="130"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="110">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsFprView">
+    <!-- FPR (12.2). DataContext : FprViewModel. -->
+    <StackPanel Spacing="8">
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="NOM, prénom, PER-… ou FPR-…" Width="240" Margin="0,0,6,6"/>
+            <ComboBox ItemsSource="{Binding Filtres}" SelectedItem="{Binding StatutFiltre}" Width="130" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Content="Inscrire une fiche" Command="{Binding BasculerInscriptionCommand}" IsVisible="{Binding PeutInscrire}" Margin="0,0,0,6"/>
+        </WrapPanel>
+
+        <Border IsVisible="{Binding ModeInscription}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Nouvelle fiche FPR"/>
+                <j:PersonnePickerView DataContext="{Binding Picker}"/>
+                <WrapPanel>
+                    <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Categorie}" PlaceholderText="Catégorie de recherche" Width="290" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Motif}" Watermark="Motif" Width="260" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Procedure}" Watermark="N° procédure" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Service}" Watermark="Service" Width="170" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Reexamen}" Watermark="Réexamen le jj/mm/aaaa" Width="160" Margin="0,0,6,6"/>
+                    <CheckBox Content="Dangereux" IsChecked="{Binding Dangereux}" Margin="0,0,10,6"/>
+                    <CheckBox Content="Susceptible d'être armé" IsChecked="{Binding Arme}" Margin="0,0,10,6"/>
+                </WrapPanel>
+                <TextBox Text="{Binding Conduite}" Watermark="Conduite à tenir" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                <TextBox Text="{Binding Informations}" Watermark="Informations autorisées" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                <Button Classes="default" Content="Inscrire au FPR" Command="{Binding InscrireCommand}" HorizontalAlignment="Right"/>
+            </StackPanel>
+        </Border>
+
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="180">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="N° fiche" Binding="{Binding Numero}" Width="100"/>
+                <DataGridTextColumn Header="Identité" Binding="{Binding Identite}" Width="*"/>
+                <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="170"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="170"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                <DataGridTextColumn Header="Créée" Binding="{Binding Creee}" Width="85"/>
+                <DataGridTextColumn Header="Réexamen" Binding="{Binding Reexamen}" Width="85"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel IsVisible="{Binding ADetail}" Spacing="6">
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding DetailTexte}" FontSize="12" TextWrapping="Wrap"/>
+                    <Border Background="#FDECEA" BorderBrush="#C62828" BorderThickness="1" Padding="8,5">
+                        <TextBlock Text="{Binding ConduiteATenir, StringFormat='Conduite à tenir : {0}'}" FontSize="12.5" FontWeight="SemiBold" Foreground="#8E0000" TextWrapping="Wrap"/>
+                    </Border>
+                </StackPanel>
+            </Border>
+            <Grid ColumnDefinitions="Auto,*,Auto" IsVisible="{Binding PeutInscrire}">
+                <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding NouveauStatut}" PlaceholderText="Nouveau statut" Width="150"/>
+                <TextBox Grid.Column="1" Text="{Binding MotifStatut}" Watermark="Motif (obligatoire pour suspendre ou lever)" Margin="6,0,0,0"/>
+                <Button Grid.Column="2" Content="Changer le statut" Command="{Binding ChangerStatutCommand}" Margin="6,0,0,0"/>
+            </Grid>
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="120">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="100"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

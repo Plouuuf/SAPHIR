@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsAnadocView">
+    <!-- ANADOC (12.10) : actes LRPPN validés et pièces indexés. DataContext : AnadocViewModel. -->
+    <StackPanel Spacing="8">
+        <TextBlock Classes="muted" Text="Recherche documentaire dans les actes LRPPN validés et les pièces des procédures. Consultations journalisées."/>
+        <WrapPanel>
+            <TextBox Text="{Binding Procedure}" Watermark="N° de procédure" Width="140" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Pv}" Watermark="N° de PV" Width="150" Margin="0,0,6,6"/>
+            <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" PlaceholderText="Type d'acte" Width="230" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Du}" Watermark="Du jj/mm/aaaa" Width="110" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Au}" Watermark="Au jj/mm/aaaa" Width="110" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Service}" Watermark="Service" Width="150" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Redacteur}" Watermark="Agent rédacteur" Width="150" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding Personne}" Watermark="Personne liée (NOM ou identifiant)" Width="210" Margin="0,0,6,6"/>
+            <TextBox Text="{Binding MotsCles}" Watermark="Mots-clés" Width="200" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="200">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                <DataGridTextColumn Header="Procédure" Binding="{Binding Procedure}" Width="100"/>
+                <DataGridTextColumn Header="N°" Binding="{Binding Numero}" Width="140"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="170"/>
+                <DataGridTextColumn Header="Rédacteur" Binding="{Binding Redacteur}" Width="140"/>
+                <DataGridTextColumn Header="Extrait" Binding="{Binding Extrait}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel IsVisible="{Binding ADocument}" Spacing="6">
+            <Button Content="Enregistrer le PDF / la pièce" Command="{Binding ExporterCommand}" IsVisible="{Binding PeutExporter}" HorizontalAlignment="Left"/>
+            <Border BorderBrush="#828790" BorderThickness="1" Background="White" Padding="12">
+                <TextBlock Text="{Binding Texte}" FontFamily="Consolas, Menlo, DejaVu Sans Mono, monospace" FontSize="11.5" TextWrapping="Wrap"/>
+            </Border>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

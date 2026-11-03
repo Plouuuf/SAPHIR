@@ -1,0 +1,260 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsView">
+    <!-- CHEOPS : portail des fichiers fictifs. DataContext : CheopsViewModel. -->
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*">
+            <controls:MessageBar/>
+
+            <!-- Bandeau rouge FPR / FOVeS, visible quel que soit le fichier consulté -->
+            <Border Grid.Row="1" IsVisible="{Binding ABandeaux}" Background="#C62828" BorderBrush="#8E0000" BorderThickness="0,0,0,2" Padding="10,6">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <PathIcon Data="{StaticResource IconWarning}" Width="18" Height="18" Foreground="White" VerticalAlignment="Top" Margin="0,2,10,0"/>
+                    <ItemsControl Grid.Column="1" ItemsSource="{Binding Bandeaux}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,1">
+                                    <TextBlock Text="{Binding Titre}" Foreground="White" FontWeight="Bold" FontSize="12.5" TextWrapping="Wrap"/>
+                                    <TextBlock Foreground="White" FontSize="12" TextWrapping="Wrap">
+                                        <Run Text="{Binding Reference, Mode=OneWay}" FontWeight="SemiBold"/>
+                                        <Run Text="{Binding ConduiteATenir, Mode=OneWay, StringFormat=' — Conduite à tenir : {0}'}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Grid.Column="2" Classes="link" Content="Masquer" Foreground="White" Command="{Binding FermerBandeauxCommand}" VerticalAlignment="Top"/>
+                </Grid>
+            </Border>
+
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                <!-- Menu latéral -->
+                <Border Width="200" IsVisible="{Binding MenuOuvert}" Background="#EEF3FA" BorderBrush="#C8D5E7" BorderThickness="0,0,1,0">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Classes="groupheader" Text="CHEOPS — fichiers" Margin="12,10,8,6"/>
+                        <ListBox Grid.Row="1" ItemsSource="{Binding Menu}" SelectedItem="{Binding MenuSelection}" Background="Transparent" BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="2,1">
+                                        <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="#0B3D91"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                    <Border Background="{StaticResource HeaderBrush}" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" Padding="6,4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Classes="small" Command="{Binding BasculerMenuCommand}" ToolTip.Tip="Afficher ou masquer le menu">
+                                <PathIcon Data="{StaticResource IconMenu}" Width="14" Height="14"/>
+                            </Button>
+                            <TextBlock Classes="instruction" Text="{Binding TitreSection}" VerticalAlignment="Center" FontSize="14" TextTrimming="CharacterEllipsis"/>
+                        </StackPanel>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                        <Panel Margin="12,10">
+                            <!-- Portail (11.1) -->
+                            <StackPanel IsVisible="{Binding IsPortail}" Spacing="10">
+                                <TextBlock Classes="instruction" Text="Applications accessibles"/>
+                                <TextBlock Classes="muted" Text="Fichiers de police fictifs (simulation VDMS). Seuls les fichiers autorisés par tes habilitations sont proposés ; chaque consultation sensible est journalisée."/>
+                                <TextBlock Classes="muted" Text="Aucun fichier n'est accessible avec tes habilitations." IsVisible="{Binding AucunFichier}"/>
+                                <Button Classes="link" Content="→ Recherche générale (personnes, véhicules, numéros de dossier)"
+                                        Command="{Binding OuvrirCommand}" CommandParameter="recherche"/>
+                                <ItemsControl ItemsSource="{Binding Tuiles}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Width="210" Height="78" Margin="0,0,10,10" HorizontalContentAlignment="Left" VerticalContentAlignment="Top"
+                                                    Command="{Binding $parent[UserControl].DataContext.OuvrirCommand}" CommandParameter="{Binding Code}">
+                                                <StackPanel Spacing="3">
+                                                    <TextBlock Text="{Binding Libelle}" FontSize="15" FontWeight="SemiBold" Foreground="#0B3D91"/>
+                                                    <TextBlock Text="{Binding Description}" FontSize="11" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </Button>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+
+                            <!-- Recherche générale (11.2) -->
+                            <Panel IsVisible="{Binding IsRecherche}">
+                            <StackPanel DataContext="{Binding Recherche}" Spacing="8">
+                                <TextBlock Classes="muted" Text="Critères : NOM, prénom, alias, date et lieu de naissance, identifiant SAPHIR, numéro de dossier, immatriculation. Seules les correspondances autorisées s'affichent."/>
+                                <WrapPanel>
+                                    <TextBox Text="{Binding Nom}" Watermark="NOM" Width="150" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Prenom}" Watermark="Prénom" Width="140" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Alias}" Watermark="Alias" Width="110" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Naissance}" Watermark="Né(e) le jj/mm/aaaa" Width="130" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Lieu}" Watermark="Lieu de naissance" Width="140" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Identifiant}" Watermark="Identifiant SAPHIR (PER-…)" Width="170" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Dossier}" Watermark="N° de dossier / procédure" Width="170" Margin="0,0,6,6"/>
+                                    <TextBox Text="{Binding Immatriculation}" Watermark="Immatriculation" Width="130" Margin="0,0,6,6" IsVisible="{Binding PeutVehicules}"/>
+                                </WrapPanel>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}"/>
+                                    <Button Content="Effacer" Command="{Binding EffacerCommand}"/>
+                                    <Button Content="Nouvelle identité" Command="{Binding NouvelleIdentiteCommand}"/>
+                                    <TextBlock Classes="muted" Text="{Binding Resultat}" VerticalAlignment="Center"/>
+                                </StackPanel>
+
+                                <TextBlock Classes="groupheader" Text="Personnes"/>
+                                <DataGrid ItemsSource="{Binding Personnes}" SelectedItem="{Binding PersonneSelection}" AutoGenerateColumns="False" Height="170">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                                        <DataGridTextColumn Header="NOM" Binding="{Binding Nom}" Width="130"/>
+                                        <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="120"/>
+                                        <DataGridTextColumn Header="Naissance" Binding="{Binding Naissance}" Width="95"/>
+                                        <DataGridTextColumn Header="Lieu" Binding="{Binding Lieu}" Width="*"/>
+                                        <DataGridTextColumn Header="Alertes" Binding="{Binding Alertes}" Width="130"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <StackPanel IsVisible="{Binding PeutVehicules}" Spacing="6">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Classes="groupheader" Text="Véhicules" VerticalAlignment="Center"/>
+                                        <Button Grid.Column="1" Classes="small" Content="Ouvrir au SIV" Command="{Binding OuvrirVehiculeCommand}"/>
+                                    </Grid>
+                                    <DataGrid ItemsSource="{Binding Vehicules}" SelectedItem="{Binding VehiculeSelection}" AutoGenerateColumns="False" Height="110">
+                                        <DataGrid.Columns>
+                                            <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="120"/>
+                                            <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="*"/>
+                                            <DataGridTextColumn Header="Couleur" Binding="{Binding Couleur}" Width="80"/>
+                                            <DataGridTextColumn Header="Titulaire" Binding="{Binding Titulaire}" Width="160"/>
+                                            <DataGridTextColumn Header="Alertes" Binding="{Binding Alertes}" Width="120"/>
+                                        </DataGrid.Columns>
+                                    </DataGrid>
+                                </StackPanel>
+
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="groupheader" Text="Numéros de dossier" VerticalAlignment="Center"/>
+                                    <Button Grid.Column="1" Classes="small" Content="Ouvrir la fiche" Command="{Binding OuvrirDossierCommand}"/>
+                                </Grid>
+                                <DataGrid ItemsSource="{Binding Dossiers}" SelectedItem="{Binding DossierSelection}" AutoGenerateColumns="False" Height="110">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Fichier" Binding="{Binding Fichier}" Width="80"/>
+                                        <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="120"/>
+                                        <DataGridTextColumn Header="Correspondance" Binding="{Binding Libelle}" Width="*"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+
+                                <!-- Fiche d'identité -->
+                                <Border IsVisible="{Binding AFiche}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="12">
+                                    <StackPanel Spacing="4">
+                                        <TextBlock Classes="instruction" Text="{Binding Fiche.Libelle}"/>
+                                        <TextBlock FontSize="12" TextWrapping="Wrap">
+                                            <Run Text="{Binding Fiche.Reference, Mode=OneWay, StringFormat='Identifiant SAPHIR : {0}'}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Fiche.Source, Mode=OneWay, StringFormat='   Source : {0}'}"/>
+                                            <Run Text="{Binding Fiche.Sexe, Mode=OneWay, StringFormat='   Sexe : {0}'}"/>
+                                            <Run Text="{Binding Fiche.Nationalite, Mode=OneWay, StringFormat='   Nationalité : {0}'}"/>
+                                        </TextBlock>
+                                        <TextBlock FontSize="12" Text="{Binding Fiche.Adresse, StringFormat='Adresse : {0}'}" TextWrapping="Wrap"/>
+                                        <TextBlock FontSize="12" Text="{Binding Fiche.Telephone, StringFormat='Téléphone : {0}'}"/>
+                                        <TextBlock FontSize="12" Text="{Binding Fiche.Signalement, StringFormat='Signalement : {0}'}" TextWrapping="Wrap"/>
+                                        <ItemsControl ItemsSource="{Binding Fiche.Alias}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock FontSize="12" Text="{Binding Alias, StringFormat='Alias : {0}'}"/>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <ItemsControl ItemsSource="{Binding Fiche.Documents}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                                                        <Run Text="{Binding Type, Mode=OneWay}"/>
+                                                        <Run Text="{Binding Numero, Mode=OneWay, StringFormat='n° {0}'}" FontWeight="SemiBold"/>
+                                                        <Run Text="{Binding Autorite, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                                    </TextBlock>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <ItemsControl ItemsSource="{Binding Fiche.Alertes}">
+                                            <ItemsControl.ItemsPanel>
+                                                <ItemsPanelTemplate>
+                                                    <StackPanel Orientation="Horizontal" Spacing="4"/>
+                                                </ItemsPanelTemplate>
+                                            </ItemsControl.ItemsPanel>
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Border Background="#C62828" CornerRadius="2" Padding="6,1">
+                                                        <TextBlock Text="{Binding}" Foreground="White" FontSize="11" FontWeight="SemiBold"/>
+                                                    </Border>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                        <WrapPanel Margin="0,4,0,0">
+                                            <Button Classes="small" Content="Consulter au TAJ" Command="{Binding OuvrirFichierCommand}" CommandParameter="TAJ" IsVisible="{Binding PeutTaj}" Margin="0,0,6,4"/>
+                                            <Button Classes="small" Content="Consulter au FPR" Command="{Binding OuvrirFichierCommand}" CommandParameter="FPR" IsVisible="{Binding PeutFpr}" Margin="0,0,6,4"/>
+                                            <Button Classes="small" Content="Permis (SNPC)" Command="{Binding OuvrirFichierCommand}" CommandParameter="SNPC" IsVisible="{Binding PeutSnpc}" Margin="0,0,6,4"/>
+                                            <Button Classes="small" Content="FIJAISV" Command="{Binding OuvrirFichierCommand}" CommandParameter="FIJAISV" IsVisible="{Binding PeutFijais}" Margin="0,0,6,4"/>
+                                            <Button Classes="small" Content="FIJAIT" Command="{Binding OuvrirFichierCommand}" CommandParameter="FIJAIT" IsVisible="{Binding PeutFijais}" Margin="0,0,6,4"/>
+                                        </WrapPanel>
+                                    </StackPanel>
+                                </Border>
+
+                                <!-- Création / modification d'identité (historisée) -->
+                                <Border IsVisible="{Binding EditionVisible}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="12">
+                                    <StackPanel Spacing="6">
+                                        <TextBlock Classes="groupheader" Text="{Binding TitreEdition}"/>
+                                        <WrapPanel>
+                                            <TextBox Text="{Binding EditNom}" Watermark="NOM" Width="150" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditPrenom}" Watermark="Prénom" Width="150" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditNaissance}" Watermark="Né(e) le jj/mm/aaaa" Width="130" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditLieu}" Watermark="Lieu de naissance" Width="160" Margin="0,0,6,6"/>
+                                            <ComboBox ItemsSource="{Binding Sexes}" SelectedItem="{Binding EditSexe}" PlaceholderText="Sexe" Width="80" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditNationalite}" Watermark="Nationalité" Width="120" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditAdresse}" Watermark="Adresse" Width="300" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditTelephone}" Watermark="Téléphone" Width="130" Margin="0,0,6,6"/>
+                                            <TextBox Text="{Binding EditAlias}" Watermark="Alias (séparés par des virgules)" Width="220" Margin="0,0,6,6"/>
+                                        </WrapPanel>
+                                        <TextBox Text="{Binding EditSignalement}" Watermark="Signalement" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBox Text="{Binding EditMotif}" Watermark="Motif de la modification (historique)"/>
+                                            <Button Grid.Column="1" Classes="default" Content="Enregistrer l'identité" Command="{Binding EnregistrerIdentiteCommand}" Margin="8,0,0,0"/>
+                                        </Grid>
+                                        <StackPanel IsVisible="{Binding AFiche}" Spacing="4">
+                                            <TextBlock Classes="groupheader" Text="Ajouter un document d'identité fictif" Margin="0,6,0,0"/>
+                                            <WrapPanel>
+                                                <ComboBox ItemsSource="{Binding TypesDocuments}" SelectedItem="{Binding DocType}" Width="190" Margin="0,0,6,6"/>
+                                                <TextBox Text="{Binding DocNumero}" Watermark="Numéro" Width="130" Margin="0,0,6,6"/>
+                                                <TextBox Text="{Binding DocDelivre}" Watermark="Délivré le" Width="100" Margin="0,0,6,6"/>
+                                                <TextBox Text="{Binding DocExpire}" Watermark="Expire le" Width="100" Margin="0,0,6,6"/>
+                                                <TextBox Text="{Binding DocAutorite}" Watermark="Autorité" Width="170" Margin="0,0,6,6"/>
+                                                <Button Content="Ajouter" Command="{Binding AjouterDocumentCommand}" Margin="0,0,0,6"/>
+                                            </WrapPanel>
+                                        </StackPanel>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
+                            </Panel>
+
+                            <Panel IsVisible="{Binding IsTaj}"><j:CheopsTajView DataContext="{Binding Taj}"/></Panel>
+                            <Panel IsVisible="{Binding IsFpr}"><j:CheopsFprView DataContext="{Binding Fpr}"/></Panel>
+                            <Panel IsVisible="{Binding IsFoves}"><j:CheopsFovesView DataContext="{Binding Foves}"/></Panel>
+                            <Panel IsVisible="{Binding IsSiv}"><j:CheopsSivView DataContext="{Binding Siv}"/></Panel>
+                            <Panel IsVisible="{Binding IsFva}"><j:CheopsFvaView DataContext="{Binding Fva}"/></Panel>
+                            <Panel IsVisible="{Binding IsSnpc}"><j:CheopsSnpcView DataContext="{Binding Snpc}"/></Panel>
+                            <Panel IsVisible="{Binding IsFaed}"><j:CheopsScientifiqueView DataContext="{Binding Faed}"/></Panel>
+                            <Panel IsVisible="{Binding IsFnaeg}"><j:CheopsScientifiqueView DataContext="{Binding Fnaeg}"/></Panel>
+                            <Panel IsVisible="{Binding IsFijaisv}"><j:CheopsFijaisView DataContext="{Binding Fijaisv}"/></Panel>
+                            <Panel IsVisible="{Binding IsFijait}"><j:CheopsFijaisView DataContext="{Binding Fijait}"/></Panel>
+                            <Panel IsVisible="{Binding IsAnadoc}"><j:CheopsAnadocView DataContext="{Binding Anadoc}"/></Panel>
+                        </Panel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

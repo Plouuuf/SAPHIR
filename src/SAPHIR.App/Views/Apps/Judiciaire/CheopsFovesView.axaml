@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsFovesView">
+    <!-- FOVeS (12.3). DataContext : FovesViewModel. -->
+    <StackPanel Spacing="8">
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="Immatriculation, n° de série, référence, procédure" Width="280" Margin="0,0,6,6"/>
+            <ComboBox ItemsSource="{Binding Filtres}" SelectedItem="{Binding StatutFiltre}" Width="150" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Content="Nouveau signalement" Command="{Binding BasculerSignalementCommand}" IsVisible="{Binding PeutSignaler}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <Border IsVisible="{Binding ModeSignalement}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Nouveau signalement FOVeS"/>
+                <WrapPanel>
+                    <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding TypeObjet}" Width="180" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Identifiant}" Watermark="Immatriculation ou n° de série" Width="200" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Natures}" SelectedItem="{Binding Nature}" Width="170" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding SignaleLe}" Watermark="Signalé le jj/mm/aaaa hh:mm" Width="180" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Service}" Watermark="Service" Width="170" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Procedure}" Watermark="N° procédure" Width="120" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <TextBox Text="{Binding Description}" Watermark="Description" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                <TextBox Text="{Binding Conduite}" Watermark="Conduite à tenir"/>
+                <Button Classes="default" Content="Enregistrer le signalement" Command="{Binding SignalerCommand}" HorizontalAlignment="Right"/>
+            </StackPanel>
+        </Border>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="180">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                <DataGridTextColumn Header="Identifiant" Binding="{Binding Identifiant}" Width="*"/>
+                <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="130"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel IsVisible="{Binding ADetail}" Spacing="6">
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                <TextBlock Text="{Binding DetailTexte}" FontSize="12" TextWrapping="Wrap"/>
+            </Border>
+            <WrapPanel IsVisible="{Binding PeutSignaler}">
+                <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding NouveauStatut}" PlaceholderText="Nouveau statut" Width="150" Margin="0,0,6,6"/>
+                <TextBox Text="{Binding DecouvertLe}" Watermark="Découvert le jj/mm/aaaa hh:mm" Width="190" Margin="0,0,6,6"/>
+                <TextBox Text="{Binding LieuDecouverte}" Watermark="Lieu de découverte" Width="220" Margin="0,0,6,6"/>
+                <TextBox Text="{Binding Motif}" Watermark="Motif" Width="180" Margin="0,0,6,6"/>
+                <Button Content="Changer le statut" Command="{Binding ChangerStatutCommand}" Margin="0,0,0,6"/>
+            </WrapPanel>
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="110">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="100"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

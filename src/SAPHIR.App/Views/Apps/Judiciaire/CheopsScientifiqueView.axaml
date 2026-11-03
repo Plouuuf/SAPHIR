@@ -1,0 +1,69 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsScientifiqueView">
+    <!-- FAED (12.7) ou FNAEG (12.8). DataContext : ScientifiqueViewModel. -->
+    <StackPanel Spacing="8">
+        <Border Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="1" Padding="8,5">
+            <TextBlock Text="{Binding Avertissement}" FontSize="12" TextWrapping="Wrap"/>
+        </Border>
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="Référence, prélèvement, procédure, affaire, NOM" Width="300" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Content="Nouvel enregistrement" Command="{Binding BasculerCreationCommand}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <Border IsVisible="{Binding ModeCreation}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <WrapPanel>
+                    <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" Width="220" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Prelevement}" Watermark="Référence de prélèvement" Width="170" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Procedure}" Watermark="N° procédure" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding PreleveLe}" Watermark="jj/mm/aaaa hh:mm" Width="130" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <TextBox Text="{Binding Origine}" Watermark="Origine (affaire, lieu)"/>
+                <TextBlock Classes="label" Text="Personne signalisée (facultatif)"/>
+                <j:PersonnePickerView DataContext="{Binding PickerCreation}"/>
+                <TextBox Text="{Binding Rapport}" Watermark="Rapport fictif" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                <Button Classes="default" Content="Enregistrer" Command="{Binding CreerCommand}" HorizontalAlignment="Right"/>
+            </StackPanel>
+        </Border>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="170">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="110"/>
+                <DataGridTextColumn Header="Prélèvement" Binding="{Binding Prelevement}" Width="130"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="150"/>
+                <DataGridTextColumn Header="Origine" Binding="{Binding Origine}" Width="*"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                <DataGridTextColumn Header="Résultat" Binding="{Binding Resultat}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel IsVisible="{Binding ADetail}" Spacing="6">
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                <TextBlock Text="{Binding DetailTexte}" FontSize="12" TextWrapping="Wrap"/>
+            </Border>
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+                <StackPanel Spacing="6">
+                    <TextBlock Classes="groupheader" Text="Résultat de comparaison simulée"/>
+                    <WrapPanel>
+                        <ComboBox ItemsSource="{Binding Resultats}" SelectedItem="{Binding Resultat}" Width="170" Margin="0,0,6,6"/>
+                        <TextBox Text="{Binding Motif}" Watermark="Motif" Width="220" Margin="0,0,6,6"/>
+                    </WrapPanel>
+                    <TextBlock Classes="label" Text="Personne rapprochée (obligatoire pour une concordance)"/>
+                    <j:PersonnePickerView DataContext="{Binding PickerResultat}"/>
+                    <TextBox Text="{Binding RapportResultat}" Watermark="Complément de rapport" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                    <Button Classes="default" Content="Enregistrer le résultat" Command="{Binding ResultatCommand}" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </Border>
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="110">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </StackPanel>
+</UserControl>

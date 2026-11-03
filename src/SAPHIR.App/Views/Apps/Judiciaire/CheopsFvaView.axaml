@@ -1,0 +1,36 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsFvaView">
+    <!-- FVA (12.5). DataContext : FvaViewModel. -->
+    <StackPanel Spacing="8">
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="Plaque" Width="200" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Content="Marquer le contrat comme vérifié" Command="{Binding VerifierCommand}" IsEnabled="{Binding ASelection}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="180">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Plaque" Binding="{Binding Plaque}" Width="100"/>
+                <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="140"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Situation}" Width="*"/>
+                <DataGridTextColumn Header="Assureur" Binding="{Binding Assureur}" Width="170"/>
+                <DataGridTextColumn Header="Contrat" Binding="{Binding Contrat}" Width="110"/>
+                <DataGridTextColumn Header="Couverture" Binding="{Binding Couverture}" Width="170"/>
+                <DataGridTextColumn Header="Vérifié le" Binding="{Binding Verifie}" Width="115"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Border IsVisible="{Binding PeutEcrire}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="groupheader" Text="Ajouter un contrat fictif au véhicule sélectionné"/>
+                <WrapPanel>
+                    <TextBox Text="{Binding Assureur}" Watermark="Assureur fictif" Width="220" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Contrat}" Watermark="N° de contrat" Width="140" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Debut}" Watermark="Début jj/mm/aaaa" Width="120" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Fin}" Watermark="Fin jj/mm/aaaa" Width="120" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding Statut}" Width="110" Margin="0,0,6,6"/>
+                    <Button Content="Ajouter" Command="{Binding AjouterCommand}" IsEnabled="{Binding ASelection}" Margin="0,0,0,6"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

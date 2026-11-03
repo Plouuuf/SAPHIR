@@ -1,0 +1,288 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.LrppnView">
+    <!-- LRPPN : procédures judiciaires de simulation. DataContext : LrppnViewModel. -->
+    <Grid>
+        <Grid RowDefinitions="Auto,*">
+            <controls:MessageBar/>
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*">
+                <Border Width="200" IsVisible="{Binding MenuOuvert}" Background="#EEF3FA" BorderBrush="#C8D5E7" BorderThickness="0,0,1,0">
+                    <Grid RowDefinitions="Auto,*">
+                        <TextBlock Classes="groupheader" Text="LRPPN" Margin="12,10,8,6"/>
+                        <ListBox Grid.Row="1" ItemsSource="{Binding Menu}" SelectedItem="{Binding MenuSelection}" Background="Transparent" BorderThickness="0">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="2,1">
+                                        <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="#0B3D91"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+                    </Grid>
+                </Border>
+
+                <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                    <Border Background="{StaticResource HeaderBrush}" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" Padding="6,4">
+                        <StackPanel Orientation="Horizontal" Spacing="8">
+                            <Button Classes="small" Command="{Binding BasculerMenuCommand}" ToolTip.Tip="Afficher ou masquer le menu">
+                                <PathIcon Data="{StaticResource IconMenu}" Width="14" Height="14"/>
+                            </Button>
+                            <TextBlock Classes="instruction" Text="Logiciel de rédaction des procédures — simulation VDMS" VerticalAlignment="Center" FontSize="14"/>
+                        </StackPanel>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="1" HorizontalScrollBarVisibility="Disabled">
+                        <Panel Margin="12,10">
+                            <!-- Listes de procédures (mes procédures, recherche, archives) -->
+                            <StackPanel IsVisible="{Binding IsListe}" Spacing="8">
+                                <TextBlock Classes="instruction" Text="{Binding TitreListe}"/>
+                                <WrapPanel>
+                                    <TextBox Text="{Binding Q}" Watermark="N° de procédure, intitulé, commune, personne, réf. PÉGASE ou main courante" Width="380" Margin="0,0,6,6"/>
+                                    <ComboBox ItemsSource="{Binding Filtres}" SelectedItem="{Binding StatutFiltre}" Width="170" Margin="0,0,6,6"/>
+                                    <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+                                    <Button Content="Ouvrir la procédure" Command="{Binding OuvrirProcedureCommand}" Margin="0,0,0,6"/>
+                                </WrapPanel>
+                                <DataGrid ItemsSource="{Binding ProcedureLignes}" SelectedItem="{Binding ProcedureSelection}" AutoGenerateColumns="False" Height="460">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="100"/>
+                                        <DataGridTextColumn Header="Intitulé" Binding="{Binding Intitule}" Width="*"/>
+                                        <DataGridTextColumn Header="Type d'affaire" Binding="{Binding Type}" Width="150"/>
+                                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="130"/>
+                                        <DataGridTextColumn Header="Responsable" Binding="{Binding Responsable}" Width="150"/>
+                                        <DataGridTextColumn Header="Ouverte le" Binding="{Binding Ouverte}" Width="115"/>
+                                        <DataGridTextColumn Header="Actes" Binding="{Binding Actes}" Width="110"/>
+                                        <DataGridTextColumn Header="PÉGASE" Binding="{Binding Intervention}" Width="90"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+
+                            <!-- Création / modification d'une procédure (13.3) -->
+                            <Panel IsVisible="{Binding IsFormulaire}">
+                                <StackPanel DataContext="{Binding Formulaire}" Spacing="8" MaxWidth="980" HorizontalAlignment="Left">
+                                    <TextBlock Classes="instruction" Text="{Binding Titre}"/>
+                                    <Border IsVisible="{Binding AIntervention}" Background="#E8F2FC" BorderBrush="#A9C7EA" BorderThickness="1" Padding="8,5">
+                                        <Grid ColumnDefinitions="*,Auto">
+                                            <TextBlock Text="{Binding InterventionTexte}" FontSize="12" TextWrapping="Wrap"/>
+                                            <Button Grid.Column="1" Classes="link" Content="Retirer le lien" Command="{Binding RetirerInterventionCommand}" Margin="8,0,0,0"/>
+                                        </Grid>
+                                    </Border>
+                                    <TextBlock Classes="groupheader" Text="Administration"/>
+                                    <WrapPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Agent responsable (référentiel RH)"/>
+                                            <ComboBox ItemsSource="{Binding Agents}" SelectedItem="{Binding Responsable}" Width="280">
+                                                <ComboBox.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock Text="{Binding Libelle}"/>
+                                                    </DataTemplate>
+                                                </ComboBox.ItemTemplate>
+                                            </ComboBox>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="RIO"/>
+                                            <TextBlock Text="{Binding ResponsableRio}" FontSize="12" Margin="0,5,0,0" MinWidth="90"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Grade"/>
+                                            <TextBox Text="{Binding Grade}" Width="150"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Qualité fonctionnelle"/>
+                                            <ComboBox ItemsSource="{Binding QualitesFonctionnelles}" SelectedItem="{Binding QualiteFonctionnelle}" Width="120"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Service"/>
+                                            <TextBox Text="{Binding Service}" Width="200"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Unité"/>
+                                            <TextBox Text="{Binding Unite}" Width="160"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Ouverture (date et heure)"/>
+                                            <TextBox Text="{Binding OuverteLe}" Watermark="jj/mm/aaaa hh:mm" Width="140"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Cadre procédural déclaré"/>
+                                            <ComboBox ItemsSource="{Binding Cadres}" SelectedItem="{Binding Cadre}" Width="250"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Type d'affaire"/>
+                                            <ComboBox ItemsSource="{Binding TypesAffaire}" SelectedItem="{Binding TypeAffaire}" Width="200"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Référence main courante"/>
+                                            <TextBox Text="{Binding MainCourante}" Width="150"/>
+                                        </StackPanel>
+                                    </WrapPanel>
+                                    <TextBlock Classes="label" Text="Intitulé *"/>
+                                    <TextBox Text="{Binding Intitule}"/>
+                                    <TextBlock Classes="groupheader" Text="Faits" Margin="0,6,0,0"/>
+                                    <WrapPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Qualification envisagée"/>
+                                            <TextBox Text="{Binding Qualification}" Width="300"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Date et heure des faits"/>
+                                            <TextBox Text="{Binding FaitsLe}" Watermark="jj/mm/aaaa hh:mm" Width="140"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Commune"/>
+                                            <TextBox Text="{Binding Commune}" Width="160"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Adresse"/>
+                                            <TextBox Text="{Binding Adresse}" Width="280"/>
+                                        </StackPanel>
+                                        <StackPanel Margin="0,0,10,6">
+                                            <TextBlock Classes="label" Text="Origine"/>
+                                            <ComboBox ItemsSource="{Binding Origines}" SelectedItem="{Binding Origine}" Width="190"/>
+                                        </StackPanel>
+                                    </WrapPanel>
+                                    <TextBlock Classes="label" Text="Description"/>
+                                    <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90"/>
+                                    <TextBlock Classes="muted" Text="Personnes, véhicules et pièces s'ajoutent ensuite dans le dossier de la procédure."/>
+                                    <Grid ColumnDefinitions="*,Auto,Auto">
+                                        <TextBox Text="{Binding Motif}" Watermark="Motif de la modification (historique)" IsVisible="{Binding EstModification}"/>
+                                        <Button Grid.Column="1" Content="Annuler" Command="{Binding AnnulerCommand}" Margin="8,0,0,0"/>
+                                        <Button Grid.Column="2" Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}" Margin="8,0,0,0"/>
+                                    </Grid>
+                                </StackPanel>
+                            </Panel>
+
+                            <Panel IsVisible="{Binding IsDossier}"><j:LrppnDossierView DataContext="{Binding Dossier}"/></Panel>
+                            <Panel IsVisible="{Binding IsActe}"><j:ActeEditeurView DataContext="{Binding Editeur}"/></Panel>
+
+                            <!-- Rédaction d'actes / actes à valider -->
+                            <StackPanel IsVisible="{Binding IsActes}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="instruction" Text="{Binding TitreListe}"/>
+                                    <Button Grid.Column="1" Classes="default" Content="Ouvrir l'acte" Command="{Binding OuvrirActeCommand}"/>
+                                </Grid>
+                                <DataGrid ItemsSource="{Binding ActeLignes}" SelectedItem="{Binding ActeSelection}" AutoGenerateColumns="False" Height="460">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="150"/>
+                                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="200"/>
+                                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="100"/>
+                                        <DataGridTextColumn Header="Personne" Binding="{Binding Personne}" Width="*"/>
+                                        <DataGridTextColumn Header="Rédacteur" Binding="{Binding Redacteur}" Width="150"/>
+                                        <DataGridTextColumn Header="Mis à jour" Binding="{Binding MisAJour}" Width="115"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+
+                            <!-- Personnes concernées (14.2, 14.3) -->
+                            <StackPanel IsVisible="{Binding IsPersonnes}" Spacing="8">
+                                <TextBlock Classes="instruction" Text="Recherche d'individu et dossiers associés"/>
+                                <TextBlock Classes="muted" Text="Sélectionne une identité : ses dossiers s'affichent selon tes habilitations (consultation journalisée)."/>
+                                <j:PersonnePickerView DataContext="{Binding PickerPersonnes}"/>
+                                <StackPanel IsVisible="{Binding ADossiersPersonne}" Spacing="6">
+                                    <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                                        <TextBlock Text="{Binding DossiersTexte}" FontSize="12" TextWrapping="Wrap"/>
+                                    </Border>
+                                    <TextBlock Classes="groupheader" Text="Procédures LRPPN de la personne"/>
+                                    <ItemsControl ItemsSource="{Binding DossiersPersonne.Procedures}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Classes="link" Margin="0,2" Command="{Binding $parent[UserControl].DataContext.OuvrirProcedurePersonneCommand}" CommandParameter="{Binding}">
+                                                    <TextBlock>
+                                                        <Run Text="{Binding Numero, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                        <Run Text="{Binding Intitule, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                                        <Run Text="{Binding Statut, Mode=OneWay, StringFormat=' ({0})'}"/>
+                                                    </TextBlock>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Pièces et scellés -->
+                            <StackPanel IsVisible="{Binding IsPieces}" Spacing="8">
+                                <TextBlock Classes="instruction" Text="Pièces et scellés de simulation"/>
+                                <WrapPanel>
+                                    <TextBox Text="{Binding PieceQ}" Watermark="N° de pièce, scellé, libellé ou procédure" Width="300" Margin="0,0,6,6"/>
+                                    <Button Classes="default" Content="Rechercher" Command="{Binding RechercherPiecesCommand}" Margin="0,0,6,6"/>
+                                    <Button Content="Ouvrir la procédure" Command="{Binding OuvrirProcedurePieceCommand}" IsEnabled="{Binding APieceSelection}" Margin="0,0,6,6"/>
+                                    <Button Content="Enregistrer le fichier" Command="{Binding TelechargerPieceCommand}" IsEnabled="{Binding APieceSelection}" Margin="0,0,0,6"/>
+                                </WrapPanel>
+                                <DataGrid ItemsSource="{Binding PieceLignes}" SelectedItem="{Binding PieceSelection}" AutoGenerateColumns="False" Height="300">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="130"/>
+                                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="95"/>
+                                        <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                                        <DataGridTextColumn Header="Scellé" Binding="{Binding Scelle}" Width="100"/>
+                                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="100"/>
+                                        <DataGridTextColumn Header="Localisation" Binding="{Binding Localisation}" Width="140"/>
+                                        <DataGridTextColumn Header="Fichier" Binding="{Binding Fichier}" Width="160"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                                <StackPanel IsVisible="{Binding APieceSelection}" Spacing="6">
+                                    <TextBlock Classes="groupheader" Text="Mouvements"/>
+                                    <TextBlock Text="{Binding PieceSelection.Mouvements}" FontSize="12" TextWrapping="Wrap"/>
+                                    <WrapPanel IsVisible="{Binding PeutPieces}">
+                                        <ComboBox ItemsSource="{Binding MouvementsPossibles}" SelectedItem="{Binding Mouvement}" Width="190" Margin="0,0,6,6"/>
+                                        <TextBox Text="{Binding Destination}" Watermark="Destination" Width="200" Margin="0,0,6,6"/>
+                                        <TextBox Text="{Binding ObservationsMouvement}" Watermark="Observations" Width="240" Margin="0,0,6,6"/>
+                                        <Button Content="Enregistrer le mouvement" Command="{Binding MouvementCommand}" Margin="0,0,0,6"/>
+                                    </WrapPanel>
+                                </StackPanel>
+                            </StackPanel>
+
+                            <!-- Modèles d'actes (versionnés) -->
+                            <Grid IsVisible="{Binding IsModeles}" RowDefinitions="Auto,Auto,*">
+                                <TextBlock Classes="instruction" Text="Modèles d'actes"/>
+                                <TextBlock Grid.Row="1" Classes="muted" Margin="0,4,0,8"
+                                           Text="Trame d'introduction de chaque type d'acte. Variables : {annee}, {date}, {heure}, {redacteur}, {grade}, {rio}, {service}, {procedure}. Chaque enregistrement crée une nouvelle version historisée (validation LRPPN requise)."/>
+                                <Grid Grid.Row="2" ColumnDefinitions="260,*">
+                                    <ListBox ItemsSource="{Binding ModeleLignes}" SelectedItem="{Binding ModeleSelection}" BorderBrush="#C8D5E7" BorderThickness="1" Height="380" VerticalAlignment="Top">
+                                        <ListBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="2,1">
+                                                    <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black"/>
+                                                    <TextBlock Text="{Binding Version}" FontSize="10.5" Foreground="#5B6B7C"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ListBox.ItemTemplate>
+                                    </ListBox>
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" Spacing="6" DataContext="{Binding ModeleSelection}">
+                                        <TextBlock Classes="groupheader" Text="{Binding Libelle}"/>
+                                        <TextBox Text="{Binding Texte}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="200"/>
+                                        <TextBox Text="{Binding Motif}" Watermark="Motif de la nouvelle version"/>
+                                        <Button Classes="default" Content="Enregistrer une nouvelle version" HorizontalAlignment="Right"
+                                                Command="{Binding $parent[UserControl].DataContext.EnregistrerModeleCommand}"
+                                                IsVisible="{Binding $parent[UserControl].DataContext.PeutValider}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Grid>
+
+                            <!-- Historique -->
+                            <StackPanel IsVisible="{Binding IsHistorique}" Spacing="8">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="instruction" Text="Historique des procédures, actes, pièces et modèles"/>
+                                    <Button Grid.Column="1" Content="Actualiser" Command="{Binding ActualiserHistoriqueCommand}"/>
+                                </Grid>
+                                <DataGrid ItemsSource="{Binding HistoriqueLignes}" AutoGenerateColumns="False" Height="480">
+                                    <DataGrid.Columns>
+                                        <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                                        <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                                        <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="140"/>
+                                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="130"/>
+                                        <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                                        <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                                    </DataGrid.Columns>
+                                </DataGrid>
+                            </StackPanel>
+                        </Panel>
+                    </ScrollViewer>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

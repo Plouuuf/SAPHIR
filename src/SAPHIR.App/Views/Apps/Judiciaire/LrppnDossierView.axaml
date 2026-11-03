@@ -1,0 +1,274 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.LrppnDossierView">
+    <!-- Dossier d'une procédure (13.4). DataContext : DossierViewModel. -->
+    <StackPanel Spacing="8">
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <Button Classes="small" Content="← Retour" Command="{Binding RetourCommand}"/>
+            <TextBlock Grid.Column="1" Classes="instruction" Text="{Binding Titre}" Margin="10,0" VerticalAlignment="Center" TextWrapping="Wrap"/>
+            <Border Grid.Column="2" Background="#E8F2FC" BorderBrush="#A9C7EA" BorderThickness="1" CornerRadius="2" Padding="8,2" VerticalAlignment="Center">
+                <TextBlock Text="{Binding Statut}" FontSize="12" FontWeight="SemiBold" Foreground="#1E395B"/>
+            </Border>
+        </Grid>
+
+        <TabControl Classes="win7">
+            <!-- Synthèse -->
+            <TabItem Header="Synthèse">
+                <StackPanel Margin="10" Spacing="8">
+                    <TextBlock Classes="groupheader" Text="Administration"/>
+                    <TextBlock Text="{Binding Administration}" FontSize="12" TextWrapping="Wrap"/>
+                    <TextBlock Classes="groupheader" Text="Faits"/>
+                    <TextBlock Text="{Binding Faits}" FontSize="12" TextWrapping="Wrap"/>
+                    <Button Content="Modifier la procédure" Command="{Binding ModifierCommand}" IsVisible="{Binding PeutRediger}" HorizontalAlignment="Left"/>
+                    <Border IsVisible="{Binding PeutValider}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="8">
+                        <WrapPanel>
+                            <TextBlock Classes="label" Text="Statut :" VerticalAlignment="Center" Margin="0,0,6,6"/>
+                            <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding NouveauStatut}" PlaceholderText="Nouveau statut" Width="190" Margin="0,0,6,6"/>
+                            <TextBox Text="{Binding MotifStatut}" Watermark="Motif" Width="260" Margin="0,0,6,6"/>
+                            <Button Content="Changer le statut" Command="{Binding ChangerStatutCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </Border>
+                    <TextBlock Classes="groupheader" Text="Procédures liées"/>
+                    <ListBox ItemsSource="{Binding Liens}" SelectedItem="{Binding LienSelection}" MaxHeight="110" BorderBrush="#C8D5E7" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock FontSize="12">
+                                    <Run Text="{Binding Numero, Mode=OneWay}" FontWeight="SemiBold"/>
+                                    <Run Text="{Binding Intitule, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <WrapPanel IsVisible="{Binding PeutRediger}">
+                        <TextBox Text="{Binding NumeroLien}" Watermark="N° de procédure à lier (2026/000123)" Width="240" Margin="0,0,6,6"/>
+                        <Button Content="Lier" Command="{Binding LierCommand}" Margin="0,0,6,6"/>
+                        <Button Content="Supprimer le lien sélectionné" Command="{Binding DelierCommand}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Personnes -->
+            <TabItem Header="Personnes">
+                <StackPanel Margin="10" Spacing="8">
+                    <DataGrid ItemsSource="{Binding PersonneLignes}" SelectedItem="{Binding PersonneSelection}" AutoGenerateColumns="False" Height="170">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="100"/>
+                            <DataGridTextColumn Header="Identité" Binding="{Binding Identite}" Width="*"/>
+                            <DataGridTextColumn Header="Qualité" Binding="{Binding Qualite}" Width="150"/>
+                            <DataGridTextColumn Header="Alertes" Binding="{Binding Alertes}" Width="110"/>
+                            <DataGridTextColumn Header="Observations" Binding="{Binding Observations}" Width="160"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <WrapPanel>
+                        <Button Content="Dossiers associés" Command="{Binding DossiersCommand}" Margin="0,0,6,6"/>
+                        <Button Content="Retirer de la procédure" Command="{Binding RetirerPersonneCommand}" IsVisible="{Binding PeutRediger}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                    <Border IsVisible="{Binding ADossiers}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                        <TextBlock Text="{Binding DossiersTexte}" FontSize="12" TextWrapping="Wrap"/>
+                    </Border>
+                    <StackPanel IsVisible="{Binding PeutRediger}" Spacing="6">
+                        <TextBlock Classes="groupheader" Text="Ajouter une personne (recherche par NOM, prénom, date de naissance ou identifiant SAPHIR)"/>
+                        <j:PersonnePickerView DataContext="{Binding Picker}"/>
+                        <WrapPanel>
+                            <ComboBox ItemsSource="{Binding Qualites}" SelectedItem="{Binding Qualite}" Width="210" Margin="0,0,6,6"/>
+                            <TextBox Text="{Binding Observations}" Watermark="Observations" Width="280" Margin="0,0,6,6"/>
+                            <Button Classes="default" Content="Ajouter à la procédure" Command="{Binding AjouterPersonneCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Actes -->
+            <TabItem Header="Actes">
+                <StackPanel Margin="10" Spacing="8">
+                    <WrapPanel IsVisible="{Binding PeutRediger}">
+                        <TextBlock Classes="label" Text="Nouvel acte :" VerticalAlignment="Center" Margin="0,0,6,6"/>
+                        <ComboBox ItemsSource="{Binding TypesActe}" SelectedItem="{Binding TypeActe}" Width="300" Margin="0,0,6,6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Libelle}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <ComboBox ItemsSource="{Binding PersonnesActe}" SelectedItem="{Binding PersonneActe}" PlaceholderText="Personne (facultatif)" Width="260" Margin="0,0,6,6">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Identite, FallbackValue='(aucune)'}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Classes="default" Content="Créer l'acte" Command="{Binding NouvelActeCommand}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                    <DataGrid ItemsSource="{Binding ActeLignes}" SelectedItem="{Binding ActeSelection}" AutoGenerateColumns="False" Height="260">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="150"/>
+                            <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="*"/>
+                            <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="95"/>
+                            <DataGridTextColumn Header="Personne" Binding="{Binding Personne}" Width="150"/>
+                            <DataGridTextColumn Header="Rédacteur" Binding="{Binding Redacteur}" Width="140"/>
+                            <DataGridTextColumn Header="Validation" Binding="{Binding Validation}" Width="190"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button Content="Ouvrir l'acte" Command="{Binding OuvrirActeCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Pièces -->
+            <TabItem Header="Pièces">
+                <StackPanel Margin="10" Spacing="8">
+                    <DataGrid ItemsSource="{Binding PieceLignes}" SelectedItem="{Binding PieceSelection}" AutoGenerateColumns="False" Height="190">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="135"/>
+                            <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="95"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Scellé" Binding="{Binding Scelle}" Width="95"/>
+                            <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="95"/>
+                            <DataGridTextColumn Header="Fichier" Binding="{Binding Fichier}" Width="170"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel IsVisible="{Binding APieceSelection}" Spacing="6">
+                        <TextBlock Classes="groupheader" Text="Mouvements de la pièce sélectionnée"/>
+                        <TextBlock Text="{Binding PieceSelection.Mouvements}" FontSize="12" TextWrapping="Wrap"/>
+                        <WrapPanel>
+                            <Button Content="Enregistrer le fichier joint" Command="{Binding TelechargerPieceCommand}" Margin="0,0,6,6"/>
+                            <ComboBox ItemsSource="{Binding MouvementsPossibles}" SelectedItem="{Binding Mouvement}" Width="180" Margin="0,0,6,6" IsVisible="{Binding PeutPieces}"/>
+                            <TextBox Text="{Binding Destination}" Watermark="Destination" Width="180" Margin="0,0,6,6" IsVisible="{Binding PeutPieces}"/>
+                            <TextBox Text="{Binding ObservationsMouvement}" Watermark="Observations" Width="200" Margin="0,0,6,6" IsVisible="{Binding PeutPieces}"/>
+                            <Button Content="Mouvement" Command="{Binding MouvementCommand}" IsVisible="{Binding PeutPieces}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <Border IsVisible="{Binding PeutPieces}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="groupheader" Text="Nouvelle pièce ou scellé de simulation"/>
+                            <WrapPanel>
+                                <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Categorie}" Width="140" Margin="0,0,6,6"/>
+                                <TextBox Text="{Binding Libelle}" Watermark="Libellé" Width="260" Margin="0,0,6,6"/>
+                                <TextBox Text="{Binding Scelle}" Watermark="N° de scellé" Width="120" Margin="0,0,6,6"/>
+                                <TextBox Text="{Binding Localisation}" Watermark="Localisation" Width="160" Margin="0,0,6,6"/>
+                                <ComboBox ItemsSource="{Binding ActesPieces}" SelectedItem="{Binding ActePiece}" PlaceholderText="Acte rattaché" Width="200" Margin="0,0,6,6">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock Text="{Binding Numero, FallbackValue='(aucun)'}"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                            </WrapPanel>
+                            <TextBox Text="{Binding Description}" Watermark="Description" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                            <Grid ColumnDefinitions="Auto,*,Auto">
+                                <Button Content="Joindre un fichier…" Command="{Binding JoindreCommand}"/>
+                                <TextBlock Grid.Column="1" Classes="muted" Text="{Binding FichierTexte}" VerticalAlignment="Center" Margin="8,0"/>
+                                <Button Grid.Column="2" Classes="default" Content="Enregistrer la pièce" Command="{Binding AjouterPieceCommand}"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Véhicules -->
+            <TabItem Header="Véhicules">
+                <StackPanel Margin="10" Spacing="8">
+                    <DataGrid ItemsSource="{Binding VehiculeLignes}" SelectedItem="{Binding VehiculeSelection}" AutoGenerateColumns="False" Height="160">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="120"/>
+                            <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="*"/>
+                            <DataGridTextColumn Header="Titulaire" Binding="{Binding Titulaire}" Width="170"/>
+                            <DataGridTextColumn Header="Rôle" Binding="{Binding Role}" Width="150"/>
+                            <DataGridTextColumn Header="Alertes" Binding="{Binding Alertes}" Width="110"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <StackPanel IsVisible="{Binding PeutRediger}" Spacing="6">
+                        <Button Content="Retirer le véhicule sélectionné" Command="{Binding RetirerVehiculeCommand}" HorizontalAlignment="Left"/>
+                        <j:VehiculePickerView DataContext="{Binding VehiculePicker}"/>
+                        <WrapPanel>
+                            <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding Role}" Width="190" Margin="0,0,6,6"/>
+                            <TextBox Text="{Binding ObservationsVehicule}" Watermark="Observations" Width="260" Margin="0,0,6,6"/>
+                            <Button Classes="default" Content="Ajouter le véhicule" Command="{Binding AjouterVehiculeCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Objets -->
+            <TabItem Header="Objets">
+                <StackPanel Margin="10" Spacing="8">
+                    <TextBlock Classes="muted" Text="Objets et scellés de la procédure (gérés dans l'onglet Pièces)."/>
+                    <DataGrid ItemsSource="{Binding ObjetLignes}" AutoGenerateColumns="False" Height="260">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="135"/>
+                            <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="95"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Scellé" Binding="{Binding Scelle}" Width="100"/>
+                            <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="100"/>
+                            <DataGridTextColumn Header="Localisation" Binding="{Binding Localisation}" Width="150"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Interventions -->
+            <TabItem Header="Interventions">
+                <StackPanel Margin="10" Spacing="8">
+                    <TextBlock Text="{Binding InterventionTexte}" FontSize="12" TextWrapping="Wrap"/>
+                    <Button Content="Actualiser depuis PÉGASE" Command="{Binding ChargerInterventionCommand}" IsVisible="{Binding AIntervention}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Historique -->
+            <TabItem Header="Historique">
+                <StackPanel Margin="10" Spacing="8">
+                    <Button Content="Actualiser" Command="{Binding ChargerHistoriqueCommand}" HorizontalAlignment="Left"/>
+                    <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="320">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                            <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="160"/>
+                            <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="140"/>
+                            <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="130"/>
+                            <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                            <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="150"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Validations -->
+            <TabItem Header="Validations">
+                <StackPanel Margin="10" Spacing="8">
+                    <TextBlock Classes="muted" Text="Journal des validations : chaque acte validé est figé, avec son empreinte SHA-256."/>
+                    <DataGrid ItemsSource="{Binding Validations}" AutoGenerateColumns="False" Height="260">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Acte" Binding="{Binding Numero}" Width="150"/>
+                            <DataGridTextColumn Header="Titre" Binding="{Binding Titre}" Width="200"/>
+                            <DataGridTextColumn Header="Validé le" Binding="{Binding Date}" Width="115"/>
+                            <DataGridTextColumn Header="Par" Binding="{Binding ValidePar}" Width="180"/>
+                            <DataGridTextColumn Header="Empreinte" Binding="{Binding Empreinte}" Width="*"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Documents -->
+            <TabItem Header="Documents">
+                <StackPanel Margin="10" Spacing="8">
+                    <DataGrid ItemsSource="{Binding Documents}" SelectedItem="{Binding DocumentSelection}" AutoGenerateColumns="False" Height="260">
+                        <DataGrid.Columns>
+                            <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="170"/>
+                            <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="150"/>
+                            <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                            <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                        </DataGrid.Columns>
+                    </DataGrid>
+                    <Button Content="Enregistrer le document sélectionné" Command="{Binding TelechargerDocumentCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </TabItem>
+
+            <!-- Exports -->
+            <TabItem Header="Exports">
+                <StackPanel Margin="10" Spacing="8">
+                    <TextBlock Classes="muted" Text="Export PDF de la procédure : synthèse, personnes, véhicules, pièces, liste des actes et texte figé de chaque acte validé."/>
+                    <Button Classes="default" Content="Exporter la procédure en PDF…" Command="{Binding ExporterCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </StackPanel>
+</UserControl>

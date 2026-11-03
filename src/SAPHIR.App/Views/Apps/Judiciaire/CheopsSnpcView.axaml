@@ -1,0 +1,75 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:j="clr-namespace:Saphir.Views.Apps.Judiciaire"
+             x:Class="Saphir.Views.Apps.Judiciaire.CheopsSnpcView">
+    <!-- SNPC (12.6). DataContext : SnpcViewModel. -->
+    <StackPanel Spacing="8">
+        <WrapPanel>
+            <TextBox Text="{Binding Q}" Watermark="NOM, prénom, PER-… ou n° de permis" Width="260" Margin="0,0,6,6"/>
+            <Button Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" Height="150">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="N° permis" Binding="{Binding Reference}" Width="110"/>
+                <DataGridTextColumn Header="Titulaire" Binding="{Binding Identite}" Width="*"/>
+                <DataGridTextColumn Header="Catégories" Binding="{Binding Categories}" Width="90"/>
+                <DataGridTextColumn Header="Situation" Binding="{Binding Situation}" Width="140"/>
+                <DataGridTextColumn Header="Points" Binding="{Binding Points}" Width="70"/>
+                <DataGridTextColumn Header="Validité" Binding="{Binding Validite}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <StackPanel IsVisible="{Binding ADetail}" Spacing="6">
+            <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="10">
+                <StackPanel Spacing="6">
+                    <TextBlock Text="{Binding DetailTexte}" FontSize="12" TextWrapping="Wrap"/>
+                    <TextBlock Text="{Binding SoldeTexte}" FontSize="13" FontWeight="SemiBold" Foreground="#1E395B"/>
+                    <ProgressBar Minimum="0" Maximum="12" Value="{Binding Solde}" Height="12" MaxWidth="320" HorizontalAlignment="Left"/>
+                </StackPanel>
+            </Border>
+            <WrapPanel IsVisible="{Binding PeutEcrire}">
+                <TextBox Text="{Binding Variation}" Watermark="Nb de points" Width="100" Margin="0,0,6,6"/>
+                <TextBox Text="{Binding MotifPoints}" Watermark="Motif (infraction, stage…)" Width="260" Margin="0,0,6,6"/>
+                <Button Content="Retirer" Command="{Binding RetirerCommand}" Margin="0,0,6,6"/>
+                <Button Content="Restituer" Command="{Binding RestituerCommand}" Margin="0,0,6,6"/>
+                <Button Content="Modifier le titre" Command="{Binding ModifierCommand}" Margin="0,0,0,6"/>
+            </WrapPanel>
+            <TextBlock Classes="groupheader" Text="Historique"/>
+            <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" Height="110">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                    <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                    <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+
+        <Border IsVisible="{Binding PeutEcrire}" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Créer un permis fictif pour une identité"/>
+                <j:PersonnePickerView DataContext="{Binding Picker}"/>
+                <Button Content="Créer un permis" Command="{Binding CreerCommand}" HorizontalAlignment="Left"/>
+            </StackPanel>
+        </Border>
+
+        <Border IsVisible="{Binding ModeEdition}" BorderBrush="#3C7FB1" BorderThickness="1" Padding="10">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Titre de conduite (historisé)"/>
+                <WrapPanel>
+                    <TextBox Text="{Binding Categories}" Watermark="Catégories (A2, B…)" Width="140" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Dates}" Watermark="Dates d'obtention" Width="230" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Validite}" Watermark="Valide jusqu'au" Width="120" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Situations}" SelectedItem="{Binding Situation}" Width="170" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Points}" Watermark="Points" Width="70" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Motif}" Watermark="Motif" Width="200" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                    <Button Content="Annuler" Command="{Binding AnnulerCommand}"/>
+                    <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}"/>
+                </StackPanel>
+            </StackPanel>
+        </Border>
+    </StackPanel>
+</UserControl>

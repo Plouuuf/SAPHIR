@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Judiciaire.VehiculePickerView">
+    <!-- Recherche d'un véhicule (plaque, VIN, marque, titulaire). DataContext : VehiculePickerViewModel. -->
+    <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="8">
+        <StackPanel Spacing="6">
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Text="{Binding Recherche}" Watermark="Immatriculation, VIN, marque ou titulaire"/>
+                <Button Grid.Column="1" Classes="small" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="6,0,0,0"/>
+            </Grid>
+            <ListBox ItemsSource="{Binding Resultats}" SelectedItem="{Binding Selection}" MaxHeight="120"
+                     BorderBrush="#C8D5E7" BorderThickness="1">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <TextBlock FontSize="12" Foreground="Black">
+                            <Run Text="{Binding Immatriculation, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text="{Binding Marque, Mode=OneWay}"/>
+                            <Run Text="{Binding Modele, Mode=OneWay}"/>
+                            <Run Text="{Binding Titulaire, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                        </TextBlock>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <TextBlock Text="{Binding SelectionLibelle}" FontSize="12" FontWeight="SemiBold" Foreground="#1E395B" TextWrapping="Wrap"/>
+        </StackPanel>
+    </Border>
+</UserControl>

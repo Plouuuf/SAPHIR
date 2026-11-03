@@ -1,0 +1,441 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.PveView">
+    <!-- PVe — procès-verbal électronique. DataContext : PveViewModel. -->
+    <UserControl.Styles>
+        <Style Selector="Border.cadre">
+            <Setter Property="BorderBrush" Value="#C8D5E7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F7FAFD"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+        <Style Selector="StackPanel.champ">
+            <Setter Property="Margin" Value="0,0,10,6"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+            <cx:MenuComplementsView Grid.Row="1" Grid.RowSpan="{Binding MenuLignes}" Grid.ColumnSpan="{Binding MenuColonnes}"/>
+
+            <!-- ===== Listes ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsListe}" RowDefinitions="Auto,Auto,*" Margin="10">
+                <TextBlock Classes="instruction" Text="{Binding TitreListe}" Margin="0,0,0,6"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,8">
+                    <TextBox Text="{Binding Recherche}" Watermark="Référence, n° d'avis, NATINF, contrevenant, immatriculation, commune, agent"/>
+                    <ComboBox Grid.Column="1" ItemsSource="{Binding Statuts}" SelectedItem="{Binding FiltreStatut}" Width="130" Margin="8,0,0,0"/>
+                    <Button Grid.Column="2" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="8,0,0,0"/>
+                </Grid>
+                <ListBox Grid.Row="2" ItemsSource="{Binding Liste}" BorderBrush="#C8D5E7" BorderThickness="1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2"
+                                    Command="{Binding $parent[UserControl].DataContext.OuvrirCommand}" CommandParameter="{Binding}">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <StackPanel>
+                                        <TextBlock Text="{Binding Titre}" FontSize="12.5" FontWeight="SemiBold" Foreground="Black"/>
+                                        <TextBlock Text="{Binding Infraction}" FontSize="12" Foreground="#1E395B" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0">
+                                        <Border CornerRadius="2" Padding="6,1" HorizontalAlignment="Right" Background="#2E8B2E" IsVisible="{Binding Valide}">
+                                            <TextBlock Text="{Binding Statut}" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <Border CornerRadius="2" Padding="6,1" HorizontalAlignment="Right" Background="#8492A3" IsVisible="{Binding Brouillon}">
+                                            <TextBlock Text="{Binding Statut}" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <Border CornerRadius="2" Padding="6,1" HorizontalAlignment="Right" Background="#C7503B" IsVisible="{Binding Abandonne}">
+                                            <TextBlock Text="{Binding Statut}" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <TextBlock Text="{Binding Montant}" FontSize="11.5" Foreground="Black" HorizontalAlignment="Right" Margin="0,2,0,0"/>
+                                        <TextBlock Text="{Binding Avis}" FontSize="10.5" Foreground="#5B6B7C" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock Grid.Row="2" Classes="muted" Text="Aucun procès-verbal." Margin="12" IsVisible="{Binding ListeVide}"/>
+            </Grid>
+
+            <!-- ===== Fiche : rédaction ou consultation ===== -->
+            <ScrollViewer Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsFiche}">
+                <StackPanel Margin="14,10" MaxWidth="980" HorizontalAlignment="Stretch">
+                    <Button Classes="link" Content="← Retour à la liste" Command="{Binding RetourCommand}" Margin="0,0,0,6"/>
+                    <WrapPanel>
+                        <TextBlock Classes="instruction" Text="{Binding TitreFiche}" Margin="0,0,10,4" VerticalAlignment="Center"/>
+                        <Border CornerRadius="2" Padding="6,1" Background="#2E8B2E" IsVisible="{Binding FicheValide}" VerticalAlignment="Center">
+                            <TextBlock Text="Validé — acte figé" FontSize="11" Foreground="White"/>
+                        </Border>
+                        <Border CornerRadius="2" Padding="6,1" Background="#C7503B" IsVisible="{Binding FicheAbandonnee}" VerticalAlignment="Center">
+                            <TextBlock Text="Abandonné" FontSize="11" Foreground="White"/>
+                        </Border>
+                        <Border CornerRadius="2" Padding="6,1" Background="#8492A3" IsVisible="{Binding Edition}" VerticalAlignment="Center">
+                            <TextBlock Text="Brouillon" FontSize="11" Foreground="White"/>
+                        </Border>
+                    </WrapPanel>
+                    <TextBlock Classes="muted" Text="{Binding InfosFiche}" Margin="0,0,0,10"/>
+
+                    <!-- Rédacteur -->
+                    <Border Classes="cadre">
+                        <StackPanel>
+                            <TextBlock Classes="groupheader" Text="Agent verbalisateur" Margin="0,0,0,4"/>
+                            <WrapPanel>
+                                <StackPanel Classes="champ" Width="220">
+                                    <TextBlock Classes="label" Text="Agent"/>
+                                    <TextBlock Text="{Binding RedacteurNom}" Foreground="Black" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="110">
+                                    <TextBlock Classes="label" Text="RIO"/>
+                                    <TextBlock Text="{Binding RedacteurRio}" Foreground="Black"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="170">
+                                    <TextBlock Classes="label" Text="Grade"/>
+                                    <TextBlock Text="{Binding RedacteurGrade}" Foreground="Black" TextWrapping="Wrap"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="260">
+                                    <TextBlock Classes="label" Text="Service"/>
+                                    <TextBlock Text="{Binding RedacteurService}" Foreground="Black" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Date et lieu -->
+                    <Border Classes="cadre">
+                        <StackPanel>
+                            <TextBlock Classes="groupheader" Text="Date et lieu de l'infraction" Margin="0,0,0,4"/>
+                            <WrapPanel>
+                                <StackPanel Classes="champ" Width="120">
+                                    <TextBlock Classes="label" Text="Date"/>
+                                    <TextBox Text="{Binding Jour}" Watermark="JJ/MM/AAAA" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="80">
+                                    <TextBlock Classes="label" Text="Heure"/>
+                                    <TextBox Text="{Binding Heure}" Watermark="HH:MM" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="330">
+                                    <TextBlock Classes="label" Text="Lieu (adresse précise)"/>
+                                    <TextBox Text="{Binding Lieu}" Watermark="Avenue du Général-de-Gaulle, face au n° 52" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="170">
+                                    <TextBlock Classes="label" Text="Commune"/>
+                                    <TextBox Text="{Binding Commune}" Watermark="Créteil" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="170">
+                                    <TextBlock Classes="label" Text="Intervention liée (n°)"/>
+                                    <TextBox Text="{Binding InterventionNumero}" Watermark="INT-2026-000031" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Infraction -->
+                    <Border Classes="cadre">
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="groupheader" Text="Infraction relevée"/>
+                            <StackPanel Spacing="4" IsVisible="{Binding Edition}">
+                                <TextBox Text="{Binding RechercheInfraction}" Watermark="Rechercher dans le référentiel : NATINF, libellé, catégorie (vitesse, stationnement…)"/>
+                                <Border BorderBrush="#C8D5E7" BorderThickness="1" Background="White" MaxHeight="180">
+                                    <ScrollViewer>
+                                        <ItemsControl ItemsSource="{Binding InfractionsProposees}">
+                                            <ItemsControl.ItemTemplate>
+                                                <DataTemplate>
+                                                    <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="8,3"
+                                                            Command="{Binding $parent[UserControl].DataContext.ChoisirInfractionCommand}" CommandParameter="{Binding}">
+                                                        <StackPanel>
+                                                            <TextBlock Text="{Binding Titre}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                                            <TextBlock Text="{Binding Detail}" FontSize="10.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                                        </StackPanel>
+                                                    </Button>
+                                                </DataTemplate>
+                                            </ItemsControl.ItemTemplate>
+                                        </ItemsControl>
+                                    </ScrollViewer>
+                                </Border>
+                            </StackPanel>
+                            <TextBlock Classes="muted" Text="Aucune infraction choisie." IsVisible="{Binding !HasInfraction}"/>
+                            <Border IsVisible="{Binding HasInfraction}" Background="#E8F2FC" BorderBrush="#A9C7EA" BorderThickness="1" Padding="10,6">
+                                <StackPanel Spacing="2">
+                                    <TextBlock Text="{Binding InfractionTitre}" FontWeight="SemiBold" Foreground="Black" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding InfractionTexte}" FontSize="11.5" Foreground="#3C3C3C"/>
+                                    <TextBlock Text="{Binding InfractionClasse}" FontSize="11.5" Foreground="#3C3C3C"/>
+                                    <TextBlock Text="{Binding InfractionMontants}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding InfractionPoints}" FontSize="12" Foreground="#C7503B"/>
+                                </StackPanel>
+                            </Border>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Contrevenant -->
+                    <Border Classes="cadre">
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="groupheader" Text="Contrevenant"/>
+                            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Edition}">
+                                <TextBox Text="{Binding RecherchePersonne}" Watermark="Rechercher une personne dans SAPHIR (nom, prénom, PER-…)"/>
+                                <Button Grid.Column="1" Content="Rechercher" Command="{Binding RechercherPersonneCommand}" Margin="8,0,0,0"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Personnes}" IsVisible="{Binding Edition}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="8,3"
+                                                Background="White" Margin="0,0,0,2"
+                                                Command="{Binding $parent[UserControl].DataContext.ChoisirPersonneCommand}" CommandParameter="{Binding}">
+                                            <StackPanel>
+                                                <TextBlock FontSize="12" Foreground="Black">
+                                                    <Run Text="{Binding Libelle, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                    <Run Text="{Binding Reference, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Alertes}" FontSize="11" Foreground="#C7503B" IsVisible="{Binding HasAlertes}"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding HasPersonneLiee}">
+                                <TextBlock Text="{Binding PersonneLiee}" Foreground="#2F6FBF" FontSize="12"/>
+                                <Button Classes="link" Content="Retirer le lien" FontSize="11.5" Command="{Binding DelierPersonneCommand}" IsVisible="{Binding Edition}"/>
+                            </StackPanel>
+                            <WrapPanel>
+                                <StackPanel Classes="champ" Width="190">
+                                    <TextBlock Classes="label" Text="Nom"/>
+                                    <TextBox Text="{Binding Nom}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="190">
+                                    <TextBlock Classes="label" Text="Prénom"/>
+                                    <TextBox Text="{Binding Prenom}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="120">
+                                    <TextBlock Classes="label" Text="Né(e) le"/>
+                                    <TextBox Text="{Binding Naissance}" Watermark="JJ/MM/AAAA" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="180">
+                                    <TextBlock Classes="label" Text="à"/>
+                                    <TextBox Text="{Binding LieuNaissance}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="330">
+                                    <TextBlock Classes="label" Text="Adresse déclarée"/>
+                                    <TextBox Text="{Binding Adresse}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Véhicule -->
+                    <Border Classes="cadre">
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="groupheader" Text="Véhicule"/>
+                            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Edition}">
+                                <TextBox Text="{Binding RechercheVehicule}" Watermark="Rechercher l'immatriculation dans SAPHIR (SIV fictif)"/>
+                                <Button Grid.Column="1" Content="Rechercher" Command="{Binding RechercherVehiculeCommand}" Margin="8,0,0,0"/>
+                            </Grid>
+                            <ItemsControl ItemsSource="{Binding Vehicules}" IsVisible="{Binding Edition}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="8,3"
+                                                Background="White" Margin="0,0,0,2"
+                                                Command="{Binding $parent[UserControl].DataContext.ChoisirVehiculeCommand}" CommandParameter="{Binding}">
+                                            <StackPanel>
+                                                <TextBlock Text="{Binding Titre}" FontSize="12" FontWeight="SemiBold" Foreground="Black"/>
+                                                <TextBlock Text="{Binding Titulaire}" FontSize="11" Foreground="#5B6B7C"/>
+                                                <TextBlock Text="{Binding Alertes}" FontSize="11" Foreground="#C7503B" IsVisible="{Binding HasAlertes}"/>
+                                            </StackPanel>
+                                        </Button>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Orientation="Horizontal" Spacing="10" IsVisible="{Binding HasVehiculeLie}">
+                                <TextBlock Text="Véhicule lié à la fiche SAPHIR" Foreground="#2F6FBF" FontSize="12"/>
+                                <Button Classes="link" Content="Retirer le lien" FontSize="11.5" Command="{Binding DelierVehiculeCommand}" IsVisible="{Binding Edition}"/>
+                            </StackPanel>
+                            <WrapPanel>
+                                <StackPanel Classes="champ" Width="140">
+                                    <TextBlock Classes="label" Text="Immatriculation"/>
+                                    <TextBox Text="{Binding Immatriculation}" Watermark="AB-123-CD" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="150">
+                                    <TextBlock Classes="label" Text="Marque"/>
+                                    <TextBox Text="{Binding Marque}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="150">
+                                    <TextBlock Classes="label" Text="Modèle"/>
+                                    <TextBox Text="{Binding Modele}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                                <StackPanel Classes="champ" Width="120">
+                                    <TextBlock Classes="label" Text="Couleur"/>
+                                    <TextBox Text="{Binding Couleur}" IsReadOnly="{Binding Consultation}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Constatations -->
+                    <Border Classes="cadre">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="groupheader" Text="Constatations"/>
+                            <TextBlock Classes="label" Text="Circonstances"/>
+                            <TextBox Text="{Binding Circonstances}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70" IsReadOnly="{Binding Consultation}"
+                                     Watermark="Véhicule contrôlé au cinémomètre à 78 km/h (vitesse retenue 73 km/h) pour 50 km/h autorisés…"/>
+                            <TextBlock Classes="label" Text="Observations"/>
+                            <TextBox Text="{Binding Observations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50" IsReadOnly="{Binding Consultation}"
+                                     Watermark="Déclarations du contrevenant, remise de l'avis…"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Justificatifs -->
+                    <Border Classes="cadre">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="groupheader" Text="Justificatifs (photos, relevés — 10 Mo au plus)"/>
+                            <TextBlock Classes="muted" Text="Enregistre d'abord le brouillon pour joindre des justificatifs." IsVisible="{Binding DoitEnregistrer}"/>
+                            <ItemsControl ItemsSource="{Binding Justificatifs}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,2">
+                                            <TextBlock Text="{Binding Nom}" Foreground="Black" FontSize="12"/>
+                                            <Button Classes="link" Content="Enregistrer" FontSize="11.5"
+                                                    Command="{Binding $parent[UserControl].DataContext.EnregistrerJustificatifCommand}" CommandParameter="{Binding}"/>
+                                            <Button Classes="link" Content="Retirer" FontSize="11.5"
+                                                    IsVisible="{Binding $parent[UserControl].DataContext.PeutJustificatifs}"
+                                                    Command="{Binding $parent[UserControl].DataContext.RetirerJustificatifCommand}" CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Button Content="Ajouter un justificatif…" Command="{Binding AjouterJustificatifCommand}" IsVisible="{Binding PeutJustificatifs}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Validation (brouillon) -->
+                    <Border Classes="cadre" IsVisible="{Binding Edition}" Background="#FFFDF2">
+                        <StackPanel Spacing="6">
+                            <TextBlock Classes="groupheader" Text="Validation"/>
+                            <CheckBox IsChecked="{Binding Certifie}" Content="Je certifie l'exactitude des constatations ci-dessus."/>
+                            <WrapPanel HorizontalAlignment="Right">
+                                <Button Content="Enregistrer le brouillon" Command="{Binding EnregistrerCommand}" Margin="0,0,8,6"/>
+                                <Button Classes="default" Content="Valider le PVe" Command="{Binding ValiderCommand}" Margin="0,0,0,6"/>
+                            </WrapPanel>
+                            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding Enregistre}">
+                                <TextBox Text="{Binding MotifAbandon}" Watermark="Motif d'abandon du brouillon (erreur de saisie, doublon…)"/>
+                                <Button Grid.Column="1" Content="Abandonner" Command="{Binding AbandonnerCommand}" Margin="8,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Mentions (PVe validé) -->
+                    <Border Classes="cadre" IsVisible="{Binding AfficherMentions}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="groupheader" Text="Mentions"/>
+                            <ItemsControl ItemsSource="{Binding Mentions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,2">
+                                            <TextBlock Text="{Binding Entete}" FontSize="11" Foreground="#5B6B7C"/>
+                                            <TextBlock Text="{Binding Texte}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding PeutMention}">
+                                <TextBox Text="{Binding NouvelleMention}" AcceptsReturn="True" TextWrapping="Wrap" Watermark="Nouvelle mention (contestation, rectification d'adresse…)"/>
+                                <Button Grid.Column="1" Content="Ajouter" Command="{Binding AjouterMentionCommand}" Margin="8,0,0,0" VerticalAlignment="Top"/>
+                            </Grid>
+                        </StackPanel>
+                    </Border>
+
+                    <WrapPanel HorizontalAlignment="Right" IsVisible="{Binding Enregistre}">
+                        <Button Content="Historique" Command="{Binding HistoriqueCommand}" Margin="0,0,8,6"/>
+                        <Button Content="Exporter / imprimer" Command="{Binding ExporterCommand}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                    <ItemsControl ItemsSource="{Binding Historique}" IsVisible="{Binding HistoriqueVisible}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,2">
+                                    <TextBlock FontSize="11.5" Foreground="#1E395B">
+                                        <Run Text="{Binding Date, Mode=OneWay}"/>
+                                        <Run Text="{Binding Auteur, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                        <Run Text="{Binding Action, Mode=OneWay, StringFormat=' — {0}'}" FontWeight="SemiBold"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ===== Référentiel des infractions ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsInfractions}" Margin="10" ColumnDefinitions="*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <TextBlock Classes="instruction" Text="Référentiel des infractions (fictif)" Margin="0,0,0,6"/>
+                    <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                        <TextBox Text="{Binding RechercheReferentiel}" Watermark="NATINF, libellé, catégorie" Width="260" Margin="0,0,8,6"/>
+                        <Button Content="Nouvelle infraction" Command="{Binding NouvelleInfractionCommand}" IsVisible="{Binding CanGererReferentiel}" Margin="0,0,8,6"/>
+                    </WrapPanel>
+                    <ListBox Grid.Row="2" ItemsSource="{Binding Referentiel}" SelectedItem="{Binding InfractionEditee}" BorderBrush="#C8D5E7" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,2">
+                                    <TextBlock Text="{Binding Titre}" FontSize="12" FontWeight="SemiBold" Foreground="Black" TextWrapping="Wrap"/>
+                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+                                    <TextBlock FontSize="10.5" Foreground="#5B6B7C">
+                                        <Run Text="{Binding Categorie, Mode=OneWay}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="Inactive (non proposée à la rédaction)" FontSize="10.5" Foreground="#C7503B" IsVisible="{Binding Inactive}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+                <Border Grid.Column="{Binding ColonneDetail}" Width="{Binding LargeurDetail}" Margin="{Binding MargeDetail}"
+                        IsVisible="{Binding EditionInfractionVisible}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                    <ScrollViewer>
+                        <StackPanel Margin="14,12" Spacing="5">
+                            <TextBlock Classes="instruction" Text="Infraction"/>
+                            <TextBlock Classes="label" Text="Code NATINF"/>
+                            <TextBox Text="{Binding INatinf}"/>
+                            <TextBlock Classes="label" Text="Libellé"/>
+                            <TextBox Text="{Binding ILibelle}" AcceptsReturn="True" TextWrapping="Wrap"/>
+                            <TextBlock Classes="label" Text="Texte de référence"/>
+                            <TextBox Text="{Binding ITexte}" Watermark="Art. R413-14 C. route"/>
+                            <TextBlock Classes="label" Text="Catégorie"/>
+                            <TextBox Text="{Binding ICategorie}"/>
+                            <TextBlock Classes="label" Text="Classe"/>
+                            <ComboBox ItemsSource="{Binding Classes}" SelectedItem="{Binding IClasse}" Width="120"/>
+                            <Grid ColumnDefinitions="*,*,*">
+                                <StackPanel>
+                                    <TextBlock Classes="label" Text="Forfaitaire (€)"/>
+                                    <TextBox Text="{Binding IForfait}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0">
+                                    <TextBlock Classes="label" Text="Minorée (€)"/>
+                                    <TextBox Text="{Binding IMinore}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="2">
+                                    <TextBlock Classes="label" Text="Majorée (€)"/>
+                                    <TextBox Text="{Binding IMajore}"/>
+                                </StackPanel>
+                            </Grid>
+                            <Grid ColumnDefinitions="*,*">
+                                <StackPanel>
+                                    <TextBlock Classes="label" Text="Points retirés"/>
+                                    <TextBox Text="{Binding IPoints}"/>
+                                </StackPanel>
+                                <StackPanel Grid.Column="1" Margin="6,0,0,0">
+                                    <TextBlock Classes="label" Text="Ordre d'affichage"/>
+                                    <TextBox Text="{Binding IOrdre}"/>
+                                </StackPanel>
+                            </Grid>
+                            <CheckBox Content="Proposée à la rédaction" IsChecked="{Binding IActif}"/>
+                            <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerInfractionCommand}" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

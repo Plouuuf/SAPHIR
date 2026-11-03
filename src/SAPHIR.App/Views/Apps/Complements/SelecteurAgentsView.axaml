@@ -1,0 +1,51 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Complements.SelecteurAgentsView">
+    <!-- Choix d'agents (destinataires, membres, partages). DataContext : SelecteurAgentsViewModel. -->
+    <StackPanel Spacing="4">
+        <TextBlock Classes="label" Text="{Binding Titre}"/>
+        <ItemsControl ItemsSource="{Binding Selection}" IsVisible="{Binding HasSelection}">
+            <ItemsControl.ItemsPanel>
+                <ItemsPanelTemplate>
+                    <WrapPanel/>
+                </ItemsPanelTemplate>
+            </ItemsControl.ItemsPanel>
+            <ItemsControl.ItemTemplate>
+                <DataTemplate>
+                    <Border Background="#E8F2FC" BorderBrush="#A9C7EA" BorderThickness="1" CornerRadius="2" Padding="6,2" Margin="0,0,4,4">
+                        <StackPanel Orientation="Horizontal" Spacing="6">
+                            <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black" VerticalAlignment="Center"/>
+                            <CheckBox IsChecked="{Binding Option}" FontSize="11" VerticalAlignment="Center" MinHeight="0"
+                                      Content="{Binding $parent[UserControl].DataContext.LibelleOption}"
+                                      IsVisible="{Binding $parent[UserControl].DataContext.HasOption}"/>
+                            <Button Classes="link" Content="Retirer" FontSize="11" VerticalAlignment="Center"
+                                    Command="{Binding $parent[UserControl].DataContext.RetirerCommand}" CommandParameter="{Binding}"/>
+                        </StackPanel>
+                    </Border>
+                </DataTemplate>
+            </ItemsControl.ItemTemplate>
+        </ItemsControl>
+        <TextBox Text="{Binding Recherche}" Watermark="Rechercher un agent (nom, RIO, service, unité)"/>
+        <Border IsVisible="{Binding HasResultats}" BorderBrush="#C8D5E7" BorderThickness="1" Background="White" MaxHeight="190">
+            <ScrollViewer>
+                <ItemsControl ItemsSource="{Binding Resultats}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="8,4"
+                                    Command="{Binding $parent[UserControl].DataContext.AjouterCommand}" CommandParameter="{Binding}">
+                                <StackPanel>
+                                    <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black"/>
+                                    <TextBlock FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap">
+                                        <Run Text="{Binding Reference, Mode=OneWay}"/>
+                                        <Run Text="{Binding Service, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                        <Run Text="{Binding Unite, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                    </TextBlock>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+    </StackPanel>
+</UserControl>

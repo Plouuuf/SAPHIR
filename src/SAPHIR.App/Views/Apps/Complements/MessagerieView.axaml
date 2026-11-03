@@ -1,0 +1,219 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.MessagerieView">
+    <!-- MESSAGERIE. DataContext : MessagerieViewModel. -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.nonlu">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+            <cx:MenuComplementsView Grid.Row="1" Grid.RowSpan="{Binding MenuLignes}" Grid.ColumnSpan="{Binding MenuColonnes}"/>
+
+            <!-- ===== Dossiers : liste + lecture ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsDossier}" Margin="10" ColumnDefinitions="*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding AfficherListe}">
+                    <TextBlock Classes="instruction" Text="{Binding TitreDossier}" Margin="0,0,0,6"/>
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" Margin="0,0,0,8">
+                        <TextBox Text="{Binding Recherche}" Watermark="Rechercher (objet, texte, expéditeur, référence)"/>
+                        <Button Grid.Column="1" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="8,0,0,0"/>
+                        <Button Grid.Column="2" Classes="small" Command="{Binding ActualiserCommand}" Margin="6,0,0,0" ToolTip.Tip="Actualiser">
+                            <PathIcon Data="{StaticResource IconRefresh}" Width="14" Height="14" Foreground="#1E395B"/>
+                        </Button>
+                    </Grid>
+                    <ListBox Grid.Row="2" ItemsSource="{Binding Messages}" SelectedItem="{Binding Selection}" BorderBrush="#C8D5E7" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                                    <Border Width="4" Margin="0,0,8,0" CornerRadius="2" Background="#2F6FBF" IsVisible="{Binding NonLu}"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Correspondant}" Classes.nonlu="{Binding NonLu}" FontSize="12.5" Foreground="Black" TextTrimming="CharacterEllipsis"/>
+                                        <StackPanel Orientation="Horizontal" Spacing="6">
+                                            <TextBlock Text="!" Foreground="#C7503B" FontWeight="Bold" IsVisible="{Binding Important}"/>
+                                            <TextBlock Text="{Binding Sujet}" Classes.nonlu="{Binding NonLu}" FontSize="12" Foreground="#1E395B" TextTrimming="CharacterEllipsis"/>
+                                        </StackPanel>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="8,0,0,0">
+                                        <TextBlock Text="{Binding Date}" FontSize="11" Foreground="#5B6B7C" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding Pieces}" FontSize="10.5" Foreground="#5B6B7C" HorizontalAlignment="Right" IsVisible="{Binding HasPieces}"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Grid.Row="2" Classes="muted" Text="Aucun message dans ce dossier." Margin="12" IsVisible="{Binding ListeVide}"/>
+                </Grid>
+
+                <!-- Volet de lecture -->
+                <Border Grid.Column="{Binding ColonneDetail}" Width="{Binding LargeurDetail}" Margin="{Binding MargeDetail}"
+                        IsVisible="{Binding AfficherLecture}" BorderBrush="#C8D5E7" BorderThickness="1" Background="White">
+                    <Grid>
+                        <TextBlock Classes="muted" Text="Sélectionne un message pour le lire." Margin="14" IsVisible="{Binding !HasOuvert}"/>
+                        <ScrollViewer IsVisible="{Binding HasOuvert}">
+                            <StackPanel Margin="14,12" Spacing="6">
+                                <Button Classes="link" Content="← Retour à la liste" IsVisible="{Binding IsCompact}" Command="{Binding RetourListeCommand}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                    <Border Background="#C7503B" CornerRadius="2" Padding="5,1" IsVisible="{Binding Ouvert.Important}" VerticalAlignment="Center">
+                                        <TextBlock Text="IMPORTANT" FontSize="10" Foreground="White"/>
+                                    </Border>
+                                    <Border Background="#8492A3" CornerRadius="2" Padding="5,1" IsVisible="{Binding OuvertBrouillon}" VerticalAlignment="Center">
+                                        <TextBlock Text="BROUILLON" FontSize="10" Foreground="White"/>
+                                    </Border>
+                                </StackPanel>
+                                <SelectableTextBlock Classes="instruction" Text="{Binding Ouvert.Sujet}" TextWrapping="Wrap" FontSize="15" Foreground="#003399"/>
+                                <Grid ColumnDefinitions="60,*" RowDefinitions="Auto,Auto,Auto">
+                                    <TextBlock Classes="label" Text="De"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Ouvert.Expediteur}" Foreground="Black" FontWeight="SemiBold"/>
+                                    <TextBlock Grid.Row="1" Classes="label" Text="Date"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding OuvertDate}" Foreground="Black"/>
+                                    <TextBlock Grid.Row="2" Classes="label" Text="Réf."/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Ouvert.Reference}" Foreground="#5B6B7C"/>
+                                </Grid>
+                                <TextBlock Classes="muted" Text="{Binding OuvertDiffusion}" IsVisible="{Binding HasDiffusion}"/>
+                                <ItemsControl ItemsSource="{Binding Destinataires}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Grid ColumnDefinitions="30,*,Auto" Margin="0,1">
+                                                <TextBlock Text="{Binding Type}" FontSize="11" Foreground="#5B6B7C"/>
+                                                <TextBlock Grid.Column="1" Text="{Binding Libelle}" FontSize="12" Foreground="Black" TextWrapping="Wrap"/>
+                                                <TextBlock Grid.Column="2" Text="{Binding Lecture}" FontSize="11" Foreground="#2F6FBF" Margin="8,0,0,0"/>
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <WrapPanel Margin="0,4,0,0">
+                                    <Button Content="Répondre" Command="{Binding RepondreCommand}" IsVisible="{Binding OuvertEnvoye}" Margin="0,0,6,6"/>
+                                    <Button Content="Répondre à tous" Command="{Binding RepondreTousCommand}" IsVisible="{Binding OuvertEnvoye}" Margin="0,0,6,6"/>
+                                    <Button Content="Transférer" Command="{Binding TransfererCommand}" IsVisible="{Binding OuvertEnvoye}" Margin="0,0,6,6"/>
+                                    <Button Content="Marquer non lu" Command="{Binding NonLuCommand}" IsVisible="{Binding OuvertRecu}" Margin="0,0,6,6"/>
+                                    <Button Classes="default" Content="Reprendre le brouillon" Command="{Binding ModifierBrouillonCommand}" IsVisible="{Binding OuvertBrouillon}" Margin="0,0,6,6"/>
+                                    <Button Content="Restaurer" Command="{Binding RestaurerCommand}" IsVisible="{Binding IsCorbeille}" Margin="0,0,6,6"/>
+                                    <Button Content="Supprimer" Command="{Binding SupprimerCommand}" Margin="0,0,6,6"/>
+                                </WrapPanel>
+                                <Border BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="0,10,0,0">
+                                    <SelectableTextBlock Text="{Binding Ouvert.Corps}" TextWrapping="Wrap" FontSize="12.5" Foreground="Black"/>
+                                </Border>
+                                <StackPanel IsVisible="{Binding HasPiecesOuvert}" Spacing="2" Margin="0,8,0,0">
+                                    <TextBlock Classes="groupheader" Text="Pièces jointes"/>
+                                    <ItemsControl ItemsSource="{Binding Ouvert.Pieces}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Classes="link" Margin="0,2" Content="{Binding Nom, StringFormat='{}{0} — enregistrer'}"
+                                                        Command="{Binding $parent[UserControl].DataContext.EnregistrerPieceCommand}" CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                                <StackPanel IsVisible="{Binding HasLiensOuvert}" Spacing="2" Margin="0,8,0,0">
+                                    <TextBlock Classes="groupheader" Text="Références SAPHIR"/>
+                                    <TextBlock Classes="muted" Text="Tes droits sont vérifiés à l'ouverture de chaque référence."/>
+                                    <ItemsControl ItemsSource="{Binding Ouvert.Liens}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Classes="link" Margin="0,2" Content="{Binding StringFormat='Ouvrir {0}'}"
+                                                        Command="{Binding $parent[UserControl].DataContext.OuvrirLienCommand}" CommandParameter="{Binding}"/>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                                <StackPanel IsVisible="{Binding HasConversation}" Spacing="2" Margin="0,10,0,0">
+                                    <TextBlock Classes="groupheader" Text="Conversation"/>
+                                    <ItemsControl ItemsSource="{Binding Conversation}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Left" Padding="6,4"
+                                                        Command="{Binding $parent[UserControl].DataContext.OuvrirConversationCommand}" CommandParameter="{Binding}">
+                                                    <StackPanel>
+                                                        <TextBlock FontSize="11.5" Foreground="#1E395B">
+                                                            <Run Text="{Binding Expediteur, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                            <Run Text="{Binding Date, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                                        </TextBlock>
+                                                        <TextBlock Text="{Binding Apercu}" FontSize="11" Foreground="#5B6B7C" TextTrimming="CharacterEllipsis"/>
+                                                    </StackPanel>
+                                                </Button>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ===== Rédaction ===== -->
+            <ScrollViewer Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsNouveau}">
+                <StackPanel Margin="16,12" Spacing="8" MaxWidth="860" HorizontalAlignment="Stretch">
+                    <TextBlock Classes="instruction" Text="{Binding TitreRedaction}"/>
+                    <cx:SelecteurAgentsView DataContext="{Binding A}"/>
+                    <cx:SelecteurAgentsView DataContext="{Binding Cc}"/>
+                    <TextBlock Classes="label" Text="Liste de diffusion (tous les agents actifs d'un service)"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <ComboBox ItemsSource="{Binding ServicesDiffusion}" SelectedItem="{Binding ServiceDiffusion}" HorizontalAlignment="Stretch"
+                                  PlaceholderText="Choisir un service"/>
+                        <Button Grid.Column="1" Content="Ajouter le service" Command="{Binding AjouterDiffusionCommand}" Margin="8,0,0,0"/>
+                    </Grid>
+                    <TextBlock Classes="muted" Text="{Binding ListeDiffusion, StringFormat='Diffusion : {0}'}"/>
+                    <TextBlock Classes="label" Text="Objet"/>
+                    <TextBox Text="{Binding Sujet}" MaxLength="200"/>
+                    <TextBlock Classes="label" Text="Message"/>
+                    <TextBox Text="{Binding Corps}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="200"/>
+                    <CheckBox Content="Message important" IsChecked="{Binding Important}"/>
+
+                    <TextBlock Classes="groupheader" Text="Références SAPHIR" Margin="0,6,0,0"/>
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBox Text="{Binding NouveauLien}" Watermark="PER-000012, PVE-2026-000004, INT-2026-000031…"/>
+                        <Button Grid.Column="1" Content="Ajouter" Command="{Binding AjouterLienCommand}" Margin="8,0,0,0"/>
+                    </Grid>
+                    <ItemsControl ItemsSource="{Binding LiensComposes}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="6,2" Margin="0,0,4,4">
+                                    <StackPanel Orientation="Horizontal" Spacing="6">
+                                        <TextBlock Text="{Binding}" FontSize="12" Foreground="Black"/>
+                                        <Button Classes="link" Content="Retirer" FontSize="11"
+                                                Command="{Binding $parent[UserControl].DataContext.RetirerLienCommand}" CommandParameter="{Binding}"/>
+                                    </StackPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Classes="groupheader" Text="Pièces jointes (10 Mo au plus par fichier)" Margin="0,6,0,0"/>
+                    <ItemsControl ItemsSource="{Binding PiecesComposees}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                                    <TextBlock Text="{Binding Nom}" FontSize="12" Foreground="Black"/>
+                                    <TextBlock Text="{Binding Taille}" FontSize="11" Foreground="#5B6B7C"/>
+                                    <Button Classes="link" Content="Retirer" FontSize="11"
+                                            Command="{Binding $parent[UserControl].DataContext.RetirerPieceCommand}" CommandParameter="{Binding}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Content="Joindre un fichier…" Command="{Binding AjouterPieceCommand}" HorizontalAlignment="Left"/>
+
+                    <Border BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="0,10,0,0" Margin="0,6,0,0">
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Abandonner" Command="{Binding AbandonnerCommand}" Margin="0,0,8,6"/>
+                            <Button Content="Enregistrer le brouillon" Command="{Binding EnregistrerBrouillonCommand}" Margin="0,0,8,6"/>
+                            <Button Classes="default" Content="Envoyer" Command="{Binding EnvoyerCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </Border>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

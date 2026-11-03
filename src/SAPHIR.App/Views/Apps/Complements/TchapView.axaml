@@ -1,0 +1,177 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.TchapView">
+    <!-- TCHAP (messagerie instantanée interne). DataContext : TchapViewModel. -->
+    <UserControl.Styles>
+        <Style Selector="Border.bulle">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D5DFE9"/>
+        </Style>
+        <Style Selector="Border.bulle.moi">
+            <Setter Property="Background" Value="#DCEBFA"/>
+            <Setter Property="BorderBrush" Value="#A9C7EA"/>
+        </Style>
+        <Style Selector="Border.bulle.retire">
+            <Setter Property="Background" Value="#F0F0F0"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <Grid RowDefinitions="Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+
+            <!-- ===== Salons ===== -->
+            <Border Grid.Row="1" Grid.ColumnSpan="{Binding MenuColonnes}" IsVisible="{Binding AfficherSalons}" BorderBrush="#C8D5E7" BorderThickness="0,0,1,0">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#F4F8FD"/>
+                        <GradientStop Offset="1" Color="#DCE6F4"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid RowDefinitions="Auto,*,Auto" Width="{Binding LargeurSalons}">
+                    <Grid ColumnDefinitions="*,Auto" Margin="12,12,8,8">
+                        <TextBlock Classes="groupheader" Text="TCHAP — Salons" VerticalAlignment="Center"/>
+                        <Button Grid.Column="1" Classes="small" Command="{Binding ActualiserCommand}" ToolTip.Tip="Actualiser">
+                            <PathIcon Data="{StaticResource IconRefresh}" Width="13" Height="13" Foreground="#1E395B"/>
+                        </Button>
+                    </Grid>
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Salons}" SelectedItem="{Binding Salon}" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*,Auto" Margin="0,2">
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#2F6FBF" Margin="0,0,8,0" IsVisible="{Binding Service}">
+                                        <TextBlock Text="#" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <Border Width="30" Height="30" CornerRadius="15" Background="#5B8C3A" Margin="0,0,8,0" IsVisible="{Binding !Service}">
+                                        <TextBlock Text="{Binding Initiale}" Foreground="White" FontWeight="Bold" HorizontalAlignment="Center" VerticalAlignment="Center"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Nom}" FontSize="12.5" Foreground="Black" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Sous}" FontSize="10.5" Foreground="#5B6B7C"/>
+                                    </StackPanel>
+                                    <Border Grid.Column="2" IsVisible="{Binding HasNonLus}" Background="#C7503B" CornerRadius="9" Padding="6,1" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding NonLus}" FontSize="10.5" Foreground="White"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <Button Grid.Row="2" Content="Nouveau salon" Command="{Binding NouveauSalonCommand}" Margin="12,8" HorizontalAlignment="Left"/>
+                </Grid>
+            </Border>
+
+            <!-- ===== Conversation ===== -->
+            <Grid Grid.Row="1" Grid.Column="1" IsVisible="{Binding AfficherConversation}">
+                <TextBlock Classes="muted" Text="Choisis un salon pour afficher la conversation." Margin="16" IsVisible="{Binding AucunSalonOuvert}"/>
+
+                <!-- Salon ouvert -->
+                <Grid RowDefinitions="Auto,Auto,*,Auto" IsVisible="{Binding HasSalon}">
+                    <Border Background="{StaticResource HeaderBrush}" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" Padding="12,8">
+                        <Grid ColumnDefinitions="Auto,*,Auto">
+                            <Button Classes="link" Content="←" FontSize="16" Margin="0,0,10,0" IsVisible="{Binding IsCompact}" Command="{Binding RetourCommand}"/>
+                            <StackPanel Grid.Column="1">
+                                <TextBlock Text="{Binding Salon.Nom}" FontSize="14" FontWeight="SemiBold" Foreground="#1E395B" TextTrimming="CharacterEllipsis"/>
+                                <TextBlock Text="{Binding SalonDescription}" FontSize="11" Foreground="#5B6B7C" TextTrimming="CharacterEllipsis"/>
+                            </StackPanel>
+                            <Button Grid.Column="2" Classes="small" Content="Membres et réglages" Command="{Binding MembresCommand}"/>
+                        </Grid>
+                    </Border>
+
+                    <!-- Membres et réglages -->
+                    <Border Grid.Row="1" IsVisible="{Binding MembresVisibles}" Background="#F7FAFD" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" MaxHeight="360">
+                        <ScrollViewer>
+                            <StackPanel Margin="12,8" Spacing="6">
+                                <TextBlock Classes="groupheader" Text="Membres" IsVisible="{Binding EstGroupe}"/>
+                                <TextBlock Classes="muted" Text="Salon de service : ouvert à tous les agents qui ont accès à Tchap." IsVisible="{Binding !EstGroupe}"/>
+                                <ItemsControl ItemsSource="{Binding Membres}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,1">
+                                                <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black"/>
+                                                <TextBlock Text="{Binding Role}" FontSize="11" Foreground="#5B6B7C"/>
+                                                <Button Classes="link" Content="Retirer" FontSize="11"
+                                                        IsVisible="{Binding $parent[UserControl].DataContext.EstAdmin}"
+                                                        Command="{Binding $parent[UserControl].DataContext.RetirerMembreCommand}" CommandParameter="{Binding}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <StackPanel Spacing="6" IsVisible="{Binding PeutGererMembres}">
+                                    <cx:SelecteurAgentsView DataContext="{Binding AjoutMembres}"/>
+                                    <Button Content="Ajouter les membres choisis" Command="{Binding AjouterMembresCommand}" HorizontalAlignment="Left"/>
+                                </StackPanel>
+                                <Grid ColumnDefinitions="*,Auto" IsVisible="{Binding EstAdmin}">
+                                    <TextBox Text="{Binding Renommage}" Watermark="Nom du salon"/>
+                                    <Button Grid.Column="1" Content="Renommer" Command="{Binding RenommerCommand}" Margin="8,0,0,0"/>
+                                </Grid>
+                                <WrapPanel>
+                                    <Button Content="Quitter le salon" Command="{Binding QuitterCommand}" IsVisible="{Binding EstGroupe}" Margin="0,0,8,6"/>
+                                    <Button Content="Archiver le salon" Command="{Binding ArchiverCommand}" IsVisible="{Binding EstAdmin}" Margin="0,0,8,6"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Border>
+
+                    <ScrollViewer Grid.Row="2" Name="Defilement" Background="#EEF2F7">
+                        <StackPanel Margin="12,8" Spacing="6">
+                            <Button Classes="link" Content="Afficher les messages précédents" Command="{Binding PlusAnciensCommand}"
+                                    IsVisible="{Binding PlusAnciens}" HorizontalAlignment="Center"/>
+                            <ItemsControl ItemsSource="{Binding Messages}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border Classes="bulle" Classes.moi="{Binding Moi}" Classes.retire="{Binding Supprime}"
+                                                BorderThickness="1" CornerRadius="6" Padding="10,6" Margin="0,3"
+                                                MaxWidth="560" HorizontalAlignment="{Binding Alignement}">
+                                            <StackPanel>
+                                                <StackPanel Orientation="Horizontal" Spacing="8">
+                                                    <TextBlock Text="{Binding Auteur}" FontSize="11" FontWeight="SemiBold" Foreground="#1E395B" IsVisible="{Binding Autre}"/>
+                                                    <TextBlock Text="{Binding Heure}" FontSize="10.5" Foreground="#5B6B7C"/>
+                                                    <Button Classes="link" Content="Retirer" FontSize="10.5" IsVisible="{Binding PeutRetirer}"
+                                                            Command="{Binding $parent[UserControl].DataContext.RetirerMessageCommand}" CommandParameter="{Binding}"/>
+                                                </StackPanel>
+                                                <SelectableTextBlock Text="{Binding Texte}" TextWrapping="Wrap" FontSize="12.5" Foreground="Black"/>
+                                            </StackPanel>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+
+                    <Border Grid.Row="3" BorderBrush="#C8D5E7" BorderThickness="0,1,0,0" Padding="10,8" Background="White">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBox Text="{Binding Texte}" Watermark="Écrire un message (Entrée pour envoyer)" IsEnabled="{Binding PeutEcrire}"
+                                     TextWrapping="Wrap" MaxHeight="120" MaxLength="4000">
+                                <TextBox.KeyBindings>
+                                    <KeyBinding Gesture="Enter" Command="{Binding EnvoyerCommand}"/>
+                                </TextBox.KeyBindings>
+                            </TextBox>
+                            <Button Grid.Column="1" Classes="default" Content="Envoyer" Command="{Binding EnvoyerCommand}" IsEnabled="{Binding PeutEcrire}" Margin="8,0,0,0"/>
+                        </Grid>
+                    </Border>
+                </Grid>
+
+                <!-- Nouveau salon -->
+                <ScrollViewer IsVisible="{Binding NouveauSalon}" Background="White">
+                    <StackPanel Margin="16,12" Spacing="6" MaxWidth="640" HorizontalAlignment="Left">
+                        <Button Classes="link" Content="← Retour" Command="{Binding AnnulerSalonCommand}" IsVisible="{Binding IsCompact}"/>
+                        <TextBlock Classes="instruction" Text="Nouveau salon"/>
+                        <TextBlock Classes="label" Text="Nom du salon"/>
+                        <TextBox Text="{Binding NomSalon}" MaxLength="100"/>
+                        <TextBlock Classes="label" Text="Description"/>
+                        <TextBox Text="{Binding DescriptionSalon}" MaxLength="300"/>
+                        <CheckBox Content="Salon de service (ouvert à tous les agents)" IsChecked="{Binding SalonService}" IsVisible="{Binding CanSalonService}"/>
+                        <cx:SelecteurAgentsView DataContext="{Binding NouveauxMembres}" IsVisible="{Binding $parent[UserControl].DataContext.MembresNouveauSalon}"/>
+                        <WrapPanel HorizontalAlignment="Right" Margin="0,6,0,0">
+                            <Button Content="Annuler" Command="{Binding AnnulerSalonCommand}" Margin="0,0,8,6"/>
+                            <Button Classes="default" Content="Créer le salon" Command="{Binding CreerSalonCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,156 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.MrzView">
+    <!-- MRZ. DataContext : MrzViewModel. -->
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+            <cx:MenuComplementsView Grid.Row="1" Grid.RowSpan="{Binding MenuLignes}" Grid.ColumnSpan="{Binding MenuColonnes}"/>
+
+            <!-- ===== Lecture ===== -->
+            <ScrollViewer Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsLecture}">
+                <StackPanel Margin="16,12" Spacing="8" MaxWidth="900" HorizontalAlignment="Stretch">
+                    <TextBlock Classes="instruction" Text="Lecture d'une bande MRZ"/>
+                    <TextBlock Classes="muted" Text="Saisis ou colle la zone de lecture automatique d'un document fictif : carte d'identité (3 lignes de 30), passeport (2 lignes de 44) ou ancienne carte nationale d'identité française (2 lignes de 36)."/>
+                    <TextBox Text="{Binding Texte}" AcceptsReturn="True" TextWrapping="NoWrap" MinHeight="86"
+                             FontFamily="Consolas, Menlo, DejaVu Sans Mono, Courier New, monospace" FontSize="15"
+                             Watermark="IDFRAX4RTBPFW46&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;&lt;"/>
+                    <WrapPanel>
+                        <Button Classes="default" Content="Analyser" Command="{Binding AnalyserCommand}" Margin="0,0,8,6"/>
+                        <Button Content="Effacer" Command="{Binding EffacerCommand}" Margin="0,0,8,6"/>
+                    </WrapPanel>
+
+                    <StackPanel IsVisible="{Binding HasResultat}" Spacing="8">
+                        <Border Background="#E9F6E9" BorderBrush="#8CC68C" BorderThickness="1" Padding="10,6" IsVisible="{Binding BilanOk}">
+                            <TextBlock Text="{Binding Bilan}" Foreground="#1D5E1D" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </Border>
+                        <Border Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="1" Padding="10,6" IsVisible="{Binding BilanKo}">
+                            <TextBlock Text="{Binding Bilan}" Foreground="#7A4B00" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                        </Border>
+                        <ItemsControl ItemsSource="{Binding Erreurs}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding StringFormat='• {0}'}" Foreground="#C7503B" FontSize="12" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="groupheader" Text="Chiffres de contrôle (7-3-1)" IsVisible="{Binding Reconnu}"/>
+                        <ItemsControl ItemsSource="{Binding Controles}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="20,180,*" Margin="0,1">
+                                        <TextBlock Text="✔" Foreground="#2E8B2E" IsVisible="{Binding Ok}"/>
+                                        <TextBlock Text="✘" Foreground="#C7503B" IsVisible="{Binding !Ok}"/>
+                                        <TextBlock Grid.Column="1" Text="{Binding Libelle}" FontSize="12" Foreground="Black"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Detail}" FontSize="12" Foreground="#5B6B7C"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <StackPanel IsVisible="{Binding Reconnu}" Spacing="6">
+                            <TextBlock Classes="groupheader" Text="Identité extraite (corrigeable après vérification visuelle)" Margin="0,6,0,0"/>
+                            <WrapPanel>
+                                <StackPanel Width="220" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Nom"/>
+                                    <TextBox Text="{Binding Nom}"/>
+                                </StackPanel>
+                                <StackPanel Width="240" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Prénoms"/>
+                                    <TextBox Text="{Binding Prenoms}"/>
+                                </StackPanel>
+                                <StackPanel Width="130" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Né(e) le"/>
+                                    <TextBox Text="{Binding Naissance}" Watermark="JJ/MM/AAAA"/>
+                                </StackPanel>
+                                <StackPanel Width="60" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Sexe"/>
+                                    <TextBox Text="{Binding Sexe}"/>
+                                </StackPanel>
+                                <StackPanel Width="160" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="N° du document"/>
+                                    <TextBox Text="{Binding Numero}"/>
+                                </StackPanel>
+                                <StackPanel Width="70" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Type"/>
+                                    <TextBox Text="{Binding Type}"/>
+                                </StackPanel>
+                                <StackPanel Width="90" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Nationalité"/>
+                                    <TextBox Text="{Binding Nationalite}"/>
+                                </StackPanel>
+                                <StackPanel Width="130" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Expire le"/>
+                                    <TextBox Text="{Binding Expiration}" Watermark="JJ/MM/AAAA"/>
+                                </StackPanel>
+                            </WrapPanel>
+                            <TextBlock Text="Document expiré." Foreground="#C7503B" FontWeight="SemiBold" IsVisible="{Binding Expiree}"/>
+                            <CheckBox IsChecked="{Binding Confirmation}"
+                                      Content="Je confirme avoir vérifié visuellement le document et l'identité de la personne"/>
+
+                            <TextBlock Classes="groupheader" Text="Liaison avec une identité SAPHIR" Margin="0,8,0,0"/>
+                            <WrapPanel>
+                                <Button Content="Rechercher dans SAPHIR" Command="{Binding RechercherCommand}" Margin="0,0,8,6"/>
+                                <Button Content="Créer cette identité" Command="{Binding CreerPersonneCommand}" IsVisible="{Binding AucunePersonne}" Margin="0,0,8,6"/>
+                            </WrapPanel>
+                            <TextBlock Classes="muted" Text="Aucune personne correspondante dans SAPHIR." IsVisible="{Binding AucunePersonne}"/>
+                            <ListBox ItemsSource="{Binding Personnes}" SelectedItem="{Binding Personne}" MaxHeight="220"
+                                     BorderBrush="#C8D5E7" BorderThickness="1">
+                                <ListBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,2">
+                                            <TextBlock FontSize="12.5" Foreground="Black">
+                                                <Run Text="{Binding Libelle, Mode=OneWay}" FontWeight="SemiBold"/>
+                                                <Run Text="{Binding Reference, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                            </TextBlock>
+                                            <TextBlock Text="Date de naissance concordante" FontSize="11" Foreground="#2E8B2E" IsVisible="{Binding NaissanceConcordante}"/>
+                                            <TextBlock Text="{Binding Alertes}" FontSize="11.5" FontWeight="SemiBold" Foreground="#C7503B" IsVisible="{Binding HasAlertes}"/>
+                                            <TextBlock Text="{Binding Alertes}" FontSize="11" Foreground="#5B6B7C" IsVisible="{Binding !HasAlertes}"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ListBox.ItemTemplate>
+                            </ListBox>
+                            <TextBlock Classes="label" Text="Contexte du contrôle (facultatif)"/>
+                            <TextBox Text="{Binding Contexte}" Watermark="Contrôle routier av. du Général-de-Gaulle, intervention INT-2026-000031…"/>
+                            <WrapPanel HorizontalAlignment="Right">
+                                <Button Content="Ouvrir la fiche dans CHEOPS" Command="{Binding OuvrirFicheCommand}" Margin="0,0,8,6"
+                                        IsVisible="{Binding PeutOuvrirFiche}"/>
+                                <Button Classes="default" Content="Enregistrer la lecture" Command="{Binding EnregistrerCommand}" Margin="0,0,0,6"/>
+                            </WrapPanel>
+                        </StackPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ===== Mes lectures ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsHistorique}" RowDefinitions="Auto,*" Margin="10">
+                <Grid ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                    <TextBlock Classes="instruction" Text="Mes lectures MRZ"/>
+                    <Button Grid.Column="1" Content="Actualiser" Command="{Binding ActualiserHistoriqueCommand}"/>
+                </Grid>
+                <ListBox Grid.Row="1" ItemsSource="{Binding Lectures}" BorderBrush="#C8D5E7" BorderThickness="1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <StackPanel Margin="0,2">
+                                <TextBlock FontSize="12.5" Foreground="Black">
+                                    <Run Text="{Binding Identite, Mode=OneWay}" FontWeight="SemiBold"/>
+                                </TextBlock>
+                                <TextBlock Text="{Binding Document}" FontSize="11.5" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding Personne}" FontSize="11.5" Foreground="#2F6FBF" TextWrapping="Wrap"/>
+                                <TextBlock FontSize="10.5" Foreground="#5B6B7C">
+                                    <Run Text="{Binding Reference, Mode=OneWay}"/>
+                                    <Run Text="{Binding Date, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                    <Run Text="{Binding Bilan, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                </TextBlock>
+                            </StackPanel>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

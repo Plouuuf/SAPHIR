@@ -1,0 +1,104 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.NotesView">
+    <!-- NOTES. DataContext : NotesViewModel. -->
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+            <cx:MenuComplementsView Grid.Row="1" Grid.RowSpan="{Binding MenuLignes}" Grid.ColumnSpan="{Binding MenuColonnes}"/>
+
+            <Grid Grid.Row="2" Grid.Column="1" Margin="10" ColumnDefinitions="*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding AfficherListe}">
+                    <WrapPanel Margin="0,0,0,6">
+                        <Button Classes="default" Content="Nouvelle note" Command="{Binding NouvelleCommand}" Margin="0,0,8,6"/>
+                        <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Categorie}" Width="190" Margin="0,0,8,6"/>
+                    </WrapPanel>
+                    <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+                        <TextBox Text="{Binding Recherche}" Watermark="Rechercher dans les titres, textes et catégories"/>
+                        <Button Grid.Column="1" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="8,0,0,0"/>
+                    </Grid>
+                    <ListBox Grid.Row="2" ItemsSource="{Binding Notes}" SelectedItem="{Binding Selection}" BorderBrush="#C8D5E7" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*" Margin="0,2">
+                                    <PathIcon Data="{StaticResource IconFlag}" Width="12" Height="12" Foreground="#C7503B" Margin="0,2,6,0"
+                                              VerticalAlignment="Top" IsVisible="{Binding Epinglee}"/>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Titre}" FontSize="12.5" FontWeight="SemiBold" Foreground="Black" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Apercu}" FontSize="11.5" Foreground="#3C3C3C" TextTrimming="CharacterEllipsis"/>
+                                        <TextBlock Text="{Binding Infos}" FontSize="10.5" Foreground="#5B6B7C"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <TextBlock Grid.Row="2" Classes="muted" Text="Aucune note." Margin="12" IsVisible="{Binding ListeVide}"/>
+                </Grid>
+
+                <Border Grid.Column="{Binding ColonneDetail}" Width="{Binding LargeurDetail}" Margin="{Binding MargeDetail}"
+                        IsVisible="{Binding AfficherEdition}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#FFFDF2">
+                    <Grid>
+                        <TextBlock Classes="muted" Text="Sélectionne une note ou crée-en une nouvelle." Margin="14" IsVisible="{Binding !EditionVisible}"/>
+                        <ScrollViewer IsVisible="{Binding EditionVisible}">
+                            <StackPanel Margin="14,12" Spacing="6">
+                                <Button Classes="link" Content="← Retour à la liste" IsVisible="{Binding IsCompact}" Command="{Binding RetourListeCommand}"/>
+                                <TextBlock Classes="instruction" Text="{Binding TitreEdition}"/>
+                                <TextBlock Classes="muted" Text="{Binding InfosEdition}"/>
+                                <TextBlock Classes="label" Text="Titre"/>
+                                <TextBox Text="{Binding Titre}" IsReadOnly="{Binding LectureSeule}" MaxLength="200"/>
+                                <TextBlock Classes="label" Text="Catégorie"/>
+                                <TextBox Text="{Binding EditCategorie}" IsReadOnly="{Binding LectureSeule}" Watermark="Service, procédure, contacts…" MaxLength="60"/>
+                                <ItemsControl ItemsSource="{Binding CategoriesExistantes}" IsVisible="{Binding PeutModifier}">
+                                    <ItemsControl.ItemsPanel>
+                                        <ItemsPanelTemplate>
+                                            <WrapPanel/>
+                                        </ItemsPanelTemplate>
+                                    </ItemsControl.ItemsPanel>
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <Button Classes="link" Content="{Binding}" FontSize="11" Margin="0,0,10,2"
+                                                    Command="{Binding $parent[UserControl].DataContext.ChoisirCategorieCommand}" CommandParameter="{Binding}"/>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Classes="label" Text="Texte"/>
+                                <TextBox Text="{Binding Contenu}" IsReadOnly="{Binding LectureSeule}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="220"/>
+                                <CheckBox Content="Épingler en haut de la liste" IsChecked="{Binding Epinglee}" IsVisible="{Binding EstAuteur}"/>
+                                <cx:SelecteurAgentsView DataContext="{Binding Partages}" IsVisible="{Binding $parent[UserControl].DataContext.EstAuteur}"/>
+                                <WrapPanel HorizontalAlignment="Right" Margin="0,6,0,0">
+                                    <Button Content="Historique" Command="{Binding HistoriqueCommand}" IsVisible="{Binding PeutHistorique}" Margin="0,0,8,6"/>
+                                    <Button Content="{Binding LibelleSupprimer}" Command="{Binding SupprimerCommand}" IsVisible="{Binding PeutSupprimer}" Margin="0,0,8,6"/>
+                                    <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}" IsVisible="{Binding PeutModifier}" Margin="0,0,0,6"/>
+                                </WrapPanel>
+                                <StackPanel IsVisible="{Binding HistoriqueVisible}" Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <TextBlock Classes="groupheader" Text="Historique de la note"/>
+                                        <Button Grid.Column="1" Classes="link" Content="Masquer" Command="{Binding FermerHistoriqueCommand}"/>
+                                    </Grid>
+                                    <ItemsControl ItemsSource="{Binding Historique}">
+                                        <ItemsControl.ItemTemplate>
+                                            <DataTemplate>
+                                                <StackPanel Margin="0,2">
+                                                    <TextBlock FontSize="11.5" Foreground="#1E395B">
+                                                        <Run Text="{Binding Date, Mode=OneWay}"/>
+                                                        <Run Text="{Binding Auteur, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                                        <Run Text="{Binding Action, Mode=OneWay, StringFormat=' — {0}'}" FontWeight="SemiBold"/>
+                                                    </TextBlock>
+                                                    <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                                </StackPanel>
+                                            </DataTemplate>
+                                        </ItemsControl.ItemTemplate>
+                                    </ItemsControl>
+                                </StackPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

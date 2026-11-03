@@ -1,0 +1,171 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             x:Class="Saphir.Views.Apps.Complements.NeoView">
+    <!-- NEO — terminal mobile (téléphone d'abord). DataContext : NeoViewModel. -->
+    <UserControl.Styles>
+        <Style Selector="Border.carte">
+            <Setter Property="Background" Value="White"/>
+            <Setter Property="BorderBrush" Value="#D5DFE9"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="CornerRadius" Value="8"/>
+            <Setter Property="Padding" Value="14,10"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid Background="#EEF2F7">
+        <Grid RowDefinitions="Auto,Auto,*">
+            <controls:MessageBar/>
+
+            <!-- Bandeau -->
+            <Border Grid.Row="1" Padding="12,8">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#2A4A73"/>
+                        <GradientStop Offset="1" Color="#16304F"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <Grid ColumnDefinitions="Auto,*">
+                    <Button Classes="flat" Command="{Binding AccueilCommand}" IsVisible="{Binding !IsAccueil}" Padding="4,2" Margin="0,0,10,0">
+                        <StackPanel Orientation="Horizontal" Spacing="4">
+                            <PathIcon Data="{StaticResource IconArrowLeft}" Width="16" Height="16" Foreground="White"/>
+                            <TextBlock Text="Accueil" Foreground="White" FontSize="13" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                    <StackPanel Grid.Column="1" VerticalAlignment="Center">
+                        <TextBlock Text="NEO" Foreground="White" FontSize="16" FontWeight="SemiBold" IsVisible="{Binding IsAccueil}"/>
+                        <TextBlock Text="{Binding TitrePage}" Foreground="White" FontSize="15" FontWeight="SemiBold" IsVisible="{Binding !IsAccueil}"/>
+                        <TextBlock Text="Terminal mobile — Police nationale (simulation)" Foreground="#C4DCF4" FontSize="11" IsVisible="{Binding IsAccueil}"/>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ===== Accueil ===== -->
+            <ScrollViewer Grid.Row="2" IsVisible="{Binding IsAccueil}">
+                <StackPanel Margin="12" Spacing="10" MaxWidth="760" HorizontalAlignment="Stretch">
+                    <Border Classes="carte">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Border Width="48" Height="48" CornerRadius="24" Background="#DCE6F4" Margin="0,0,12,0" VerticalAlignment="Top">
+                                <PathIcon Data="{StaticResource IconPerson}" Width="28" Height="28" Foreground="#2F6FBF"/>
+                            </Border>
+                            <StackPanel Grid.Column="1" Spacing="1">
+                                <TextBlock Text="{Binding AgentNom}" FontSize="16" FontWeight="SemiBold" Foreground="#1E395B" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding AgentGrade}" FontSize="12.5" Foreground="Black"/>
+                                <TextBlock Text="{Binding AgentRio}" FontSize="12" Foreground="#3C3C3C"/>
+                                <TextBlock Text="{Binding AgentAffectation}" FontSize="11.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <Border Classes="carte" IsVisible="{Binding CanIntervention}">
+                        <StackPanel Spacing="4">
+                            <TextBlock Classes="groupheader" Text="Intervention en cours"/>
+                            <StackPanel IsVisible="{Binding HasIntervention}" Spacing="2">
+                                <TextBlock Text="{Binding InterventionTitre}" FontSize="13.5" FontWeight="SemiBold" Foreground="Black" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding InterventionLieu}" FontSize="12" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding InterventionDetail}" FontSize="11.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                <TextBlock Text="{Binding InterventionEquipages}" FontSize="11.5" Foreground="#2F6FBF" TextWrapping="Wrap"/>
+                                <WrapPanel Margin="0,4,0,0">
+                                    <Button Content="Actualiser" Command="{Binding ActualiserInterventionCommand}" Margin="0,0,8,4"/>
+                                    <Button Classes="default" Content="Ouvrir dans PÉGASE" Command="{Binding OuvrirInterventionCommand}" Margin="0,0,0,4"/>
+                                </WrapPanel>
+                            </StackPanel>
+                            <StackPanel IsVisible="{Binding !HasIntervention}" Spacing="4">
+                                <TextBlock Classes="muted" Text="Aucune intervention suivie. Indique son identifiant pour l'afficher ici (statut, adresse, équipages)."/>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBox Text="{Binding SaisieIntervention}" Watermark="Identifiant (ex. 31)"/>
+                                    <Button Grid.Column="1" Content="Suivre" Command="{Binding SuivreInterventionCommand}" Margin="8,0,0,0"/>
+                                </Grid>
+                            </StackPanel>
+                        </StackPanel>
+                    </Border>
+
+                    <ItemsControl ItemsSource="{Binding Tuiles}">
+                        <ItemsControl.ItemsPanel>
+                            <ItemsPanelTemplate>
+                                <WrapPanel HorizontalAlignment="Center"/>
+                            </ItemsPanelTemplate>
+                        </ItemsControl.ItemsPanel>
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="flat" Command="{Binding OuvrirCommand}" Margin="4" Padding="0">
+                                    <Border Width="108" Height="104" Background="White" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="10">
+                                        <Grid>
+                                            <StackPanel VerticalAlignment="Center" Spacing="3">
+                                                <Image Source="{Binding Icone}" Width="38" Height="38" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding Titre}" FontSize="12.5" FontWeight="SemiBold" Foreground="#1E395B" HorizontalAlignment="Center"/>
+                                                <TextBlock Text="{Binding SousTitre}" FontSize="10" Foreground="#5B6B7C" HorizontalAlignment="Center"
+                                                           TextAlignment="Center" TextWrapping="Wrap" Margin="4,0"/>
+                                            </StackPanel>
+                                            <Border IsVisible="{Binding HasCompteur}" Background="#C7503B" CornerRadius="9" Padding="6,1"
+                                                    HorizontalAlignment="Right" VerticalAlignment="Top" Margin="0,6,6,0">
+                                                <TextBlock Text="{Binding Compteur}" FontSize="10.5" Foreground="White"/>
+                                            </Border>
+                                        </Grid>
+                                    </Border>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- ===== Consultation rapide ===== -->
+            <Grid Grid.Row="2" IsVisible="{Binding IsRecherche}" RowDefinitions="Auto,Auto,*" Margin="12">
+                <Grid ColumnDefinitions="*,Auto">
+                    <TextBox Text="{Binding Recherche}" Watermark="{Binding FiligraneRecherche}" FontSize="14"/>
+                    <Button Grid.Column="1" Classes="default" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="8,0,0,0"/>
+                </Grid>
+                <TextBlock Grid.Row="1" Classes="muted" Text="Consultation journalisée. Le détail des fichiers reste soumis à tes habilitations (CHEOPS)." Margin="0,6"/>
+                <ScrollViewer Grid.Row="2">
+                    <StackPanel Spacing="8">
+                        <TextBlock Classes="muted" Text="Aucun résultat." IsVisible="{Binding AucunResultat}"/>
+                        <ItemsControl ItemsSource="{Binding Resultats}" IsVisible="{Binding IsPersonne}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="carte" Margin="0,0,0,8">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Libelle}" FontSize="13.5" FontWeight="SemiBold" Foreground="Black" TextWrapping="Wrap"/>
+                                            <TextBlock FontSize="11.5" Foreground="#5B6B7C" TextWrapping="Wrap">
+                                                <Run Text="{Binding Reference, Mode=OneWay}"/>
+                                                <Run Text="{Binding LieuNaissance, Mode=OneWay, StringFormat=' · né(e) à {0}'}"/>
+                                            </TextBlock>
+                                            <Border Background="#FBE3DE" BorderBrush="#E3A08F" BorderThickness="1" CornerRadius="3" Padding="6,2" IsVisible="{Binding HasAlertes}">
+                                                <TextBlock Text="{Binding Alertes}" FontSize="12" FontWeight="SemiBold" Foreground="#A3301B" TextWrapping="Wrap"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Alertes}" FontSize="11.5" Foreground="#2E8B2E" IsVisible="{Binding !HasAlertes}"/>
+                                            <Button Classes="link" Content="Ouvrir la fiche dans CHEOPS" Margin="0,4,0,0"
+                                                    Command="{Binding $parent[UserControl].DataContext.OuvrirFicheCommand}" CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <ItemsControl ItemsSource="{Binding Vehicules}" IsVisible="{Binding IsVehicule}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border Classes="carte" Margin="0,0,0,8">
+                                        <StackPanel Spacing="2">
+                                            <TextBlock Text="{Binding Titre}" FontSize="13.5" FontWeight="SemiBold" Foreground="Black" TextWrapping="Wrap"/>
+                                            <TextBlock Text="{Binding Titulaire}" FontSize="11.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                            <Border Background="#FBE3DE" BorderBrush="#E3A08F" BorderThickness="1" CornerRadius="3" Padding="6,2" IsVisible="{Binding HasAlertes}">
+                                                <TextBlock Text="{Binding Alertes}" FontSize="12" FontWeight="SemiBold" Foreground="#A3301B" TextWrapping="Wrap"/>
+                                            </Border>
+                                            <TextBlock Text="{Binding Alertes}" FontSize="11.5" Foreground="#2E8B2E" IsVisible="{Binding !HasAlertes}"/>
+                                            <Button Classes="link" Content="Ouvrir la fiche dans CHEOPS" Margin="0,4,0,0"
+                                                    Command="{Binding $parent[UserControl].DataContext.OuvrirFicheCommand}" CommandParameter="{Binding}"/>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+
+            <!-- ===== Application ouverte dans NEO ===== -->
+            <ContentControl Grid.Row="2" Name="Contenu" IsVisible="{Binding HasApplication}" Background="White"/>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

@@ -15,6 +15,12 @@ public partial class App : Application
 {
     public override void Initialize()
     {
+        // Dates, nombres et calendriers en français sur toutes les plateformes.
+        var francais = System.Globalization.CultureInfo.GetCultureInfo("fr-FR");
+        System.Globalization.CultureInfo.DefaultThreadCurrentCulture = francais;
+        System.Globalization.CultureInfo.DefaultThreadCurrentUICulture = francais;
+        System.Globalization.CultureInfo.CurrentCulture = francais;
+        System.Globalization.CultureInfo.CurrentUICulture = francais;
         AvaloniaXamlLoader.Load(this);
     }
 

@@ -1,0 +1,232 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.BodycamView">
+    <!-- BODYCAM. DataContext : BodycamViewModel. -->
+    <UserControl.Styles>
+        <Style Selector="Border.cadre">
+            <Setter Property="BorderBrush" Value="#C8D5E7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F7FAFD"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,0,0,10"/>
+        </Style>
+    </UserControl.Styles>
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+            <cx:MenuComplementsView Grid.Row="1" Grid.RowSpan="{Binding MenuLignes}" Grid.ColumnSpan="{Binding MenuColonnes}"/>
+
+            <!-- ===== Registre ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsRegistre}" RowDefinitions="Auto,Auto,*" Margin="10">
+                <TextBlock Classes="instruction" Text="Registre des enregistrements bodycam" Margin="0,0,0,6"/>
+                <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                    <TextBox Text="{Binding Recherche}" Watermark="Numéro, agent, description, provenance" Width="250" Margin="0,0,8,6"/>
+                    <TextBox Text="{Binding FiltreIntervention}" Watermark="N° d'intervention" Width="160" Margin="0,0,8,6"/>
+                    <Button Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,8,6"/>
+                    <CheckBox Content="Afficher les archives" IsChecked="{Binding Archives}" Margin="0,0,8,6"/>
+                </WrapPanel>
+                <ListBox Grid.Row="2" ItemsSource="{Binding Liste}" BorderBrush="#C8D5E7" BorderThickness="1">
+                    <ListBox.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="flat" Foreground="Black" HorizontalAlignment="Stretch" HorizontalContentAlignment="Stretch" Padding="2"
+                                    Command="{Binding $parent[UserControl].DataContext.OuvrirCommand}" CommandParameter="{Binding}">
+                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                    <Border Width="46" Height="34" CornerRadius="2" Background="#1E2B3A" Margin="0,0,10,0" VerticalAlignment="Top">
+                                        <PathIcon Data="{StaticResource IconTriangleRight}" Width="14" Height="14" Foreground="White"/>
+                                    </Border>
+                                    <StackPanel Grid.Column="1">
+                                        <TextBlock Text="{Binding Titre}" FontSize="12.5" FontWeight="SemiBold" Foreground="Black"/>
+                                        <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                        <TextBlock Text="{Binding Description}" FontSize="11.5" Foreground="#3C3C3C" TextTrimming="CharacterEllipsis"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2" Margin="10,0,0,0">
+                                        <Border CornerRadius="2" Padding="6,1" Background="#2E8B2E" IsVisible="{Binding Disponible}">
+                                            <TextBlock Text="{Binding Statut}" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <Border CornerRadius="2" Padding="6,1" Background="#D08A1E" IsVisible="{Binding EnAttente}">
+                                            <TextBlock Text="{Binding Statut}" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                        <Border CornerRadius="2" Padding="6,1" Background="#8492A3" IsVisible="{Binding Archive}">
+                                            <TextBlock Text="{Binding Statut}" FontSize="10.5" Foreground="White"/>
+                                        </Border>
+                                    </StackPanel>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ListBox.ItemTemplate>
+                </ListBox>
+                <TextBlock Grid.Row="2" Classes="muted" Text="Aucun enregistrement." Margin="12" IsVisible="{Binding ListeVide}"/>
+            </Grid>
+
+            <!-- ===== Fiche ===== -->
+            <ScrollViewer Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsFiche}">
+                <StackPanel Margin="14,10" MaxWidth="900" HorizontalAlignment="Stretch">
+                    <Button Classes="link" Content="← Retour au registre" Command="{Binding RetourCommand}" Margin="0,0,0,6"/>
+                    <TextBlock Classes="instruction" Text="{Binding TitreFiche}" Margin="0,0,0,8"/>
+
+                    <!-- Transfert en cours -->
+                    <Border Classes="cadre" IsVisible="{Binding Transfert}" Background="#E8F2FC">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding TexteTransfert}" Foreground="Black"/>
+                            <ProgressBar Minimum="0" Maximum="100" Value="{Binding Progression}" Height="14"/>
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Consultation -->
+                    <StackPanel IsVisible="{Binding Lecture}">
+                        <Border Classes="cadre">
+                            <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                                <TextBlock Classes="label" Text="Porteur"/>
+                                <TextBlock Grid.Column="1" Text="{Binding Fiche.Agent}" Foreground="Black" FontWeight="SemiBold"/>
+                                <TextBlock Grid.Row="1" Classes="label" Text="Enregistré le"/>
+                                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding FicheDate}" Foreground="Black"/>
+                                <TextBlock Grid.Row="2" Classes="label" Text="Durée"/>
+                                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding FicheDuree}" Foreground="Black"/>
+                                <TextBlock Grid.Row="3" Classes="label" Text="Intervention"/>
+                                <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Fiche.InterventionNumero}" Foreground="Black"/>
+                                <TextBlock Grid.Row="4" Classes="label" Text="Provenance"/>
+                                <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Fiche.Provenance}" Foreground="Black"/>
+                                <TextBlock Grid.Row="5" Classes="label" Text="Vidéo"/>
+                                <TextBlock Grid.Row="5" Grid.Column="1" Text="{Binding FicheSource}" Foreground="Black" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="6" Classes="label" Text="Fichier"/>
+                                <TextBlock Grid.Row="6" Grid.Column="1" Text="{Binding FicheFichier}" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+                                <TextBlock Grid.Row="7" Classes="label" Text="Statut"/>
+                                <TextBlock Grid.Row="7" Grid.Column="1" Text="{Binding Fiche.Statut}" Foreground="Black"/>
+                                <TextBlock Grid.Row="8" Classes="label" Text="Créé par"/>
+                                <TextBlock Grid.Row="8" Grid.Column="1" Text="{Binding Fiche.CreePar}" Foreground="#3C3C3C" TextWrapping="Wrap"/>
+                            </Grid>
+                        </Border>
+                        <Border Classes="cadre">
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="groupheader" Text="Description"/>
+                                <SelectableTextBlock Text="{Binding Fiche.Description}" TextWrapping="Wrap" Foreground="Black"/>
+                                <TextBlock Text="{Binding Fiche.MotifArchivage, StringFormat='Archivé — motif : {0}'}" Foreground="#C7503B"
+                                           TextWrapping="Wrap" IsVisible="{Binding FicheArchivee}"/>
+                            </StackPanel>
+                        </Border>
+                        <WrapPanel Margin="0,0,0,8">
+                            <Button Classes="default" Content="Visionner la vidéo" Command="{Binding VisionnerCommand}" IsVisible="{Binding PeutVisionner}" Margin="0,0,8,6"/>
+                            <Button Content="Envoyer le fichier vidéo…" Command="{Binding EnvoyerVideoCommand}" IsVisible="{Binding PeutEnvoyer}" Margin="0,0,8,6"/>
+                            <Button Content="Modifier" Command="{Binding ModifierCommand}" IsVisible="{Binding PeutModifier}" Margin="0,0,8,6"/>
+                            <Button Content="Journal des accès" Command="{Binding AccesCommand}" IsVisible="{Binding CanGerer}" Margin="0,0,8,6"/>
+                            <Button Content="Historique" Command="{Binding HistoriqueCommand}" IsVisible="{Binding CanGerer}" Margin="0,0,8,6"/>
+                        </WrapPanel>
+                        <TextBlock Classes="muted" Text="Chaque visionnage est inscrit au journal des accès de l'enregistrement." Margin="0,0,0,8"/>
+
+                        <Border Classes="cadre">
+                            <StackPanel Spacing="4">
+                                <TextBlock Classes="groupheader" Text="Documents associés"/>
+                                <TextBlock Classes="muted" Text="Aucun document." IsVisible="{Binding !HasDocuments}"/>
+                                <ItemsControl ItemsSource="{Binding Documents}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Orientation="Horizontal" Spacing="10" Margin="0,2">
+                                                <TextBlock Text="{Binding Nom}" Foreground="Black" FontSize="12"/>
+                                                <Button Classes="link" Content="Enregistrer" FontSize="11.5"
+                                                        Command="{Binding $parent[UserControl].DataContext.EnregistrerDocumentCommand}" CommandParameter="{Binding}"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <Button Content="Associer un document…" Command="{Binding AjouterDocumentCommand}" IsVisible="{Binding PeutDocuments}" HorizontalAlignment="Left"/>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="cadre" IsVisible="{Binding AccesVisible}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="groupheader" Text="Journal des accès"/>
+                                <ItemsControl ItemsSource="{Binding Acces}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock FontSize="11.5" Foreground="Black" TextWrapping="Wrap">
+                                                <Run Text="{Binding Date, Mode=OneWay}" Foreground="#5B6B7C"/>
+                                                <Run Text="{Binding Agent, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                                <Run Text="{Binding Action, Mode=OneWay, StringFormat=' — {0}'}" FontWeight="SemiBold"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="cadre" IsVisible="{Binding HistoriqueVisible}">
+                            <StackPanel Spacing="2">
+                                <TextBlock Classes="groupheader" Text="Historique des modifications"/>
+                                <ItemsControl ItemsSource="{Binding Historique}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate>
+                                            <StackPanel Margin="0,2">
+                                                <TextBlock FontSize="11.5" Foreground="#1E395B">
+                                                    <Run Text="{Binding Date, Mode=OneWay}"/>
+                                                    <Run Text="{Binding Auteur, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                                    <Run Text="{Binding Action, Mode=OneWay, StringFormat=' — {0}'}" FontWeight="SemiBold"/>
+                                                </TextBlock>
+                                                <TextBlock Text="{Binding Detail}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                            </StackPanel>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                            </StackPanel>
+                        </Border>
+
+                        <Border Classes="cadre" IsVisible="{Binding PeutArchiver}" Background="#FFFDF2">
+                            <Grid ColumnDefinitions="*,Auto">
+                                <TextBox Text="{Binding MotifArchivage}" Watermark="Motif d'archivage (fin de conservation, doublon…)"/>
+                                <Button Grid.Column="1" Content="Archiver" Command="{Binding ArchiverCommand}" Margin="8,0,0,0"/>
+                            </Grid>
+                        </Border>
+                    </StackPanel>
+
+                    <!-- Formulaire (création / modification) -->
+                    <StackPanel IsVisible="{Binding Edition}" Spacing="6">
+                        <Border Classes="cadre">
+                            <StackPanel Spacing="6">
+                                <cx:SelecteurAgentsView DataContext="{Binding Porteur}"/>
+                                <WrapPanel>
+                                    <StackPanel Width="120" Margin="0,0,10,6">
+                                        <TextBlock Classes="label" Text="Date"/>
+                                        <TextBox Text="{Binding Jour}" Watermark="JJ/MM/AAAA"/>
+                                    </StackPanel>
+                                    <StackPanel Width="80" Margin="0,0,10,6">
+                                        <TextBlock Classes="label" Text="Heure"/>
+                                        <TextBox Text="{Binding Heure}" Watermark="HH:MM"/>
+                                    </StackPanel>
+                                    <StackPanel Width="100" Margin="0,0,10,6">
+                                        <TextBlock Classes="label" Text="Durée"/>
+                                        <TextBox Text="{Binding DureeSaisie}" Watermark="MM:SS"/>
+                                    </StackPanel>
+                                    <StackPanel Width="170" Margin="0,0,10,6">
+                                        <TextBlock Classes="label" Text="Intervention (n°)"/>
+                                        <TextBox Text="{Binding InterventionNumero}" Watermark="INT-2026-000031"/>
+                                    </StackPanel>
+                                    <StackPanel Width="250" Margin="0,0,10,6">
+                                        <TextBlock Classes="label" Text="Provenance"/>
+                                        <ComboBox ItemsSource="{Binding Provenances}" SelectedItem="{Binding Provenance}" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </WrapPanel>
+                                <TextBlock Classes="label" Text="Description"/>
+                                <TextBox Text="{Binding Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="70"
+                                         Watermark="Interpellation rue de Paris, refus d'obtempérer…"/>
+                                <TextBlock Classes="label" Text="Vidéo"/>
+                                <StackPanel Orientation="Horizontal" Spacing="16">
+                                    <RadioButton GroupName="source" Content="Fichier envoyé au serveur (200 Mo au plus)" IsChecked="{Binding SourceFichier}"/>
+                                    <RadioButton GroupName="source" Content="Lien vers la vidéo" IsChecked="{Binding SourceUrl}"/>
+                                </StackPanel>
+                                <TextBox Text="{Binding Url}" Watermark="https://…" IsVisible="{Binding SourceUrl}"/>
+                                <TextBlock Classes="muted" Text="Après l'enregistrement de la fiche, le bouton « Envoyer le fichier vidéo » apparaît." IsVisible="{Binding SourceFichier}"/>
+                            </StackPanel>
+                        </Border>
+                        <WrapPanel HorizontalAlignment="Right">
+                            <Button Content="Annuler" Command="{Binding AnnulerCommand}" Margin="0,0,8,6"/>
+                            <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,204 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:cx="clr-namespace:Saphir.Views.Apps.Complements"
+             x:Class="Saphir.Views.Apps.Complements.AnnuaireView">
+    <!-- ANNUAIRE. DataContext : AnnuaireViewModel. -->
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*" ColumnDefinitions="Auto,*">
+            <controls:MessageBar Grid.ColumnSpan="2"/>
+            <cx:MenuComplementsView Grid.Row="1" Grid.RowSpan="{Binding MenuLignes}" Grid.ColumnSpan="{Binding MenuColonnes}"/>
+
+            <!-- ===== Personnel ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsPersonnel}" Margin="10" ColumnDefinitions="*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*" IsVisible="{Binding AfficherListe}">
+                    <TextBlock Classes="instruction" Text="Personnel en activité" Margin="0,0,0,6"/>
+                    <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                        <TextBox Text="{Binding Recherche}" Watermark="Nom, prénom, RIO, référence" Width="220" Margin="0,0,8,6"/>
+                        <ComboBox ItemsSource="{Binding Services}" SelectedItem="{Binding FiltreService}" Width="170" Margin="0,0,8,6"
+                                  ToolTip.Tip="Service"/>
+                        <ComboBox ItemsSource="{Binding Unites}" SelectedItem="{Binding FiltreUnite}" Width="150" Margin="0,0,8,6"
+                                  ToolTip.Tip="Unité"/>
+                        <ComboBox ItemsSource="{Binding Grades}" SelectedItem="{Binding FiltreGrade}" Width="150" Margin="0,0,8,6"
+                                  ToolTip.Tip="Grade"/>
+                        <Button Content="Actualiser" Command="{Binding ActualiserCommand}" Margin="0,0,8,6"/>
+                        <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                    <ListBox Grid.Row="2" ItemsSource="{Binding Agents}" SelectedItem="{Binding Selection}"
+                             BorderBrush="#C8D5E7" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,Auto" Margin="2,2">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12.5" Foreground="Black">
+                                            <Run Text="{Binding Nom, Mode=OneWay}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Prenom, Mode=OneWay}"/>
+                                        </TextBlock>
+                                        <TextBlock Text="{Binding Ligne2}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="10,0,0,0" HorizontalAlignment="Right">
+                                        <TextBlock Text="{Binding Rio, StringFormat='RIO {0}'}" FontSize="11" Foreground="#3C3C3C" HorizontalAlignment="Right"/>
+                                        <TextBlock Text="{Binding Contact}" IsVisible="{Binding HasContact}" FontSize="11" Foreground="#2F6FBF" HorizontalAlignment="Right"/>
+                                    </StackPanel>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+
+                <!-- Fiche contact -->
+                <Border Grid.Column="{Binding ColonneDetail}" Width="{Binding LargeurDetail}" Margin="{Binding MargeDetail}"
+                        IsVisible="{Binding AfficherFiche}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                    <Grid>
+                        <TextBlock Classes="muted" Text="Sélectionne un agent pour afficher sa fiche contact." Margin="14" TextWrapping="Wrap"
+                                   IsVisible="{Binding !HasSelection}"/>
+                        <ScrollViewer IsVisible="{Binding HasSelection}">
+                            <StackPanel Margin="14,12" Spacing="6">
+                                <Button Classes="link" Content="← Retour à la liste" IsVisible="{Binding IsCompact}" Command="{Binding RetourListeCommand}"/>
+                                <StackPanel Orientation="Horizontal" Spacing="10">
+                                    <Border Width="44" Height="44" CornerRadius="22" Background="#DCE6F4">
+                                        <PathIcon Data="{StaticResource IconPerson}" Width="26" Height="26" Foreground="#2F6FBF"/>
+                                    </Border>
+                                    <StackPanel VerticalAlignment="Center">
+                                        <TextBlock Classes="instruction" Text="{Binding Selection.NomComplet}" TextWrapping="Wrap"/>
+                                        <TextBlock Classes="muted" Text="{Binding Selection.Reference}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <TextBlock Classes="groupheader" Text="Informations professionnelles" Margin="0,6,0,0"/>
+                                <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto">
+                                    <TextBlock Classes="label" Text="Grade"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Selection.Grade}" TextWrapping="Wrap" Foreground="Black"/>
+                                    <TextBlock Grid.Row="1" Classes="label" Text="RIO"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Selection.Rio}" Foreground="Black"/>
+                                    <TextBlock Grid.Row="2" Classes="label" Text="Service"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Selection.Service}" TextWrapping="Wrap" Foreground="Black"/>
+                                    <TextBlock Grid.Row="3" Classes="label" Text="Unité"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Selection.Unite}" TextWrapping="Wrap" Foreground="Black"/>
+                                    <TextBlock Grid.Row="4" Classes="label" Text="Fonction"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Selection.Fonction}" TextWrapping="Wrap" Foreground="Black"/>
+                                </Grid>
+                                <TextBlock Classes="groupheader" Text="Coordonnées professionnelles" Margin="0,6,0,0"/>
+                                <Grid ColumnDefinitions="100,*" RowDefinitions="Auto,Auto,Auto,Auto" IsVisible="{Binding !EditionCoordonnees}">
+                                    <TextBlock Classes="label" Text="Téléphone"/>
+                                    <SelectableTextBlock Grid.Column="1" Text="{Binding Selection.Telephone}" Foreground="Black"/>
+                                    <TextBlock Grid.Row="1" Classes="label" Text="Indicatif"/>
+                                    <SelectableTextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Selection.Indicatif}" Foreground="Black"/>
+                                    <TextBlock Grid.Row="2" Classes="label" Text="Poste / bureau"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Selection.Poste}" Foreground="Black"/>
+                                    <TextBlock Grid.Row="3" Classes="label" Text="Messagerie"/>
+                                    <SelectableTextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Selection.Email}" Foreground="Black"/>
+                                </Grid>
+                                <StackPanel Spacing="6" IsVisible="{Binding EditionCoordonnees}">
+                                    <TextBox Text="{Binding EditTelephone}" Watermark="Téléphone de service"/>
+                                    <TextBox Text="{Binding EditIndicatif}" Watermark="Indicatif radio"/>
+                                    <TextBox Text="{Binding EditPoste}" Watermark="Poste / bureau"/>
+                                    <TextBox Text="{Binding EditEmail}" Watermark="Adresse de messagerie professionnelle"/>
+                                    <StackPanel Orientation="Horizontal" Spacing="8" HorizontalAlignment="Right">
+                                        <Button Content="Annuler" Command="{Binding AnnulerCoordonneesCommand}"/>
+                                        <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCoordonneesAgentCommand}"/>
+                                    </StackPanel>
+                                </StackPanel>
+                                <WrapPanel Margin="0,8,0,0">
+                                    <Button Classes="default" Content="Écrire un message" Command="{Binding EcrireCommand}" IsVisible="{Binding CanEcrire}" Margin="0,0,8,6"/>
+                                    <Button Content="Modifier les coordonnées" Command="{Binding ModifierCoordonneesCommand}" Margin="0,0,8,6"
+                                            IsVisible="{Binding PeutModifierCoordonnees}"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </ScrollViewer>
+                    </Grid>
+                </Border>
+            </Grid>
+
+            <!-- ===== Annuaire des services ===== -->
+            <Grid Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsServices}" Margin="10" ColumnDefinitions="*,Auto">
+                <Grid RowDefinitions="Auto,Auto,*">
+                    <TextBlock Classes="instruction" Text="Annuaire des services" Margin="0,0,0,6"/>
+                    <WrapPanel Grid.Row="1" Margin="0,0,0,8">
+                        <TextBox Text="{Binding RechercheService}" Watermark="Service, catégorie, indicatif" Width="240" Margin="0,0,8,6"/>
+                        <Button Content="Nouveau service" Command="{Binding NouveauServiceCommand}" IsVisible="{Binding CanGererServices}" Margin="0,0,8,6"/>
+                    </WrapPanel>
+                    <ListBox Grid.Row="2" ItemsSource="{Binding ListeServices}" SelectedItem="{Binding ServiceSelectionne}"
+                             BorderBrush="#C8D5E7" BorderThickness="1">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="2,3" Spacing="1">
+                                    <TextBlock Text="{Binding Nom}" FontSize="12.5" FontWeight="SemiBold" Foreground="Black" TextWrapping="Wrap"/>
+                                    <TextBlock FontSize="11.5" Foreground="#3C3C3C" TextWrapping="Wrap">
+                                        <Run Text="{Binding Telephone, Mode=OneWay, StringFormat='Tél. {0}'}"/>
+                                        <Run Text="   "/>
+                                        <Run Text="{Binding Indicatif, Mode=OneWay, StringFormat='Indicatif {0}'}" Foreground="#2F6FBF"/>
+                                        <Run Text="   "/>
+                                        <Run Text="{Binding Frequence, Mode=OneWay}" Foreground="#5B6B7C"/>
+                                    </TextBlock>
+                                    <TextBlock FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap">
+                                        <Run Text="{Binding Categorie, Mode=OneWay}"/>
+                                        <Run Text="{Binding Horaires, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                        <Run Text="{Binding Adresse, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                    </TextBlock>
+                                    <TextBlock Text="{Binding Observations}" FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap" FontStyle="Italic"/>
+                                    <TextBlock Text="Service inactif (masqué aux agents)" FontSize="11" Foreground="#C7503B" IsVisible="{Binding !Actif}"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Grid>
+
+                <Border Grid.Column="{Binding ColonneDetail}" Width="{Binding LargeurDetail}" Margin="{Binding MargeDetail}"
+                        IsVisible="{Binding EditionServiceVisible}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                    <ScrollViewer>
+                        <StackPanel Margin="14,12" Spacing="6">
+                            <TextBlock Classes="instruction" Text="{Binding TitreEditionService}"/>
+                            <TextBlock Classes="label" Text="Nom du service"/>
+                            <TextBox Text="{Binding SNom}"/>
+                            <TextBlock Classes="label" Text="Catégorie"/>
+                            <TextBox Text="{Binding SCategorie}" Watermark="Commandement, Voie publique, Partenaires…"/>
+                            <TextBlock Classes="label" Text="Téléphone (fictif)"/>
+                            <TextBox Text="{Binding STelephone}" Watermark="01 99 00 01 00"/>
+                            <TextBlock Classes="label" Text="Indicatif radio"/>
+                            <TextBox Text="{Binding SIndicatif}"/>
+                            <TextBlock Classes="label" Text="Fréquence / canal"/>
+                            <TextBox Text="{Binding SFrequence}"/>
+                            <TextBlock Classes="label" Text="Adresse"/>
+                            <TextBox Text="{Binding SAdresse}"/>
+                            <TextBlock Classes="label" Text="Horaires"/>
+                            <TextBox Text="{Binding SHoraires}"/>
+                            <TextBlock Classes="label" Text="Observations"/>
+                            <TextBox Text="{Binding SObservations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50"/>
+                            <Grid ColumnDefinitions="Auto,90,*">
+                                <TextBlock Classes="label" Text="Ordre" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                                <TextBox Grid.Column="1" Text="{Binding SOrdre}"/>
+                                <CheckBox Grid.Column="2" Content="Service actif" IsChecked="{Binding SActif}" Margin="12,0,0,0"/>
+                            </Grid>
+                            <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerServiceCommand}" HorizontalAlignment="Right"/>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Border>
+            </Grid>
+
+            <!-- ===== Mes coordonnées ===== -->
+            <ScrollViewer Grid.Row="2" Grid.Column="1" IsVisible="{Binding IsCoordonnees}">
+                <StackPanel Margin="20,16" Spacing="8" MaxWidth="560" HorizontalAlignment="Left">
+                    <TextBlock Classes="instruction" Text="Mes coordonnées professionnelles"/>
+                    <TextBlock Classes="muted" Text="Ton identité, ton grade et ton affectation sont gérés par le service RH. Tu renseignes ici les coordonnées de service visibles dans l'annuaire (données fictives)."/>
+                    <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8">
+                        <StackPanel Spacing="2">
+                            <TextBlock Text="{Binding MonIdentite}" Foreground="Black" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding MonAffectation}" Classes="muted"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBlock Classes="label" Text="Téléphone de service"/>
+                    <TextBox Text="{Binding MonTelephone}" Watermark="01 99 00 02 15"/>
+                    <TextBlock Classes="label" Text="Indicatif radio"/>
+                    <TextBox Text="{Binding MonIndicatif}" Watermark="BAC 94-3"/>
+                    <TextBlock Classes="label" Text="Poste / bureau"/>
+                    <TextBox Text="{Binding MonPoste}" Watermark="Bureau 214 — poste 2214"/>
+                    <TextBlock Classes="label" Text="Adresse de messagerie professionnelle"/>
+                    <TextBox Text="{Binding MonEmail}" Watermark="prenom.nom@vdms-police.fr"/>
+                    <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerMesCoordonneesCommand}" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

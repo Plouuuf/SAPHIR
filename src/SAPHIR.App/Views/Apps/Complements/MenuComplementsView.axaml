@@ -1,0 +1,71 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Complements.MenuComplementsView">
+    <!--
+        Menu des applications complémentaires. DataContext : ComplementsViewModelBase.
+        Ordinateur : colonne latérale « panneau de configuration » de Windows 7. Téléphone : bandeau horizontal défilant.
+    -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.entree">
+            <Setter Property="FontSize" Value="12"/>
+            <Setter Property="Foreground" Value="{StaticResource LinkBrush}"/>
+        </Style>
+        <Style Selector="TextBlock.entree.selected">
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="Black"/>
+        </Style>
+    </UserControl.Styles>
+    <Panel>
+        <Border IsVisible="{Binding IsLarge}" Width="200" BorderBrush="#C8D5E7" BorderThickness="0,0,1,0">
+            <Border.Background>
+                <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                    <GradientStop Offset="0" Color="#F4F8FD"/>
+                    <GradientStop Offset="1" Color="#DCE6F4"/>
+                </LinearGradientBrush>
+            </Border.Background>
+            <StackPanel Margin="14,16" Spacing="2">
+                <TextBlock Classes="groupheader" Text="{Binding TitreMenu}" Margin="0,0,0,8"/>
+                <ItemsControl ItemsSource="{Binding Menu}">
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="link" Command="{Binding AllerCommand}" IsVisible="{Binding IsVisible}" Margin="0,4"
+                                    HorizontalAlignment="Stretch">
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Classes="entree" Classes.selected="{Binding IsSelected}" Text="{Binding Libelle}" TextWrapping="Wrap"/>
+                                    <Border Grid.Column="1" IsVisible="{Binding HasCompteur}" Background="#2F6FBF" CornerRadius="8"
+                                            Padding="6,0" Margin="6,0,0,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Compteur}" FontSize="10.5" Foreground="White"/>
+                                    </Border>
+                                </Grid>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </StackPanel>
+        </Border>
+
+        <Border IsVisible="{Binding IsCompact}" Background="#EEF3FA" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1">
+            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Disabled">
+                <ItemsControl ItemsSource="{Binding Menu}" Margin="4,0">
+                    <ItemsControl.ItemsPanel>
+                        <ItemsPanelTemplate>
+                            <StackPanel Orientation="Horizontal"/>
+                        </ItemsPanelTemplate>
+                    </ItemsControl.ItemsPanel>
+                    <ItemsControl.ItemTemplate>
+                        <DataTemplate>
+                            <Button Classes="flat" Command="{Binding AllerCommand}" IsVisible="{Binding IsVisible}" Padding="10,9">
+                                <StackPanel Orientation="Horizontal" Spacing="5">
+                                    <TextBlock Classes="entree" Classes.selected="{Binding IsSelected}" Text="{Binding Libelle}" FontSize="13"/>
+                                    <Border IsVisible="{Binding HasCompteur}" Background="#2F6FBF" CornerRadius="8" Padding="6,0" VerticalAlignment="Center">
+                                        <TextBlock Text="{Binding Compteur}" FontSize="10.5" Foreground="White"/>
+                                    </Border>
+                                </StackPanel>
+                            </Button>
+                        </DataTemplate>
+                    </ItemsControl.ItemTemplate>
+                </ItemsControl>
+            </ScrollViewer>
+        </Border>
+    </Panel>
+</UserControl>

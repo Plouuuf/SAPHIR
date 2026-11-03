@@ -408,6 +408,7 @@ public sealed class ShellViewModel : ViewModelBase
         }
 
         Screen = ShellScreen.Welcome;
+        Desktop?.Detach();
         Desktop = new DesktopViewModel(Avatar, LockSession, () => _ = SignOutAsync());
         Desktop.IsCompactLayout = IsCompact;
         Desktop.IsOnline = _realtime.IsConnected;
@@ -428,6 +429,7 @@ public sealed class ShellViewModel : ViewModelBase
         _revalidation.Stop();
         await _realtime.StopAsync();
         SaphirSession.Close();
+        Desktop?.Detach();
         Desktop = null;
         ErrorText = null;
         Screen = ShellScreen.Logon;

@@ -6,11 +6,18 @@ namespace Saphir.Server.Data;
 /// <summary>Agents SAPHIR (rh_agents) : lecture, première connexion, dernière connexion.</summary>
 public sealed class AgentStore(SaphirDb db)
 {
-    /// <summary>Colonnes lues par <see cref="Lire"/> (alias de table « a »).</summary>
+    /// <summary>
+    /// Colonnes lues par <see cref="Lire"/> (alias de table « a »). Grade, service, unité et fonction (module RH, phase 3)
+    /// sont lus par sous-requêtes scalaires : « SELECT {Colonnes} FROM rh_agents a … » reste valide partout, sans jointure.
+    /// </summary>
     public const string Colonnes =
-        "a.id, a.reference, a.discord_id, a.nom, a.prenom, a.rio, a.matricule, a.statut, a.cree_le, a.maj_le, a.derniere_connexion";
+        "a.id, a.reference, a.discord_id, a.nom, a.prenom, a.rio, a.matricule, a.statut, a.cree_le, a.maj_le, a.derniere_connexion, " +
+        "(SELECT rg.libelle FROM rh_grades rg WHERE rg.id = a.grade_id) AS rh_grade, " +
+        "(SELECT rs.libelle FROM rh_services rs WHERE rs.id = a.service_id) AS rh_service, " +
+        "(SELECT ru.libelle FROM rh_unites ru WHERE ru.id = a.unite_id) AS rh_unite, " +
+        "(SELECT rf.libelle FROM rh_fonctions rf WHERE rf.id = a.fonction_id) AS rh_fonction";
 
-    /// <summary>Grade, service, unité et fonction arrivent en phase 3 : null pour l'instant.</summary>
+    /// <summary>Fiche courte d'un agent : identité, RIO, matricule, grade, service, unité, fonction (valeurs actuelles), statut.</summary>
     public static AgentDto Lire(SqlRow r) => new(
         r.Long("id"),
         r.Text("reference"),
@@ -19,10 +26,10 @@ public sealed class AgentStore(SaphirDb db)
         r.Text("prenom"),
         r.NullableText("rio"),
         r.NullableText("matricule"),
-        null,
-        null,
-        null,
-        null,
+        r.NullableText("rh_grade"),
+        r.NullableText("rh_service"),
+        r.NullableText("rh_unite"),
+        r.NullableText("rh_fonction"),
         r.Text("statut"),
         r.Date("cree_le"),
         r.Date("maj_le"));

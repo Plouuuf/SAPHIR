@@ -1,0 +1,55 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhRioView">
+    <!-- 9. Gestion des RIO (4.6). DataContext : RhRioViewModel. -->
+    <Grid RowDefinitions="*,Auto,190">
+        <Grid ColumnDefinitions="*,Auto">
+            <Grid RowDefinitions="Auto,*">
+                <WrapPanel Margin="0,0,0,6">
+                    <TextBox Text="{Binding Recherche}" Watermark="Rechercher un agent" Width="220" Margin="0,0,6,4">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding RechercherCommand}"/>
+                        </TextBox.KeyBindings>
+                    </TextBox>
+                    <Button Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,10,4"/>
+                    <CheckBox IsChecked="{Binding SansRioSeulement}" Content="Agents sans RIO seulement" Margin="0,0,10,4"/>
+                    <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center" Margin="0,0,0,4"/>
+                </WrapPanel>
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Agents}" SelectedItem="{Binding Selection}" IsReadOnly="True"
+                          AutoGenerateColumns="False" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Identifiant" Binding="{Binding Reference}" Width="90"/>
+                        <DataGridTextColumn Header="NOM" Binding="{Binding Nom}" Width="110"/>
+                        <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="100"/>
+                        <DataGridTextColumn Header="RIO" Binding="{Binding Rio}" Width="80"/>
+                        <DataGridTextColumn Header="Grade" Binding="{Binding Grade}" Width="*"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="120"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+            <Border Grid.Column="1" Width="370" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                <ScrollViewer>
+                    <StackPanel Margin="14,12" Spacing="8">
+                        <ContentControl Content="{Binding Formulaire}"/>
+                        <Button Classes="link" Content="Ouvrir le dossier de l'agent" Command="{Binding OuvrirDossierCommand}"
+                                IsVisible="{Binding Formulaire.HasAgent}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <TextBlock Grid.Row="1" Classes="groupheader" Text="Historique des attributions et changements de RIO" Margin="0,10,0,4"/>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Historique}" IsReadOnly="True" AutoGenerateColumns="False"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Agent" Binding="{Binding Agent}" Width="150"/>
+                <DataGridTextColumn Header="Effet" Binding="{Binding Effet}" Width="85"/>
+                <DataGridTextColumn Header="Ancien RIO" Binding="{Binding Ancien}" Width="90"/>
+                <DataGridTextColumn Header="Nouveau RIO" Binding="{Binding Nouveau}" Width="95"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
+                <DataGridTextColumn Header="Administrateur RH" Binding="{Binding Auteur}" Width="150"/>
+                <DataGridTextColumn Header="Saisi le" Binding="{Binding Saisi}" Width="115"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

@@ -179,5 +179,35 @@ public static class SaphirSession
     /// <summary>Messages temps réel du serveur, relayés aux applications ouvertes.</summary>
     public static event Action<RealtimeMessage>? Realtime;
 
-    public static void Publish(RealtimeMessage message) => Realtime?.Invoke(message);
+    /// <summary>
+    /// Publie un message aux applications ouvertes. Type « open-app » : ouvre l'application <c>AppId</c> sur le bureau
+    /// avec l'argument <c>Text</c> (ex. « intervention:12 »), que l'application lit avec <see cref="TakeAppArgument"/>.
+    /// </summary>
+    public static void Publish(RealtimeMessage message)
+    {
+        if (message.Type == OpenAppType && message.AppId is { } appId)
+        {
+            lock (PendingArguments)
+            {
+                if (message.Text is null) PendingArguments.Remove(appId);
+                else PendingArguments[appId] = message.Text;
+            }
+            OpenAppRequested?.Invoke(appId);
+        }
+        Realtime?.Invoke(message);
+    }
+
+    public const string OpenAppType = "open-app";
+
+    private static readonly Dictionary<string, string> PendingArguments = new(StringComparer.Ordinal);
+
+    /// <summary>Demande d'ouverture d'une application (le bureau l'ouvre ou la met au premier plan).</summary>
+    public static event Action<string>? OpenAppRequested;
+
+    /// <summary>Argument transmis à l'ouverture de l'application (consommé : renvoie null ensuite).</summary>
+    public static string? TakeAppArgument(string appId)
+    {
+        lock (PendingArguments)
+            return PendingArguments.Remove(appId, out var value) ? value : null;
+    }
 }

@@ -56,7 +56,13 @@ public sealed class DesktopViewModel : ViewModelBase
 
         ApplySession();
         UpdateClock(DateTime.Now);
+        SaphirSession.OpenAppRequested += OnOpenAppRequested;
     }
+
+    private void OnOpenAppRequested(string appId) => Avalonia.Threading.Dispatcher.UIThread.Post(() => OpenById(appId));
+
+    /// <summary>Fin de session : le bureau cesse d'écouter les demandes d'ouverture.</summary>
+    public void Detach() => SaphirSession.OpenAppRequested -= OnOpenAppRequested;
 
     // ===== Applications =====
 

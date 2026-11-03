@@ -1,0 +1,57 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhParametresView">
+    <!-- 16. Paramètres RH. DataContext : RhParametresViewModel. -->
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="8" MaxWidth="900" HorizontalAlignment="Left">
+            <TextBlock Classes="groupheader" Text="Attribution des RIO"/>
+            <Grid ColumnDefinitions="200,*" RowDefinitions="Auto,Auto,Auto">
+                <TextBlock Classes="label" Text="Format du RIO (expression)"/>
+                <TextBlock Grid.Column="1" Text="{Binding RioFormat}" FontFamily="Consolas, Menlo, monospace"/>
+                <TextBlock Grid.Row="1" Classes="label" Text="Exemple" Margin="0,4,0,0"/>
+                <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding RioExemple}" Margin="0,4,0,0"/>
+                <TextBlock Grid.Row="2" Classes="label" Text="Organisation" Margin="0,4,0,0"/>
+                <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Organisation}" Margin="0,4,0,0"/>
+            </Grid>
+            <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="11"
+                       Text="Le RIO est unique, distinct de l'identifiant Discord et de l'identifiant SAPHIR, et n'est jamais réattribué à un autre agent. Le format est un paramètre central (Administration › Paramètres)."/>
+            <Button Content="Modifier le format dans Administration" Command="{Binding Rh.OuvrirAdministrationCommand}"
+                    IsVisible="{Binding PeutModifierFormat}" HorizontalAlignment="Left"/>
+
+            <TextBlock Classes="groupheader" Text="Fichiers acceptés" Margin="0,8,0,0"/>
+            <TextBlock Text="{Binding Fichiers}" TextWrapping="Wrap"/>
+            <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="11"
+                       Text="Chaque fichier est contrôlé par le serveur (taille, extension, signature du contenu), stocké en base privée avec son empreinte SHA-256, et versionné."/>
+
+            <TextBlock Classes="groupheader" Text="Catégories documentaires" Margin="0,8,0,0"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <DataGrid ItemsSource="{Binding Categories}" SelectedItem="{Binding Selection}" IsReadOnly="True" AutoGenerateColumns="False"
+                          Height="300" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Ordre" Binding="{Binding Ordre}" Width="55"/>
+                        <DataGridTextColumn Header="Groupe" Binding="{Binding Groupe}" Width="140"/>
+                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Libelle}" Width="*"/>
+                        <DataGridTextColumn Header="État" Binding="{Binding Etat}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+                <Border Grid.Column="1" Width="280" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD" Padding="12,10">
+                    <StackPanel Spacing="6">
+                        <Button Content="Nouvelle catégorie" Command="{Binding NouvelleCommand}" IsVisible="{Binding PeutGerer}" HorizontalAlignment="Left"/>
+                        <TextBlock Classes="muted" Text="Sélectionne une catégorie pour la modifier." TextWrapping="Wrap" IsVisible="{Binding !EnEdition}"/>
+                        <StackPanel Spacing="6" IsVisible="{Binding EnEdition}" IsEnabled="{Binding PeutGerer}">
+                            <TextBlock Classes="label" Text="Libellé *"/>
+                            <TextBox Text="{Binding Libelle}"/>
+                            <TextBlock Classes="label" Text="Groupe"/>
+                            <ComboBox ItemsSource="{Binding Groupes}" SelectedItem="{Binding Groupe}" HorizontalAlignment="Stretch"/>
+                            <TextBlock Classes="label" Text="Ordre"/>
+                            <TextBox Text="{Binding Ordre}" Width="90" HorizontalAlignment="Left"/>
+                            <CheckBox IsChecked="{Binding Actif}" Content="Active"/>
+                            <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"
+                                    IsVisible="{Binding PeutGerer}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+            </Grid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

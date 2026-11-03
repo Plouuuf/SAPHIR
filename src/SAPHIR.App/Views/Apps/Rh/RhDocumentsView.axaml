@@ -1,0 +1,257 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhDocumentsView">
+    <!-- 10. Documents et 12. Documents à valider (section 5). DataContext : RhDocumentsViewModel. Inspiré de l'Explorateur Windows 7. -->
+    <UserControl.Styles>
+        <Style Selector="TextBlock.champ">
+            <Setter Property="FontSize" Value="11.5"/>
+            <Setter Property="Foreground" Value="#5B6B7C"/>
+            <Setter Property="Margin" Value="0,4,0,1"/>
+        </Style>
+    </UserControl.Styles>
+
+    <Grid>
+        <Grid ColumnDefinitions="Auto,*,Auto">
+            <!-- ===== Dossiers (volet de navigation) ===== -->
+            <Border Width="210" Margin="0,0,10,0" IsVisible="{Binding EstExplorateur}" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <TextBlock Classes="groupheader" Text="Dossiers" Margin="10,8,10,4"/>
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Dossiers}" SelectedItem="{Binding Dossier}" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="6">
+                                    <PathIcon Data="{StaticResource IconFlag}" Width="11" Height="11" Foreground="#D9A531"/>
+                                    <TextBlock Text="{Binding Libelle}" FontSize="12" TextTrimming="CharacterEllipsis"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                    <StackPanel Grid.Row="2" Margin="8" Spacing="4" IsVisible="{Binding PeutGererDossiers}">
+                        <TextBox Text="{Binding NomDossier}" Watermark="Nom du dossier"/>
+                        <WrapPanel>
+                            <Button Classes="small" Content="Nouveau sous-dossier" Command="{Binding CreerDossierCommand}" Margin="0,0,4,4"/>
+                            <Button Classes="small" Content="Renommer" Command="{Binding RenommerDossierCommand}" IsEnabled="{Binding DossierChoisi}" Margin="0,0,4,4"/>
+                            <Button Classes="small" Content="Supprimer" Command="{Binding SupprimerDossierCommand}" IsEnabled="{Binding DossierChoisi}" Margin="0,0,4,4"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Grid>
+            </Border>
+
+            <!-- ===== Liste ===== -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                <WrapPanel Margin="0,0,0,6">
+                    <TextBox Text="{Binding Recherche}" Watermark="Rechercher (nom, référence, fichier, agent)" Width="220" Margin="0,0,6,4">
+                        <TextBox.KeyBindings>
+                            <KeyBinding Gesture="Enter" Command="{Binding RechercherCommand}"/>
+                        </TextBox.KeyBindings>
+                    </TextBox>
+                    <ComboBox ItemsSource="{Binding CategoriesFiltre}" SelectedItem="{Binding CategorieFiltre}" DisplayMemberBinding="{Binding Libelle}" Width="190" Margin="0,0,6,4"/>
+                    <ComboBox ItemsSource="{Binding AgentsFiltre}" SelectedItem="{Binding AgentFiltre}" DisplayMemberBinding="{Binding Libelle}" Width="190" Margin="0,0,6,4"/>
+                    <ComboBox ItemsSource="{Binding StatutsFiltre}" SelectedItem="{Binding StatutFiltre}" Width="130" Margin="0,0,6,4" IsVisible="{Binding EstExplorateur}"/>
+                    <Button Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,4"/>
+                    <Button Classes="default" Content="Importer un document…" Command="{Binding OuvrirImportCommand}" IsVisible="{Binding PeutImporter}" Margin="0,0,6,4"/>
+                    <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center" Margin="0,0,0,4"/>
+                </WrapPanel>
+                <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" IsReadOnly="True"
+                          AutoGenerateColumns="False" CanUserResizeColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="105"/>
+                        <DataGridTextColumn Header="Nom" Binding="{Binding Titre}" Width="*"/>
+                        <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="130"/>
+                        <DataGridTextColumn Header="Agent" Binding="{Binding Agent}" Width="120"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                        <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="55"/>
+                        <DataGridTextColumn Header="Modifié le" Binding="{Binding MajLe}" Width="115"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </Grid>
+
+            <!-- ===== Détail ===== -->
+            <Border Grid.Column="2" Width="370" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                <Grid>
+                    <TextBlock Classes="muted" Margin="14" TextWrapping="Wrap" IsVisible="{Binding !HasDetail}"
+                               Text="Sélectionne un document pour afficher ses propriétés, ses versions et son aperçu."/>
+                    <ScrollViewer IsVisible="{Binding HasDetail}">
+                        <StackPanel Margin="12,10" Spacing="4">
+                            <TextBlock Classes="instruction" Text="{Binding DetailEntete}" FontSize="13.5" TextWrapping="Wrap"/>
+                            <TextBlock Classes="muted" Text="{Binding DetailInfo}" FontSize="11" TextWrapping="Wrap"/>
+                            <Border IsVisible="{Binding HasAvisFige}" Background="#FFF6D5" BorderBrush="#E3C565" BorderThickness="1" Padding="8,4" Margin="0,4">
+                                <TextBlock Text="{Binding AvisFige}" TextWrapping="Wrap" FontSize="11.5"/>
+                            </Border>
+
+                            <!-- Actions -->
+                            <WrapPanel Margin="0,4,0,0">
+                                <Button Classes="small" Content="Télécharger" Command="{Binding TelechargerCommand}" Margin="0,0,4,4"/>
+                                <Button Classes="small" Content="Soumettre à validation" Command="{Binding SoumettreCommand}" IsVisible="{Binding PeutSoumettre}" Margin="0,0,4,4"/>
+                                <Button Classes="small default" Content="Valider" Command="{Binding ValiderCommand}" IsVisible="{Binding PeutValider}" Margin="0,0,4,4"/>
+                                <Button Classes="small" Content="Restaurer" Command="{Binding RestaurerCommand}" IsVisible="{Binding PeutRestaurer}" Margin="0,0,4,4"/>
+                                <Button Classes="link" Content="Dossier de l'agent" Command="{Binding OuvrirDossierAgentCommand}" IsVisible="{Binding DetailAgent}"
+                                        VerticalAlignment="Center" Margin="4,0,0,4"/>
+                            </WrapPanel>
+                            <StackPanel Spacing="4" IsVisible="{Binding PeutRefuser}">
+                                <TextBox Text="{Binding MotifRefus}" Watermark="Motif du refus (obligatoire)"/>
+                                <Button Classes="small" Content="Refuser (retour en brouillon)" Command="{Binding RefuserCommand}" HorizontalAlignment="Left"/>
+                            </StackPanel>
+
+                            <!-- Aperçu -->
+                            <TextBlock Classes="groupheader" Text="Aperçu" Margin="0,8,0,0"/>
+                            <TextBlock Classes="muted" Text="{Binding ApercuInfo}" TextWrapping="Wrap" FontSize="11"/>
+                            <Border IsVisible="{Binding HasApercuImage}" BorderBrush="#C8D5E7" BorderThickness="1" Background="White" Padding="4">
+                                <Image Source="{Binding ApercuImage}" MaxHeight="260" Stretch="Uniform"/>
+                            </Border>
+                            <TextBox IsVisible="{Binding HasApercuTexte}" Text="{Binding ApercuTexte, Mode=OneWay}" IsReadOnly="True"
+                                     TextWrapping="Wrap" AcceptsReturn="True" MaxHeight="260" FontFamily="Consolas, Menlo, monospace" FontSize="11"/>
+
+                            <!-- Propriétés -->
+                            <TextBlock Classes="groupheader" Text="Propriétés" Margin="0,8,0,0"/>
+                            <StackPanel Spacing="1" IsEnabled="{Binding PeutModifierMeta}">
+                                <TextBlock Classes="champ" Text="Nom du document"/>
+                                <TextBox Text="{Binding EditTitre}"/>
+                                <TextBlock Classes="champ" Text="Type"/>
+                                <TextBox Text="{Binding EditType}" Watermark="Note, décision, attestation…"/>
+                                <TextBlock Classes="champ" Text="Catégorie"/>
+                                <ComboBox ItemsSource="{Binding CategoriesEdit}" SelectedItem="{Binding EditCategorie}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                                <TextBlock Classes="champ" Text="Description"/>
+                                <TextBox Text="{Binding EditDescription}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                                <TextBlock Classes="champ" Text="Agent concerné"/>
+                                <ComboBox ItemsSource="{Binding AgentsEdit}" SelectedItem="{Binding EditAgent}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                                <TextBlock Classes="champ" Text="Service concerné"/>
+                                <ComboBox ItemsSource="{Binding ServicesEdit}" SelectedItem="{Binding EditService}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                                <Grid ColumnDefinitions="*,*,*" Margin="0,4,0,0">
+                                    <StackPanel>
+                                        <TextBlock Classes="champ" Text="Date"/>
+                                        <CalendarDatePicker SelectedDate="{Binding EditDateDocument}" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="1" Margin="4,0">
+                                        <TextBlock Classes="champ" Text="Effet"/>
+                                        <CalendarDatePicker SelectedDate="{Binding EditDateEffet}" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                    <StackPanel Grid.Column="2">
+                                        <TextBlock Classes="champ" Text="Expiration"/>
+                                        <CalendarDatePicker SelectedDate="{Binding EditDateExpiration}" HorizontalAlignment="Stretch"/>
+                                    </StackPanel>
+                                </Grid>
+                                <TextBlock Classes="champ" Text="Niveau de confidentialité"/>
+                                <ComboBox ItemsSource="{Binding Confidentialites}" SelectedItem="{Binding EditConfidentialite}" HorizontalAlignment="Stretch"/>
+                                <TextBlock Classes="champ" Text="Observations"/>
+                                <TextBox Text="{Binding EditObservations}" AcceptsReturn="True" TextWrapping="Wrap"/>
+                            </StackPanel>
+                            <StackPanel Spacing="1" IsEnabled="{Binding PeutDeplacer}">
+                                <TextBlock Classes="champ" Text="Dossier de destination"/>
+                                <ComboBox ItemsSource="{Binding DossiersEdit}" SelectedItem="{Binding EditDossier}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                                <TextBlock Classes="champ" Text="Motif de la modification"/>
+                                <TextBox Text="{Binding EditMotif}" Watermark="Facultatif (historisé)"/>
+                            </StackPanel>
+                            <Button Classes="default" Content="Enregistrer les propriétés" Command="{Binding EnregistrerCommand}"
+                                    IsVisible="{Binding PeutEnregistrer}" HorizontalAlignment="Right" Margin="0,6,0,0"/>
+
+                            <!-- Versions -->
+                            <TextBlock Classes="groupheader" Text="Versions" Margin="0,8,0,0"/>
+                            <ItemsControl ItemsSource="{Binding Versions}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <Border BorderBrush="#DDE4EE" BorderThickness="0,0,0,1" Padding="0,4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <StackPanel>
+                                                    <TextBlock Text="{Binding Titre}" FontSize="11.5" FontWeight="SemiBold" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding Detail}" FontSize="10.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                                    <TextBlock Text="{Binding Commentaire}" FontSize="10.5" Foreground="#1E395B" TextWrapping="Wrap" IsVisible="{Binding HasCommentaire}"/>
+                                                    <TextBlock Text="{Binding Empreinte}" FontSize="9.5" Foreground="#8492A3" TextTrimming="CharacterEllipsis"/>
+                                                </StackPanel>
+                                                <Button Grid.Column="1" Classes="link" Content="Télécharger" FontSize="11" VerticalAlignment="Top" Margin="6,0,0,0"
+                                                        Command="{Binding $parent[UserControl].DataContext.TelechargerVersionCommand}" CommandParameter="{Binding}"/>
+                                            </Grid>
+                                        </Border>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                            <StackPanel Spacing="4" IsVisible="{Binding PeutNouvelleVersion}" Margin="0,4,0,0">
+                                <TextBox Text="{Binding CommentaireVersion}" Watermark="Commentaire de modification (obligatoire)"/>
+                                <Button Classes="small" Content="Déposer une nouvelle version…" Command="{Binding NouvelleVersionCommand}" HorizontalAlignment="Left"/>
+                            </StackPanel>
+
+                            <!-- Archivage -->
+                            <StackPanel Spacing="4" IsVisible="{Binding PeutArchiver}" Margin="0,8,0,0">
+                                <TextBlock Classes="groupheader" Text="Archivage"/>
+                                <TextBox Text="{Binding MotifArchivage}" Watermark="Motif de l'archivage (facultatif)"/>
+                                <Button Classes="small" Content="Archiver le document" Command="{Binding ArchiverCommand}" HorizontalAlignment="Left"/>
+                            </StackPanel>
+
+                            <!-- Historique -->
+                            <TextBlock Classes="groupheader" Text="Historique" Margin="0,8,0,0"/>
+                            <ItemsControl ItemsSource="{Binding HistoriqueDocument}">
+                                <ItemsControl.ItemTemplate>
+                                    <DataTemplate>
+                                        <StackPanel Margin="0,2">
+                                            <TextBlock FontSize="11" TextWrapping="Wrap">
+                                                <Run Text="{Binding Date, Mode=OneWay}" Foreground="#5B6B7C"/>
+                                                <Run Text="{Binding Action, Mode=OneWay, StringFormat=' — {0}'}" FontWeight="SemiBold"/>
+                                                <Run Text="{Binding Auteur, Mode=OneWay, StringFormat=' par {0}'}"/>
+                                            </TextBlock>
+                                            <TextBlock FontSize="10.5" Foreground="#5B6B7C" Text="{Binding Detail}" TextWrapping="Wrap"/>
+                                        </StackPanel>
+                                    </DataTemplate>
+                                </ItemsControl.ItemTemplate>
+                            </ItemsControl>
+                        </StackPanel>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
+
+        <!-- ===== Formulaire d'ajout (5.4) ===== -->
+        <Grid IsVisible="{Binding ImportOuvert}" Background="#80FFFFFF">
+            <Border HorizontalAlignment="Center" VerticalAlignment="Center" MaxWidth="560" Margin="10" CornerRadius="4"
+                    Background="White" BorderBrush="#7A96B8" BorderThickness="1" BoxShadow="0 8 26 0 #44000000">
+                <Grid RowDefinitions="Auto,*,Auto">
+                    <Border Background="{StaticResource HeaderBrush}" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" Padding="14,8">
+                        <TextBlock Classes="instruction" Text="Importer un document RH" FontSize="14"/>
+                    </Border>
+                    <ScrollViewer Grid.Row="1" MaxHeight="520">
+                        <Grid Margin="14,10" ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                            <TextBlock Classes="label" Text="Fichier *" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="8">
+                                <Button Content="Choisir…" Command="{Binding ChoisirFichierCommand}"/>
+                                <TextBlock Text="{Binding NvFichierTexte}" VerticalAlignment="Center" TextTrimming="CharacterEllipsis" MaxWidth="250"/>
+                            </StackPanel>
+                            <TextBlock Grid.Row="1" Grid.ColumnSpan="2" Classes="muted" Text="{Binding AideFichiers}" FontSize="11" TextWrapping="Wrap" Margin="0,4,0,0"/>
+                            <TextBlock Grid.Row="2" Classes="label" Text="Nom du document *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding NvTitre}" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="3" Classes="label" Text="Type" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding NvType}" Watermark="Note, décision, attestation…" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="4" Classes="label" Text="Catégorie" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding CategoriesEdit}" SelectedItem="{Binding NvCategorie}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="5" Classes="label" Text="Dossier de destination" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding DossiersEdit}" SelectedItem="{Binding NvDossier}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="6" Classes="label" Text="Description" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="6" Grid.Column="1" Text="{Binding NvDescription}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="7" Classes="label" Text="Agent concerné" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="7" Grid.Column="1" ItemsSource="{Binding AgentsEdit}" SelectedItem="{Binding NvAgent}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="8" Classes="label" Text="Service concerné" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="8" Grid.Column="1" ItemsSource="{Binding ServicesEdit}" SelectedItem="{Binding NvService}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="9" Classes="label" Text="Date de création" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <CalendarDatePicker Grid.Row="9" Grid.Column="1" SelectedDate="{Binding NvDateDocument}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="10" Classes="label" Text="Date d'effet" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <CalendarDatePicker Grid.Row="10" Grid.Column="1" SelectedDate="{Binding NvDateEffet}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="11" Classes="label" Text="Date d'expiration" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <CalendarDatePicker Grid.Row="11" Grid.Column="1" SelectedDate="{Binding NvDateExpiration}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="12" Classes="label" Text="Auteur" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="12" Grid.Column="1" Text="{Binding Auteur}" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="13" Classes="label" Text="Confidentialité" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="13" Grid.Column="1" ItemsSource="{Binding Confidentialites}" SelectedItem="{Binding NvConfidentialite}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="14" Classes="label" Text="Observations" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="14" Grid.Column="1" Text="{Binding NvObservations}" Margin="0,6,0,0"/>
+                            <CheckBox Grid.Row="15" Grid.Column="1" IsChecked="{Binding NvSoumettre}" Content="Statut « À valider » (sinon brouillon)" Margin="0,8,0,0"/>
+                        </Grid>
+                    </ScrollViewer>
+                    <Border Grid.Row="2" Background="{StaticResource PanelBrush}" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="12,9">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                            <Button Classes="default" Content="Importer" Command="{Binding ImporterCommand}"/>
+                            <Button Content="Annuler" Command="{Binding FermerImportCommand}"/>
+                        </StackPanel>
+                    </Border>
+                </Grid>
+            </Border>
+        </Grid>
+    </Grid>
+</UserControl>

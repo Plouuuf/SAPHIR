@@ -1,0 +1,250 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:vm="clr-namespace:Saphir.ViewModels.Apps.Rh"
+             xmlns:rh="clr-namespace:Saphir.Views.Apps.Rh"
+             x:Class="Saphir.Views.Apps.Rh.RhView">
+    <!-- RESSOURCES HUMAINES : menu latéral des 16 rubriques, page courante, formulaires communs. DataContext : RhViewModel. -->
+    <UserControl.DataTemplates>
+        <!-- ===== Pages ===== -->
+        <DataTemplate DataType="{x:Type vm:RhTableauBordViewModel}"><rh:RhTableauBordView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhPersonnelViewModel}"><rh:RhPersonnelView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhDossierViewModel}"><rh:RhDossierView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhReferentielViewModel}"><rh:RhReferentielView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhAffectationsViewModel}"><rh:RhAffectationsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhRioViewModel}"><rh:RhRioView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhDocumentsViewModel}"><rh:RhDocumentsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhModelesViewModel}"><rh:RhModelesView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhHabilitationsViewModel}"><rh:RhHabilitationsView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhHistoriqueViewModel}"><rh:RhHistoriqueView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhArchivesViewModel}"><rh:RhArchivesView/></DataTemplate>
+        <DataTemplate DataType="{x:Type vm:RhParametresViewModel}"><rh:RhParametresView/></DataTemplate>
+
+        <!-- ===== Formulaires (dossier individuel, affectations, RIO, archives) ===== -->
+        <DataTemplate DataType="{x:Type vm:RhIdentiteFormulaire}">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Modification du NOM et du prénom"/>
+                <TextBlock Classes="muted" Text="Permission « Modifier l'identité » requise." IsVisible="{Binding !Autorise}"/>
+                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" IsVisible="{Binding Autorise}">
+                    <TextBlock Classes="label" Text="Ancienne valeur" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Actuel}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Classes="label" Text="NOM" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Nom}" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="2" Classes="label" Text="Prénom" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Prenom}" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="3" Classes="label" Text="Date d'effet" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <CalendarDatePicker Grid.Row="3" Grid.Column="1" SelectedDate="{Binding DateEffet}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="4" Classes="label" Text="Motif *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Motif}" Watermark="Obligatoire" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="5" Classes="label" Text="Observations" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Observations}" Margin="0,6,0,0"/>
+                </Grid>
+                <Button Classes="default" Content="Modifier l'identité" Command="{Binding EnregistrerCommand}"
+                        HorizontalAlignment="Right" IsVisible="{Binding Autorise}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:RhMatriculeFormulaire}">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Matricule de simulation"/>
+                <TextBlock Classes="muted" Text="Permission « Modifier l'identité » requise." IsVisible="{Binding !Autorise}"/>
+                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto" IsVisible="{Binding Autorise}">
+                    <TextBlock Classes="label" Text="Matricule actuel" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Column="1" Text="{Binding Actuel}" VerticalAlignment="Center"/>
+                    <TextBlock Grid.Row="1" Classes="label" Text="Nouveau matricule" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Matricule}" Margin="0,6,0,0"/>
+                    <TextBlock Grid.Row="2" Classes="label" Text="Motif *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Motif}" Watermark="Obligatoire" Margin="0,6,0,0"/>
+                </Grid>
+                <Button Content="Modifier le matricule" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right" IsVisible="{Binding Autorise}"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:RhIntegrationFormulaire}">
+            <StackPanel Spacing="6" IsVisible="{Binding Autorise}">
+                <TextBlock Classes="groupheader" Text="Date d'intégration"/>
+                <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto">
+                    <TextBlock Classes="label" Text="Date" VerticalAlignment="Center"/>
+                    <CalendarDatePicker Grid.Column="1" SelectedDate="{Binding DateIntegration}" HorizontalAlignment="Stretch"/>
+                    <TextBlock Grid.Row="1" Classes="label" Text="Motif" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Motif}" Margin="0,6,0,0"/>
+                </Grid>
+                <Button Content="Enregistrer la date" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"/>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:RhRioFormulaire}">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Attribution ou changement de RIO"/>
+                <TextBlock Classes="muted" Text="Choisis un agent." IsVisible="{Binding !HasAgent}"/>
+                <TextBlock Classes="muted" Text="Permission « Attribuer et changer les RIO » requise." IsVisible="{Binding !Autorise}"/>
+                <StackPanel Spacing="6" IsVisible="{Binding HasAgent}">
+                    <StackPanel Spacing="6" IsVisible="{Binding Autorise}">
+                        <TextBlock Classes="muted" Text="{Binding Aide}" TextWrapping="Wrap"/>
+                        <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                            <TextBlock Classes="label" Text="Agent concerné" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding AgentLibelle}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Classes="label" Text="RIO actuel" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Actuel}" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Classes="label" Text="Nouveau RIO *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Rio}" Watermark="7 chiffres" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="3" Classes="label" Text="Date d'effet" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <CalendarDatePicker Grid.Row="3" Grid.Column="1" SelectedDate="{Binding DateEffet}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="4" Classes="label" Text="Motif" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Motif}" Watermark="Obligatoire pour un changement" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="5" Classes="label" Text="Observations" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="5" Grid.Column="1" Text="{Binding Observations}" Margin="0,6,0,0"/>
+                        </Grid>
+                        <Button Classes="default" Content="Enregistrer le RIO" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:RhGradeFormulaire}">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Attribuer un nouveau grade"/>
+                <TextBlock Classes="muted" Text="Permission « Grades, affectations et fonctions » requise." IsVisible="{Binding !Autorise}"/>
+                <StackPanel Spacing="6" IsVisible="{Binding Autorise}">
+                    <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto">
+                        <TextBlock Classes="label" Text="Grade actuel" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Column="1" Text="{Binding Actuel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                        <TextBlock Grid.Row="1" Classes="label" Text="Nouveau grade *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Grades}" SelectedItem="{Binding Grade}"
+                                  DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                        <TextBlock Grid.Row="2" Classes="label" Text="Date d'effet" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <CalendarDatePicker Grid.Row="2" Grid.Column="1" SelectedDate="{Binding DateEffet}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                        <TextBlock Grid.Row="3" Classes="label" Text="Motif *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Motif}" Watermark="Obligatoire" Margin="0,6,0,0"/>
+                        <TextBlock Grid.Row="4" Classes="label" Text="Observations" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding Observations}" Margin="0,6,0,0"/>
+                        <TextBlock Grid.Row="5" Classes="label" Text="Justificatif" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Justificatifs}" SelectedItem="{Binding Justificatif}"
+                                  DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                    </Grid>
+                    <Button Classes="default" Content="Attribuer le grade" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"/>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:RhAffectationFormulaire}">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Nouvelle affectation"/>
+                <TextBlock Classes="muted" Text="Choisis un agent." IsVisible="{Binding !HasAgent}"/>
+                <TextBlock Classes="muted" Text="Permission « Grades, affectations et fonctions » requise." IsVisible="{Binding !Autorise}"/>
+                <StackPanel Spacing="6" IsVisible="{Binding HasAgent}">
+                    <StackPanel Spacing="6" IsVisible="{Binding Autorise}">
+                        <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto">
+                            <TextBlock Classes="label" Text="Agent" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding AgentLibelle}" TextWrapping="Wrap" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Classes="label" Text="Actuelle" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="1" Grid.Column="1" Text="{Binding Actuelle}" TextWrapping="Wrap" FontWeight="SemiBold" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Classes="label" Text="Service *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding Services}" SelectedItem="{Binding Service}"
+                                      DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="3" Classes="label" Text="Unité *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="3" Grid.Column="1" ItemsSource="{Binding Unites}" SelectedItem="{Binding Unite}"
+                                      DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="4" Classes="label" Text="Fonction" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="4" Grid.Column="1" ItemsSource="{Binding Fonctions}" SelectedItem="{Binding Fonction}"
+                                      DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="5" Classes="label" Text="Responsable" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="5" Grid.Column="1" ItemsSource="{Binding Responsables}" SelectedItem="{Binding Responsable}"
+                                      DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="6" Classes="label" Text="Date d'effet" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <CalendarDatePicker Grid.Row="6" Grid.Column="1" SelectedDate="{Binding DateEffet}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="7" Classes="label" Text="Motif *" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="7" Grid.Column="1" Text="{Binding Motif}" Watermark="Obligatoire" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="8" Classes="label" Text="Observations" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="8" Grid.Column="1" Text="{Binding Observations}" Margin="0,6,0,0"/>
+                        </Grid>
+                        <Button Classes="default" Content="Affecter" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type vm:RhStatutFormulaire}">
+            <StackPanel Spacing="6">
+                <TextBlock Classes="groupheader" Text="Statut administratif"/>
+                <TextBlock Classes="muted" Text="Permission « Suspendre, réactiver ou archiver » requise." IsVisible="{Binding !Autorise}"/>
+                <StackPanel Spacing="6" IsVisible="{Binding HasAgent}">
+                    <StackPanel Spacing="6" IsVisible="{Binding Autorise}">
+                        <Grid ColumnDefinitions="120,*" RowDefinitions="Auto,Auto,Auto">
+                            <TextBlock Classes="label" Text="Statut actuel" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Column="1" Text="{Binding Actuel}" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <TextBlock Grid.Row="1" Classes="label" Text="Nouveau statut" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Statuts}" SelectedItem="{Binding Statut}"
+                                      HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                            <TextBlock Grid.Row="2" Classes="label" Text="Motif" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                            <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Motif}" Watermark="Obligatoire pour suspendre ou archiver" Margin="0,6,0,0"/>
+                        </Grid>
+                        <TextBlock Classes="muted" TextWrapping="Wrap" FontSize="11"
+                                   Text="Une suspension ou un archivage ne fait disparaître aucune intervention ni aucun procès-verbal de l'agent."/>
+                        <Button Content="Appliquer le statut" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"/>
+                    </StackPanel>
+                </StackPanel>
+            </StackPanel>
+        </DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid>
+        <Grid RowDefinitions="Auto,Auto,*">
+            <!-- Bandeau -->
+            <Border Background="{StaticResource HeaderBrush}" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" Padding="8,6">
+                <Grid ColumnDefinitions="Auto,*,Auto">
+                    <Button Classes="small" Command="{Binding BasculerMenuCommand}" ToolTip.Tip="Afficher ou masquer le menu RH">
+                        <PathIcon Data="{StaticResource IconMenu}" Width="14" Height="14" Foreground="#1E395B"/>
+                    </Button>
+                    <StackPanel Grid.Column="1" Margin="10,0" VerticalAlignment="Center">
+                        <TextBlock Text="RESSOURCES HUMAINES" FontWeight="SemiBold" FontSize="13" Foreground="{StaticResource TitleTextBrush}"/>
+                        <TextBlock Classes="muted" Text="{Binding AgentConnecte}" FontSize="11"/>
+                    </StackPanel>
+                    <Button Grid.Column="2" Classes="small" Command="{Binding ActualiserCommand}" ToolTip.Tip="Recharger les données">
+                        <StackPanel Orientation="Horizontal" Spacing="5">
+                            <PathIcon Data="{StaticResource IconRefresh}" Width="12" Height="12" Foreground="#1E395B"/>
+                            <TextBlock Text="Actualiser" VerticalAlignment="Center"/>
+                        </StackPanel>
+                    </Button>
+                </Grid>
+            </Border>
+
+            <controls:MessageBar Grid.Row="1"/>
+
+            <Grid Grid.Row="2" ColumnDefinitions="Auto,*">
+                <!-- Menu latéral (panneau de configuration Windows 7) -->
+                <Border Width="214" IsVisible="{Binding MenuOuvert}" BorderBrush="#C8D5E7" BorderThickness="0,0,1,0">
+                    <Border.Background>
+                        <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                            <GradientStop Offset="0" Color="#EEF4FB"/>
+                            <GradientStop Offset="1" Color="#DDE8F5"/>
+                        </LinearGradientBrush>
+                    </Border.Background>
+                    <ListBox ItemsSource="{Binding Menu}" SelectedItem="{Binding MenuSelection}" Background="Transparent"
+                             BorderThickness="0" Padding="6,8" ScrollViewer.HorizontalScrollBarVisibility="Disabled">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="24,*" Margin="0,1">
+                                    <TextBlock Text="{Binding Numero}" FontSize="11" Foreground="#7A8DA6" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Column="1" Text="{Binding Libelle}" FontSize="12" Foreground="{StaticResource LinkBrush}"
+                                               TextWrapping="Wrap" VerticalAlignment="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </Border>
+
+                <!-- Page courante -->
+                <Grid Grid.Column="1" RowDefinitions="Auto,*" Background="White">
+                    <StackPanel Margin="14,10,14,8" DataContext="{Binding Page}">
+                        <TextBlock Classes="instruction" Text="{Binding Titre}" FontSize="15"/>
+                        <TextBlock Classes="muted" Text="{Binding Description}" TextWrapping="Wrap" IsVisible="{Binding HasDescription}" Margin="0,2,0,0"/>
+                    </StackPanel>
+                    <ContentControl Grid.Row="1" Content="{Binding Page}" Margin="14,0,14,10"/>
+                </Grid>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

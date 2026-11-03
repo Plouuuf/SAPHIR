@@ -1,0 +1,29 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhHistoriqueView">
+    <!-- 14. Historique RH. DataContext : RhHistoriqueViewModel. -->
+    <Grid RowDefinitions="Auto,*">
+        <WrapPanel Margin="0,0,0,6">
+            <ComboBox ItemsSource="{Binding Objets}" SelectedItem="{Binding Objet}" Width="170" Margin="0,0,6,4"/>
+            <TextBox Text="{Binding Reference}" Watermark="Référence (AG-000001, DOC-RH-…, code)" Width="240" Margin="0,0,6,4">
+                <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding FiltrerCommand}"/>
+                </TextBox.KeyBindings>
+            </TextBox>
+            <Button Content="Filtrer" Command="{Binding FiltrerCommand}" Margin="0,0,10,4"/>
+            <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center" Margin="0,0,0,4"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" IsReadOnly="True" AutoGenerateColumns="False" CanUserResizeColumns="True"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="150"/>
+                <DataGridTextColumn Header="Objet" Binding="{Binding Objet}" Width="80"/>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="110"/>
+                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="150"/>
+                <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="170"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

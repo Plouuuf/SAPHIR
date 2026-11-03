@@ -1,0 +1,65 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhReferentielView">
+    <!-- 4 à 7. Grades, services, unités, fonctions (4.8, 4.9). DataContext : RhReferentielViewModel. -->
+    <Grid ColumnDefinitions="*,Auto">
+        <Grid RowDefinitions="Auto,*">
+            <WrapPanel Margin="0,0,0,6">
+                <Button Content="Nouveau" Command="{Binding NouveauCommand}" IsVisible="{Binding PeutModifier}" Margin="0,0,8,0"/>
+                <Button Content="Voir le personnel concerné" Command="{Binding PersonnelCommand}" Margin="0,0,8,0"/>
+                <TextBlock Classes="muted" VerticalAlignment="Center" Text="{Binding EnteteLien, StringFormat='Colonne « Rattachement » : {0}'}"
+                           IsVisible="{Binding AfficheLien}"/>
+            </WrapPanel>
+            <DataGrid Grid.Row="1" ItemsSource="{Binding Elements}" SelectedItem="{Binding Selection}" IsReadOnly="True"
+                      AutoGenerateColumns="False" CanUserResizeColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Ordre" Binding="{Binding Ordre}" Width="55"/>
+                    <DataGridTextColumn Header="Intitulé" Binding="{Binding Libelle}" Width="*"/>
+                    <DataGridTextColumn Header="Abrégé" Binding="{Binding Abrege}" Width="80"/>
+                    <DataGridTextColumn Header="Rattachement" Binding="{Binding Lien}" Width="200"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Etat}" Width="65"/>
+                    <DataGridTextColumn Header="Effectif" Binding="{Binding Effectif}" Width="65"/>
+                    <DataGridTextColumn Header="Code" Binding="{Binding Code}" Width="130"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <Border Grid.Column="1" Width="320" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+            <Grid>
+                <TextBlock Classes="muted" Margin="14" TextWrapping="Wrap" IsVisible="{Binding !EnEdition}"
+                           Text="Sélectionne un élément pour le consulter ou le modifier."/>
+                <ScrollViewer IsVisible="{Binding EnEdition}">
+                    <StackPanel Margin="14,12" Spacing="6" IsEnabled="{Binding PeutModifier}">
+                        <TextBlock Classes="instruction" Text="{Binding TitreEditeur}" FontSize="14" TextWrapping="Wrap"/>
+                        <TextBlock Classes="muted" Text="{Binding InfoSelection}" TextWrapping="Wrap" FontSize="11"/>
+                        <TextBlock Classes="label" Text="Intitulé *" Margin="0,6,0,0"/>
+                        <TextBox Text="{Binding Libelle}"/>
+                        <TextBlock Classes="label" Text="Abréviation"/>
+                        <TextBox Text="{Binding Abrege}" MaxLength="20"/>
+                        <StackPanel Spacing="6" IsVisible="{Binding EstGrades}">
+                            <TextBlock Classes="label" Text="Catégorie"/>
+                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Categorie}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel Spacing="6" IsVisible="{Binding EstUnites}">
+                            <TextBlock Classes="label" Text="Service de rattachement *"/>
+                            <ComboBox ItemsSource="{Binding Parents}" SelectedItem="{Binding Parent}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel Spacing="6" IsVisible="{Binding EstServices}">
+                            <TextBlock Classes="label" Text="Responsable du service"/>
+                            <ComboBox ItemsSource="{Binding Responsables}" SelectedItem="{Binding Responsable}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <TextBlock Classes="label" Text="Ordre hiérarchique ou d'affichage"/>
+                        <TextBox Text="{Binding Ordre}" Width="100" HorizontalAlignment="Left"/>
+                        <CheckBox IsChecked="{Binding Actif}" Content="Actif (proposé dans les listes)"/>
+                        <Button Classes="default" Content="Enregistrer" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Right"
+                                IsVisible="{Binding PeutModifier}"/>
+                        <StackPanel Spacing="3" IsVisible="{Binding EstServices}" Margin="0,8,0,0">
+                            <TextBlock Classes="groupheader" Text="Unités du service"/>
+                            <ItemsControl ItemsSource="{Binding UnitesDuService}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

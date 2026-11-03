@@ -1,0 +1,93 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhModelesView">
+    <!-- 11. Modèles documentaires (5.6). DataContext : RhModelesViewModel. -->
+    <Grid ColumnDefinitions="210,*,Auto">
+        <!-- Liste des modèles -->
+        <Grid RowDefinitions="*,Auto">
+            <ListBox ItemsSource="{Binding Modeles}" SelectedItem="{Binding Selection}" BorderBrush="#C8D5E7" BorderThickness="1">
+                <ListBox.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel Margin="2,1">
+                            <TextBlock Text="{Binding Libelle}" FontSize="12" TextWrapping="Wrap"/>
+                            <TextBlock Text="{Binding Categorie}" FontSize="10.5" Foreground="#5B6B7C"/>
+                        </StackPanel>
+                    </DataTemplate>
+                </ListBox.ItemTemplate>
+            </ListBox>
+            <Button Grid.Row="1" Content="Nouveau modèle" Command="{Binding NouveauCommand}" IsVisible="{Binding PeutModifier}"
+                    HorizontalAlignment="Left" Margin="0,8,0,0"/>
+        </Grid>
+
+        <!-- Éditeur -->
+        <Border Grid.Column="1" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+            <Grid>
+                <TextBlock Classes="muted" Margin="14" IsVisible="{Binding !EnEdition}" Text="Sélectionne un modèle ou crée-en un nouveau."/>
+                <Grid RowDefinitions="Auto,*,Auto" Margin="12,10" IsVisible="{Binding EnEdition}">
+                    <Grid ColumnDefinitions="90,*" RowDefinitions="Auto,Auto,Auto,Auto" IsEnabled="{Binding PeutModifier}">
+                        <TextBlock Classes="label" Text="Nom *" VerticalAlignment="Center"/>
+                        <TextBox Grid.Column="1" Text="{Binding Libelle}"/>
+                        <TextBlock Grid.Row="1" Classes="label" Text="Type" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                        <TextBlock Grid.Row="2" Classes="label" Text="Catégorie" VerticalAlignment="Center" Margin="0,6,0,0"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" ItemsSource="{Binding CategoriesChoix}" SelectedItem="{Binding Categorie}"
+                                  DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch" Margin="0,6,0,0"/>
+                        <CheckBox Grid.Row="3" Grid.Column="1" IsChecked="{Binding Actif}" Content="Modèle actif" Margin="0,6,0,0"/>
+                    </Grid>
+                    <TextBox Grid.Row="1" Text="{Binding Contenu}" AcceptsReturn="True" TextWrapping="Wrap" Margin="0,8,0,0"
+                             FontFamily="Consolas, Menlo, monospace" FontSize="12" IsReadOnly="{Binding !PeutModifier}"/>
+                    <Button Grid.Row="2" Classes="default" Content="Enregistrer le modèle" Command="{Binding EnregistrerCommand}"
+                            IsVisible="{Binding PeutModifier}" HorizontalAlignment="Right" Margin="0,8,0,0"/>
+                </Grid>
+            </Grid>
+        </Border>
+
+        <!-- Variables et génération -->
+        <Border Grid.Column="2" Width="320" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+            <ScrollViewer>
+                <StackPanel Margin="12,10" Spacing="6">
+                    <TextBlock Classes="groupheader" Text="Générer pour un agent"/>
+                    <TextBlock Classes="muted" Text="Choisis un modèle actif." IsVisible="{Binding !PeutGenerer}" TextWrapping="Wrap"/>
+                    <StackPanel Spacing="6" IsVisible="{Binding PeutGenerer}">
+                        <TextBlock Classes="label" Text="Agent concerné *"/>
+                        <ComboBox ItemsSource="{Binding AgentsChoix}" SelectedItem="{Binding Agent}" DisplayMemberBinding="{Binding Libelle}"
+                                  HorizontalAlignment="Stretch" PlaceholderText="Choisir un agent…"/>
+                        <TextBlock Classes="label" Text="Titre du document"/>
+                        <TextBox Text="{Binding TitreDocument}" Watermark="Par défaut : modèle — NOM Prénom"/>
+                        <TextBlock Classes="label" Text="Dossier de destination"/>
+                        <ComboBox ItemsSource="{Binding DossiersChoix}" SelectedItem="{Binding Dossier}" DisplayMemberBinding="{Binding Libelle}" HorizontalAlignment="Stretch"/>
+                        <TextBlock Classes="label" Text="Confidentialité"/>
+                        <ComboBox ItemsSource="{Binding Confidentialites}" SelectedItem="{Binding Confidentialite}" HorizontalAlignment="Stretch"/>
+                        <CheckBox IsChecked="{Binding Soumettre}" Content="Soumettre directement à validation"/>
+                        <WrapPanel>
+                            <Button Content="Aperçu" Command="{Binding ApercuCommand}" Margin="0,0,6,4"/>
+                            <Button Classes="default" Content="Générer le document PDF" Command="{Binding GenererCommand}" Margin="0,0,6,4"/>
+                        </WrapPanel>
+                    </StackPanel>
+                    <Border IsVisible="{Binding HasGenere}" Background="#E8F2FC" BorderBrush="#A9C7EA" BorderThickness="1" Padding="8,6">
+                        <StackPanel Spacing="4">
+                            <TextBlock Text="{Binding GenereTexte}" TextWrapping="Wrap" FontSize="11.5"/>
+                            <Button Classes="link" Content="Ouvrir dans Documents" Command="{Binding OuvrirGenereCommand}" FontSize="11.5"/>
+                        </StackPanel>
+                    </Border>
+                    <TextBox IsVisible="{Binding HasApercu}" Text="{Binding Apercu, Mode=OneWay}" IsReadOnly="True" AcceptsReturn="True"
+                             TextWrapping="Wrap" MaxHeight="300" FontFamily="Consolas, Menlo, monospace" FontSize="11"/>
+
+                    <TextBlock Classes="groupheader" Text="Variables automatiques" Margin="0,8,0,0"/>
+                    <TextBlock Classes="muted" FontSize="11" TextWrapping="Wrap" Text="Clique sur une variable pour l'ajouter à la fin du modèle."/>
+                    <ItemsControl ItemsSource="{Binding Variables}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,2">
+                                    <Button Classes="link" Content="{Binding Code}" FontSize="11.5" FontFamily="Consolas, Menlo, monospace"
+                                            Command="{Binding $parent[UserControl].DataContext.InsererCommand}" CommandParameter="{Binding}"/>
+                                    <TextBlock Text="{Binding Description}" FontSize="10.5" Foreground="#5B6B7C" TextWrapping="Wrap"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

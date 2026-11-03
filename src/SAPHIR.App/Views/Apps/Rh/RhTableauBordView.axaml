@@ -1,0 +1,180 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhTableauBordView">
+    <!-- 1. Tableau de bord RH (4.3). DataContext : RhTableauBordViewModel. Valeurs issues de la base uniquement. -->
+    <UserControl.Styles>
+        <Style Selector="Button.tuile">
+            <Setter Property="Width" Value="150"/>
+            <Setter Property="Height" Value="66"/>
+            <Setter Property="Margin" Value="0,0,8,8"/>
+            <Setter Property="HorizontalContentAlignment" Value="Left"/>
+            <Setter Property="VerticalContentAlignment" Value="Top"/>
+            <Setter Property="Padding" Value="10,6"/>
+        </Style>
+        <Style Selector="TextBlock.chiffre">
+            <Setter Property="FontSize" Value="22"/>
+            <Setter Property="FontWeight" Value="SemiBold"/>
+            <Setter Property="Foreground" Value="#1E395B"/>
+        </Style>
+        <Style Selector="Border.cadre">
+            <Setter Property="BorderBrush" Value="#C8D5E7"/>
+            <Setter Property="BorderThickness" Value="1"/>
+            <Setter Property="Background" Value="#F7FAFD"/>
+            <Setter Property="Padding" Value="12,8"/>
+            <Setter Property="Margin" Value="0,0,10,10"/>
+        </Style>
+    </UserControl.Styles>
+
+    <ScrollViewer HorizontalScrollBarVisibility="Disabled">
+        <StackPanel Spacing="6">
+            <WrapPanel>
+                <Button Classes="tuile" Command="{Binding VoirTousCommand}" ToolTip.Tip="Voir tout le personnel">
+                    <StackPanel>
+                        <TextBlock Classes="chiffre" Text="{Binding Total}"/>
+                        <TextBlock Text="Agents au total" FontSize="11"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="tuile" Command="{Binding VoirActifsCommand}">
+                    <StackPanel>
+                        <TextBlock Classes="chiffre" Text="{Binding Actifs}" Foreground="#2E7D32"/>
+                        <TextBlock Text="Comptes actifs" FontSize="11"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="tuile" Command="{Binding VoirSuspendusCommand}">
+                    <StackPanel>
+                        <TextBlock Classes="chiffre" Text="{Binding Suspendus}" Foreground="#C7503B"/>
+                        <TextBlock Text="Comptes suspendus" FontSize="11"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="tuile" Command="{Binding VoirProfilsACompleterCommand}">
+                    <StackPanel>
+                        <TextBlock Classes="chiffre" Text="{Binding ProfilsACompleter}" Foreground="#B26A00"/>
+                        <TextBlock Text="Profils incomplets" FontSize="11"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="tuile" Command="{Binding VoirSansRioCommand}">
+                    <StackPanel>
+                        <TextBlock Classes="chiffre" Text="{Binding SansRio}" Foreground="#B26A00"/>
+                        <TextBlock Text="Agents sans RIO" FontSize="11"/>
+                    </StackPanel>
+                </Button>
+                <Button Classes="tuile" Command="{Binding VoirAValiderCommand}">
+                    <StackPanel>
+                        <TextBlock Classes="chiffre" Text="{Binding DocumentsAValider}"/>
+                        <TextBlock Text="Documents en attente" FontSize="11"/>
+                    </StackPanel>
+                </Button>
+            </WrapPanel>
+
+            <WrapPanel>
+                <Border Classes="cadre" Width="330">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Répartition par statut"/>
+                        <ItemsControl ItemsSource="{Binding ParStatut}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="120,*,34" Margin="0,2">
+                                        <TextBlock Text="{Binding Libelle}" FontSize="11.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Height="10" Width="{Binding Largeur}" HorizontalAlignment="Left" Background="#5B9BD5" CornerRadius="1"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Nombre}" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Classes="cadre" Width="330">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Répartition par grade"/>
+                        <ItemsControl ItemsSource="{Binding ParGrade}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="120,*,34" Margin="0,2">
+                                        <TextBlock Text="{Binding Libelle}" FontSize="11.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Height="10" Width="{Binding Largeur}" HorizontalAlignment="Left" Background="#4A7EBB" CornerRadius="1"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Nombre}" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Classes="cadre" Width="330">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Répartition par service"/>
+                        <ItemsControl ItemsSource="{Binding ParService}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="120,*,34" Margin="0,2">
+                                        <TextBlock Text="{Binding Libelle}" FontSize="11.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Height="10" Width="{Binding Largeur}" HorizontalAlignment="Left" Background="#70AD47" CornerRadius="1"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Nombre}" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                        <TextBlock Classes="groupheader" Text="Répartition par unité" Margin="0,8,0,0"/>
+                        <ItemsControl ItemsSource="{Binding ParUnite}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="120,*,34" Margin="0,2">
+                                        <TextBlock Text="{Binding Libelle}" FontSize="11.5" TextTrimming="CharacterEllipsis" VerticalAlignment="Center"/>
+                                        <Border Grid.Column="1" Height="10" Width="{Binding Largeur}" HorizontalAlignment="Left" Background="#A5C882" CornerRadius="1"/>
+                                        <TextBlock Grid.Column="2" Text="{Binding Nombre}" FontSize="11.5" HorizontalAlignment="Right" VerticalAlignment="Center"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <WrapPanel>
+                <Border Classes="cadre" Width="520">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Dernières modifications"/>
+                        <TextBlock Classes="muted" Text="Aucune modification enregistrée." IsVisible="{Binding !Modifications.Count}"/>
+                        <ItemsControl ItemsSource="{Binding Modifications}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,3">
+                                        <TextBlock FontSize="11.5" TextWrapping="Wrap">
+                                            <Run Text="{Binding Date, Mode=OneWay}" Foreground="#5B6B7C"/>
+                                            <Run Text=" — " Foreground="#5B6B7C"/>
+                                            <Run Text="{Binding Action, Mode=OneWay}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Reference, Mode=OneWay, StringFormat=' ({0})'}"/>
+                                        </TextBlock>
+                                        <TextBlock FontSize="11" Foreground="#5B6B7C" TextWrapping="Wrap">
+                                            <Run Text="{Binding Auteur, Mode=OneWay, StringFormat='par {0}'}"/>
+                                            <Run Text="{Binding Detail, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+                <Border Classes="cadre" Width="330">
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Dernières créations de comptes"/>
+                        <ItemsControl ItemsSource="{Binding Creations}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <StackPanel Margin="0,3">
+                                        <Button Classes="link" Content="{Binding Libelle}" FontSize="12"
+                                                Command="{Binding $parent[UserControl].DataContext.OuvrirAgentCommand}" CommandParameter="{Binding}"/>
+                                        <TextBlock FontSize="11" Foreground="#5B6B7C">
+                                            <Run Text="{Binding Reference, Mode=OneWay}"/>
+                                            <Run Text="{Binding CreeLe, Mode=OneWay, StringFormat=' · créé le {0}'}"/>
+                                            <Run Text="{Binding Statut, Mode=OneWay, StringFormat=' · {0}'}"/>
+                                        </TextBlock>
+                                    </StackPanel>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

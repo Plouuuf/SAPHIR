@@ -1,0 +1,49 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhPersonnelView">
+    <!-- 2. Gestion du personnel (4.4). DataContext : RhPersonnelViewModel. Double-clic : dossier individuel. -->
+    <Grid RowDefinitions="Auto,*,Auto">
+        <WrapPanel Margin="0,0,0,6">
+            <TextBox Text="{Binding Recherche}" Watermark="Rechercher (nom, RIO, matricule, grade, Discord…)" Width="260" Margin="0,0,6,6">
+                <TextBox.KeyBindings>
+                    <KeyBinding Gesture="Enter" Command="{Binding RechercherCommand}"/>
+                </TextBox.KeyBindings>
+            </TextBox>
+            <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding Statut}" Width="150" Margin="0,0,6,6"/>
+            <ComboBox ItemsSource="{Binding Services}" SelectedItem="{Binding Service}" DisplayMemberBinding="{Binding Libelle}" Width="160" Margin="0,0,6,6"/>
+            <ComboBox ItemsSource="{Binding Unites}" SelectedItem="{Binding Unite}" DisplayMemberBinding="{Binding Libelle}" Width="140" Margin="0,0,6,6"/>
+            <ComboBox ItemsSource="{Binding Grades}" SelectedItem="{Binding Grade}" DisplayMemberBinding="{Binding Libelle}" Width="170" Margin="0,0,6,6"/>
+            <Button Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,6,6"/>
+            <Button Classes="link" Content="Réinitialiser" Command="{Binding ReinitialiserCommand}" VerticalAlignment="Center" Margin="4,0,10,6"/>
+            <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center" Margin="0,0,0,6"/>
+        </WrapPanel>
+
+        <DataGrid Name="Grille" Grid.Row="1" ItemsSource="{Binding Agents}" SelectedItem="{Binding Selection}"
+                  IsReadOnly="True" AutoGenerateColumns="False" CanUserResizeColumns="True" CanUserSortColumns="True"
+                  GridLinesVisibility="Horizontal" HeadersVisibility="Column" DoubleTapped="Grille_DoubleTapped">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Identifiant" Binding="{Binding Reference}" Width="90"/>
+                <DataGridTextColumn Header="NOM" Binding="{Binding Nom}" Width="110"/>
+                <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="100"/>
+                <DataGridTextColumn Header="RIO" Binding="{Binding Rio}" Width="75"/>
+                <DataGridTextColumn Header="Matricule" Binding="{Binding Matricule}" Width="85"/>
+                <DataGridTextColumn Header="Grade" Binding="{Binding Grade}" Width="120"/>
+                <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="110"/>
+                <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="90"/>
+                <DataGridTextColumn Header="Fonction" Binding="{Binding Fonction}" Width="130"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="120"/>
+                <DataGridTextColumn Header="Discord" Binding="{Binding Discord}" Width="140"/>
+                <DataGridTextColumn Header="Dernière modification" Binding="{Binding MajLe}" Width="130"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <Border Grid.Row="2" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,6,0,0">
+            <WrapPanel>
+                <Button Classes="default" Content="Ouvrir le dossier" Command="{Binding OuvrirDossierCommand}" IsEnabled="{Binding HasSelection}" Margin="0,0,6,4"/>
+                <Button Content="Documents" Command="{Binding DocumentsCommand}" IsEnabled="{Binding HasSelection}" Margin="0,0,6,4"/>
+                <Button Content="Historique" Command="{Binding HistoriqueCommand}" IsEnabled="{Binding HasSelection}" Margin="0,0,6,4"/>
+                <Button Content="Modifier, suspendre ou archiver…" Command="{Binding StatutCommand}" IsEnabled="{Binding HasSelection}" Margin="0,0,6,4"/>
+            </WrapPanel>
+        </Border>
+    </Grid>
+</UserControl>

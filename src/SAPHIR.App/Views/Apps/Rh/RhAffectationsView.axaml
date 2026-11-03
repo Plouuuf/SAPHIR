@@ -1,0 +1,39 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhAffectationsView">
+    <!-- 8. Affectations (4.10). DataContext : RhAffectationsViewModel. -->
+    <Grid ColumnDefinitions="*,Auto">
+        <Grid RowDefinitions="Auto,*">
+            <WrapPanel Margin="0,0,0,6">
+                <CheckBox IsChecked="{Binding EnCoursSeulement}" Content="Affectations en cours seulement" Margin="0,0,12,0"/>
+                <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center"/>
+            </WrapPanel>
+            <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" IsReadOnly="True"
+                      AutoGenerateColumns="False" CanUserResizeColumns="True" GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Agent" Binding="{Binding Agent}" Width="150"/>
+                    <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="110"/>
+                    <DataGridTextColumn Header="Unité" Binding="{Binding Unite}" Width="90"/>
+                    <DataGridTextColumn Header="Fonction" Binding="{Binding Fonction}" Width="120"/>
+                    <DataGridTextColumn Header="Responsable" Binding="{Binding Responsable}" Width="120"/>
+                    <DataGridTextColumn Header="Début" Binding="{Binding Debut}" Width="85"/>
+                    <DataGridTextColumn Header="Fin" Binding="{Binding Fin}" Width="80"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </Grid>
+
+        <Border Grid.Column="1" Width="360" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+            <ScrollViewer>
+                <StackPanel Margin="14,12" Spacing="8">
+                    <TextBlock Classes="label" Text="Agent concerné"/>
+                    <ComboBox ItemsSource="{Binding AgentsChoix}" SelectedItem="{Binding Agent}" DisplayMemberBinding="{Binding Libelle}"
+                              HorizontalAlignment="Stretch" PlaceholderText="Choisir un agent…"/>
+                    <ContentControl Content="{Binding Formulaire}"/>
+                    <Button Classes="link" Content="Ouvrir le dossier de l'agent" Command="{Binding OuvrirDossierCommand}"
+                            IsVisible="{Binding Formulaire.HasAgent}"/>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+    </Grid>
+</UserControl>

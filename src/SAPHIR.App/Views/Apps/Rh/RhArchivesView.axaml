@@ -1,0 +1,50 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Rh.RhArchivesView">
+    <!-- 15. Archives : agents et documents archivés. DataContext : RhArchivesViewModel. -->
+    <Grid RowDefinitions="Auto,*,Auto,*">
+        <TextBlock Classes="groupheader" Text="Agents archivés" IsVisible="{Binding VoitAgents}"/>
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" Margin="0,4,0,10" IsVisible="{Binding VoitAgents}">
+            <DataGrid ItemsSource="{Binding AgentsArchives}" SelectedItem="{Binding Agent}" IsReadOnly="True" AutoGenerateColumns="False"
+                      GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Identifiant" Binding="{Binding Reference}" Width="90"/>
+                    <DataGridTextColumn Header="NOM" Binding="{Binding Nom}" Width="110"/>
+                    <DataGridTextColumn Header="Prénom" Binding="{Binding Prenom}" Width="100"/>
+                    <DataGridTextColumn Header="RIO" Binding="{Binding Rio}" Width="80"/>
+                    <DataGridTextColumn Header="Grade" Binding="{Binding Grade}" Width="*"/>
+                    <DataGridTextColumn Header="Archivé le" Binding="{Binding MajLe}" Width="115"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <Border Grid.Column="1" Width="330" Margin="10,0,0,0" BorderBrush="#C8D5E7" BorderThickness="1" Background="#F7FAFD">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="6">
+                        <TextBlock Classes="muted" Text="Sélectionne un agent archivé pour le réactiver ou consulter son dossier." TextWrapping="Wrap"
+                                   IsVisible="{Binding !Statut.HasAgent}"/>
+                        <ContentControl Content="{Binding Statut}"/>
+                        <Button Classes="link" Content="Consulter son dossier" Command="{Binding OuvrirDossierCommand}" IsVisible="{Binding Statut.HasAgent}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+
+        <TextBlock Grid.Row="2" Classes="groupheader" Text="Documents archivés" IsVisible="{Binding VoitDocuments}"/>
+        <Grid Grid.Row="3" RowDefinitions="*,Auto" Margin="0,4,0,0" IsVisible="{Binding VoitDocuments}">
+            <DataGrid ItemsSource="{Binding DocumentsArchives}" SelectedItem="{Binding Document}" IsReadOnly="True" AutoGenerateColumns="False"
+                      GridLinesVisibility="Horizontal" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="105"/>
+                    <DataGridTextColumn Header="Nom" Binding="{Binding Titre}" Width="*"/>
+                    <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="150"/>
+                    <DataGridTextColumn Header="Agent" Binding="{Binding Agent}" Width="130"/>
+                    <DataGridTextColumn Header="Version" Binding="{Binding Version}" Width="60"/>
+                    <DataGridTextColumn Header="Archivé le" Binding="{Binding MajLe}" Width="115"/>
+                </DataGrid.Columns>
+            </DataGrid>
+            <WrapPanel Grid.Row="1" Margin="0,6,0,0">
+                <Button Content="Télécharger" Command="{Binding TelechargerCommand}" IsEnabled="{Binding HasDocument}" Margin="0,0,6,0"/>
+                <Button Content="Restaurer" Command="{Binding RestaurerCommand}" IsEnabled="{Binding HasDocument}" IsVisible="{Binding PeutRestaurer}"/>
+            </WrapPanel>
+        </Grid>
+    </Grid>
+</UserControl>

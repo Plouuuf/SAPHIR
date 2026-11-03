@@ -90,7 +90,7 @@ public static class RhPdf
         if (page == 1)
             Texte("F2", 14, Marge, haut - 48, Tronquer(titre, 70));
 
-        var y = haut - (page == 1 ? 74 : 44);
+        double y = haut - (page == 1 ? 74 : 44);
         foreach (var ligne in lignes)
         {
             if (ligne.Length > 0)

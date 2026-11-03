@@ -102,12 +102,18 @@ Permissions : `CHEOPS*`, `lrppn.consulter`, `lrppn.acte.rediger`, `pegase.appel.
 | GET | `/modeles` | LECTURE | `ModeleDto[]` (version 0 = modèle par défaut) |
 | PUT | `/modeles/{type}` | `lrppn.acte.valider` | `ModeleInput` → nouvelle version (`lr_modeles_versions`) |
 
-## Tables (migrations 500, 510, 520, 590)
+## Tables (migrations 500, 510, 520, 530, 590)
 
 `per_personnes`, `per_alias`, `per_documents`, `veh_vehicules`, `veh_assurances` ; `ch_taj`, `ch_fpr`, `ch_foves`,
 `ch_permis`, `ch_scientifique`, `ch_fijais`, `ch_decisions`, `ch_anadoc` ; `lr_procedures`, `lr_procedure_personnes`,
 `lr_procedure_vehicules`, `lr_procedure_liens`, `lr_actes`, `lr_actes_versions`, `lr_actes_mentions`, `lr_pieces`
-(fichier en MEDIUMBLOB), `lr_pieces_mouvements`, `lr_modeles`, `lr_modeles_versions`. Migration 590 : jeu de données fictives.
+(fichier en MEDIUMBLOB), `lr_pieces_mouvements`, `lr_modeles`, `lr_modeles_versions`. Migration 530 : déclaration
+d'identité en jeu (propriétaire Discord, retrait logique, profession, signalement ; voir `docs/API-CITOYEN.md`).
+Migration 590 : jeu de données fictives.
+
+Personnes et véhicules **retirés par le joueur** (`retire_le`) sont exclus des recherches (`/api/personnes/recherche`,
+`/api/vehicules/recherche`, CHEOPS, SNPC) ; la fiche reste consultable par son identifiant. Les personnes déclarées en
+jeu portent `PersonneFicheDto.DeclareeParJoueur` et figurent dans `RechercheGeneraleDto.DeclareesParJoueur`.
 
 ## Configuration facultative (lecture FiveM)
 

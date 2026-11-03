@@ -125,6 +125,12 @@ public static class SocleRegles
                        System.Globalization.CultureInfo.InvariantCulture, out _)
                     ? null
                     : "Valeur numérique attendue.",
+            "citoyen.portail.actif" => valeur.Trim() is "oui" or "non"
+                ? null
+                : "Valeur attendue : « oui » ou « non ».",
+            "citoyen.personnages.max" => int.TryParse(valeur.Trim(), out var max) && max is >= 1 and <= 50
+                ? null
+                : "Nombre entier de 1 à 50 attendu.",
             _ => null
         };
     }

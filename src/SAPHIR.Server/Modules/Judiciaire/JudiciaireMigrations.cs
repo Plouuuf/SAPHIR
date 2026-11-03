@@ -515,6 +515,39 @@ public static class JudiciaireMigrations
             """
         ]),
 
+        // Déclaration d'identité par le joueur depuis le jeu (ressource FiveM saphir-identite) : propriétaire Discord,
+        // retrait logique, profession et signalement détaillé. Le personnage FiveM est l'identifiant existant fivem_id.
+        new(530, "Judiciaire : déclaration d'identité par le joueur (propriétaire Discord, retrait, profession, signalement)",
+        [
+            """
+            ALTER TABLE per_personnes
+                ADD COLUMN IF NOT EXISTS discord_proprietaire VARCHAR(32) NULL,
+                ADD COLUMN IF NOT EXISTS declaree_le DATETIME NULL,
+                ADD COLUMN IF NOT EXISTS retire_le DATETIME NULL,
+                ADD COLUMN IF NOT EXISTS profession VARCHAR(120) NULL,
+                ADD COLUMN IF NOT EXISTS taille_cm SMALLINT NULL,
+                ADD COLUMN IF NOT EXISTS corpulence VARCHAR(40) NULL,
+                ADD COLUMN IF NOT EXISTS signes_particuliers VARCHAR(500) NULL
+            """,
+            "CREATE INDEX IF NOT EXISTS ix_per_personnes_discord ON per_personnes (discord_proprietaire, retire_le)",
+            """
+            ALTER TABLE veh_vehicules
+                ADD COLUMN IF NOT EXISTS declare_le DATETIME NULL,
+                ADD COLUMN IF NOT EXISTS retire_le DATETIME NULL
+            """,
+            """
+            INSERT IGNORE INTO sys_parametres (cle, valeur, libelle, aide, modifiable, maj_le)
+            VALUES ('citoyen.portail.actif', 'oui', 'Déclaration d''identité en jeu : portail ouvert',
+                    '« oui » : les joueurs peuvent déclarer leurs personnages, véhicules et permis depuis le jeu (/identite). Toute autre valeur (« non ») ferme le portail.',
+                    1, UTC_TIMESTAMP())
+            """,
+            """
+            INSERT IGNORE INTO sys_parametres (cle, valeur, libelle, aide, modifiable, maj_le)
+            VALUES ('citoyen.personnages.max', '5', 'Déclaration d''identité en jeu : personnages actifs par compte Discord',
+                    'Nombre maximal de personnages déclarés et non retirés pour un même compte Discord (1 à 50).', 1, UTC_TIMESTAMP())
+            """
+        ]),
+
         new(590, "Judiciaire : données fictives de départ (Créteil, Val-de-Marne)", JudiciaireDonneesFictives.Requetes)
     ];
 }

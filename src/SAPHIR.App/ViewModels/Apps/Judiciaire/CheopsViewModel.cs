@@ -293,8 +293,10 @@ public sealed record VehiculeLigne(VehiculeResumeDto Dto)
     public string Alertes => FormatsJ.Alertes(Dto.Alertes);
 }
 
-public sealed record PersonneLigne(PersonneResumeDto Dto)
+public sealed record PersonneLigne(PersonneResumeDto Dto, bool DeclareeParJoueur = false)
 {
+    /// <summary>Badge « Déclarée par le joueur » (fiche créée ou reprise depuis le jeu, /identite).</summary>
+    public string Origine => DeclareeParJoueur ? "Déclarée par le joueur" : string.Empty;
     public string Reference => Dto.Reference;
     public string Nom => Dto.Nom;
     public string Prenom => Dto.Prenom;
@@ -432,7 +434,8 @@ public sealed class RechercheGeneraleViewModel : CheopsSectionBase
             if (!chemin.Contains('?'))
                 throw new ArgumentException("Renseigne au moins un critère de recherche.");
             var resultat = await api.GetAsync<RechercheGeneraleDto>(chemin);
-            Remplir(Personnes, resultat.Personnes.Select(p => new PersonneLigne(p)));
+            var declarees = resultat.DeclareesParJoueur ?? Array.Empty<long>();
+            Remplir(Personnes, resultat.Personnes.Select(p => new PersonneLigne(p, declarees.Contains(p.Id))));
             Remplir(Vehicules, resultat.Vehicules.Select(v => new VehiculeLigne(v)));
             Remplir(Dossiers, resultat.Dossiers);
             OnPropertyChanged(nameof(Resultat));

@@ -14,6 +14,8 @@ public static class JudiciaireCaptures
     private static readonly PersonneResumeDto Leroy = new(1, "PER-000001", "LEROY", "Kévin", new DateOnly(1998, 3, 14), "Créteil (94)", "M", ["FPR", "TAJ", "FNAEG"]);
     private static readonly PersonneResumeDto Benali = new(2, "PER-000002", "BENALI", "Sofiane", new DateOnly(1991, 7, 2), "Vitry-sur-Seine (94)", "M", ["TAJ"]);
     private static readonly PersonneResumeDto Moreau = new(3, "PER-000003", "MOREAU", "Julie", new DateOnly(1985, 11, 23), "Paris 12e (75)", "F", ["TAJ"]);
+    // Personnage déclaré par un joueur depuis le jeu (/identite) : badge « Déclarée par le joueur » dans la recherche.
+    private static readonly PersonneResumeDto LeroyJoueur = new(14, "PER-000014", "LEROY", "Inès", new DateOnly(2001, 5, 9), "Saint-Maur-des-Fossés (94)", "F", Array.Empty<string>());
     private static readonly PersonneResumeDto Roussel = new(5, "PER-000005", "ROUSSEL", "Anthony", new DateOnly(1979, 1, 30), "Maisons-Alfort (94)", "M", ["SNPC"]);
 
     private static HistoriqueDto H(int id, int minutes, string objet, string reference, string action, string? champ, string? avant, string? apres, string? motif = null)
@@ -26,7 +28,7 @@ public static class JudiciaireCaptures
     private static PersonneFicheDto FicheLeroy() => new(1, "PER-000001", "LEROY", "Kévin", new DateOnly(1998, 3, 14), "Créteil (94)", "M", "Française",
         "12 rue des Écoles, 94000 Créteil", "06 12 48 77 31", "1,80 m, corpulence mince, cheveux bruns courts, tatouage avant-bras droit", "SAPHIR",
         [new AliasDto(1, "KEV")], [new DocumentIdentiteDto(1, "Carte nationale d'identité", "X4RT7ZK21", new DateOnly(2021, 6, 2), new DateOnly(2031, 6, 1), "Préfecture du Val-de-Marne")],
-        ["FPR", "TAJ", "FNAEG"], [BandeauLeroy], Now.AddDays(-30), Now.AddDays(-2));
+        ["FPR", "TAJ", "FNAEG"], [BandeauLeroy], Now.AddDays(-30), Now.AddDays(-2)) { Profession = "Livreur" };
 
     private static List<TajFaitDto> TajLeroy() =>
     [
@@ -126,8 +128,9 @@ public static class JudiciaireCaptures
             "api/pegase/interventions/1284/resume" => new InterventionResumeDto(1284, "PG-2026-001284", "Vol avec violence", "Rue du Général-Leclerc", "Créteil",
                 Now.AddHours(-4), "Clôturée", ["TV 94-12", "BAC 94-3"]),
 
-            "api/cheops/recherche" => new RechercheGeneraleDto([Leroy], [Golf],
-                [new CorrespondanceDto("TAJ", 1, "TAJ-000001", "LEROY Kévin — Vol avec violence (vol à l'arraché) (2025/000412)", 1, null)]),
+            "api/cheops/recherche" => new RechercheGeneraleDto([Leroy, LeroyJoueur], [Golf],
+                [new CorrespondanceDto("TAJ", 1, "TAJ-000001", "LEROY Kévin — Vol avec violence (vol à l'arraché) (2025/000412)", 1, null)],
+                [LeroyJoueur.Id]),
             "api/cheops/personnes/1" => FicheLeroy(),
             "api/cheops/taj" => new List<TajLigneDto> { new(Leroy, 2, TajLeroy()[0].FaitsLe) },
             "api/cheops/taj/personnes/1" => new TajFicheDto(FicheLeroy(), TajLeroy(), [H(2, 300, "taj", "PER-000001", "Inscription", "TAJ-000002", null, "Mis en cause — Conduite sans assurance")]),

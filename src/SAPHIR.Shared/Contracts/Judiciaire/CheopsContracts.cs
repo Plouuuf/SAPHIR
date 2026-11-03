@@ -62,7 +62,11 @@ public sealed record DocumentIdentiteDto(long Id, string Type, string Numero, Da
 
 public sealed record DocumentIdentiteInput(string Type, string Numero, DateOnly? DelivreLe, DateOnly? ExpireLe, string? Autorite);
 
-/// <summary>Fiche d'identité complète (CHEOPS, LRPPN). <see cref="Source"/> : « SAPHIR » ou « FiveM ».</summary>
+/// <summary>
+/// Fiche d'identité complète (CHEOPS, LRPPN). <see cref="Source"/> : « SAPHIR », « FiveM » ou « Joueur ».
+/// <see cref="DeclareeParJoueur"/> : fiche déclarée (ou reprise) par le joueur depuis le jeu (/identite) ;
+/// <see cref="RetireeLe"/> : retirée par le joueur (invisible dans les recherches, conservée).
+/// </summary>
 public sealed record PersonneFicheDto(
     long Id,
     string Reference,
@@ -84,6 +88,10 @@ public sealed record PersonneFicheDto(
     DateTimeOffset MajLe)
 {
     public string Libelle => DateNaissance is { } d ? $"{Nom} {Prenom} (né(e) le {d:dd/MM/yyyy})" : $"{Nom} {Prenom}";
+
+    public bool DeclareeParJoueur { get; init; }
+    public string? Profession { get; init; }
+    public DateTimeOffset? RetireeLe { get; init; }
 }
 
 /// <summary>Modification d'une identité (historisée, motif conseillé).</summary>
@@ -105,10 +113,12 @@ public sealed record PersonneModificationInput(
 /// <summary>Correspondance dans un fichier (numéro de dossier, référence, procédure).</summary>
 public sealed record CorrespondanceDto(string Fichier, long Id, string Reference, string Libelle, long? PersonneId, long? VehiculeId);
 
+/// <summary>Résultat de la recherche générale. <see cref="DeclareesParJoueur"/> : identifiants des personnes déclarées par le joueur (badge).</summary>
 public sealed record RechercheGeneraleDto(
     IReadOnlyList<PersonneResumeDto> Personnes,
     IReadOnlyList<VehiculeResumeDto> Vehicules,
-    IReadOnlyList<CorrespondanceDto> Dossiers);
+    IReadOnlyList<CorrespondanceDto> Dossiers,
+    IReadOnlyList<long>? DeclareesParJoueur = null);
 
 // ===== TAJ (12.1) =====
 

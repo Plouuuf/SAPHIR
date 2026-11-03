@@ -28,7 +28,7 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
         await using var db = await saphirDb.OpenAsync(ct);
         await ImporterFiveMAsync(db, termes, ct);
 
-        var sql = new StringBuilder($"SELECT {Sqlj.ColonnesPersonne} FROM per_personnes p WHERE 1 = 1");
+        var sql = new StringBuilder($"SELECT {Sqlj.ColonnesPersonne} FROM per_personnes p WHERE p.retire_le IS NULL");
         var parametres = new List<(string Name, object? Value)>();
         for (var i = 0; i < termes.Count; i++)
         {
@@ -54,7 +54,7 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
     public async Task<List<PersonneResumeDto>> RechercherCriteresAsync(string? nom, string? prenom, string? alias, string? naissance,
         string? lieu, string? identifiant, AgentDroits droits, CancellationToken ct)
     {
-        var sql = new StringBuilder($"SELECT {Sqlj.ColonnesPersonne} FROM per_personnes p WHERE 1 = 1");
+        var sql = new StringBuilder($"SELECT {Sqlj.ColonnesPersonne} FROM per_personnes p WHERE p.retire_le IS NULL");
         var parametres = new List<(string Name, object? Value)>();
         var critere = false;
         if (!string.IsNullOrWhiteSpace(nom))
@@ -136,7 +136,7 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
         var fiche = await db.FirstOrDefaultAsync(
             """
             SELECT id, reference, nom, prenom, date_naissance, lieu_naissance, sexe, nationalite, adresse, telephone, signalement,
-                   source, cree_le, maj_le
+                   source, cree_le, maj_le, discord_proprietaire, profession, retire_le
             FROM per_personnes WHERE id = @id
             """,
             r => new PersonneFicheDto(
@@ -144,7 +144,12 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
                 r.NullableText("lieu_naissance"), r.NullableText("sexe"), r.NullableText("nationalite"), r.NullableText("adresse"),
                 r.NullableText("telephone"), r.NullableText("signalement"), r.Text("source", "SAPHIR"),
                 Array.Empty<AliasDto>(), Array.Empty<DocumentIdentiteDto>(), Array.Empty<string>(), Array.Empty<AlerteBandeauDto>(),
-                r.Date("cree_le"), r.Date("maj_le")), ct, ("@id", id));
+                r.Date("cree_le"), r.Date("maj_le"))
+            {
+                DeclareeParJoueur = r.NullableText("discord_proprietaire") is not null,
+                Profession = r.NullableText("profession"),
+                RetireeLe = r.NullableDate("retire_le")
+            }, ct, ("@id", id));
         if (fiche is null)
             return null;
 
@@ -374,8 +379,8 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
         var lignes = await db.QueryAsync(
             $"""
             SELECT {ColonnesVehicule} FROM veh_vehicules v {JointureTitulaire}
-            WHERE v.immatriculation LIKE @plaque OR v.vin LIKE @plaque OR CONCAT_WS(' ', v.marque, v.modele) LIKE @texte
-               OR tp.nom LIKE @texte OR v.titulaire_libre LIKE @texte
+            WHERE v.retire_le IS NULL AND (v.immatriculation LIKE @plaque OR v.vin LIKE @plaque OR CONCAT_WS(' ', v.marque, v.modele) LIKE @texte
+               OR tp.nom LIKE @texte OR v.titulaire_libre LIKE @texte)
             ORDER BY v.immatriculation LIMIT {Limite}
             """, LireVehicule, ct,
             ("@plaque", Sqlj.Like(normalise.Length == 0 ? texte : normalise)), ("@texte", Sqlj.Like(texte)));
@@ -391,7 +396,7 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
         await using var db = await saphirDb.OpenAsync(ct);
         await ImporterVehiculesFiveMAsync(db, normalise, ct);
         var lignes = await db.QueryAsync(
-            $"SELECT {ColonnesVehicule} FROM veh_vehicules v {JointureTitulaire} WHERE v.immatriculation LIKE @plaque OR v.vin LIKE @plaque ORDER BY v.immatriculation LIMIT {Limite}",
+            $"SELECT {ColonnesVehicule} FROM veh_vehicules v {JointureTitulaire} WHERE v.retire_le IS NULL AND (v.immatriculation LIKE @plaque OR v.vin LIKE @plaque) ORDER BY v.immatriculation LIMIT {Limite}",
             LireVehicule, ct, ("@plaque", Sqlj.Like(normalise)));
         return await AvecAlertesAsync(db, lignes, droits, ct);
     }

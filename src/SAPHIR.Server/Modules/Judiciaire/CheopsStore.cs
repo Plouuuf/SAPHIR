@@ -450,7 +450,7 @@ public sealed class CheopsStore(SaphirDb saphirDb, PersonnesStore personnes)
     {
         if (string.IsNullOrWhiteSpace(q))
             return [];
-        var sql = new StringBuilder($"SELECT {ColonnesPermis}, {ColonnesPersonneP} FROM ch_permis c JOIN per_personnes p ON p.id = c.personne_id WHERE ");
+        var sql = new StringBuilder($"SELECT {ColonnesPermis}, {ColonnesPersonneP} FROM ch_permis c JOIN per_personnes p ON p.id = c.personne_id WHERE p.retire_le IS NULL AND ");
         var parametres = new List<(string Name, object? Value)> { ("@permis", q.Trim().ToUpperInvariant()) };
         sql.Append("(c.reference = @permis OR (1 = 1");
         AjouterTermes(sql, parametres, q);
@@ -926,6 +926,14 @@ public sealed class CheopsStore(SaphirDb saphirDb, PersonnesStore personnes)
                     "SELECT id, numero, intitule, statut FROM lr_procedures WHERE numero LIKE @like OR main_courante_ref = @exact OR intervention_numero = @exact LIMIT 50",
                     r => new CorrespondanceDto("LRPPN", r.Long("id"), r.Text("numero"), $"{r.Text("intitule")} ({r.Text("statut")})", null, null));
         }
-        return new RechercheGeneraleDto(trouvees, vehicules, dossiers);
+        List<long> declarees = [];
+        if (trouvees.Count > 0)
+        {
+            var (liste, parametres) = Sqlj.In("p", trouvees.Select(p => p.Id));
+            await using var db = await saphirDb.OpenAsync(ct);
+            declarees = await db.QueryAsync($"SELECT id FROM per_personnes WHERE discord_proprietaire IS NOT NULL AND id IN ({liste})",
+                r => r.Long("id"), ct, parametres);
+        }
+        return new RechercheGeneraleDto(trouvees, vehicules, dossiers, declarees);
     }
 }

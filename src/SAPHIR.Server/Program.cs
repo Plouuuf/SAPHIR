@@ -1,6 +1,7 @@
 using System.Security.Cryptography;
 using System.Text;
 using Saphir.Server.Data;
+using Saphir.Server.Modules;
 using Saphir.Server.Services;
 using Saphir.Shared.Contracts;
 
@@ -51,6 +52,9 @@ public static class Program
         builder.Services.AddSingleton<AgentStore>();
         builder.Services.AddSingleton<AdminStore>();
         builder.Services.AddSingleton<SessionService>();
+
+        // Modules métier (phases 3 à 8)
+        builder.Services.AddSaphirModules();
 
         var app = builder.Build();
 
@@ -138,6 +142,7 @@ public static class Program
         // ===== Socle : version, session, Administration (jeton d'application requis, sauf /api/version) =====
 
         app.MapSocle();
+        app.MapSaphirModules();
 
         // ===== Intégrations serveur à serveur (clé SAPHIR:AccessKey dans l'en-tête X-Saphir-Key) =====
 

@@ -54,13 +54,24 @@ public sealed class SampleApi : HttpMessageHandler
             "api/admin/parametres" => Parametres(),
             "api/admin/historique" => Historique(),
             "api/admin/journal" => Journal(),
-            _ => null,
+            _ => ModuleSample(request, path),
         };
 
         var response = body is null
             ? new HttpResponseMessage(HttpStatusCode.NotFound) { Content = JsonContent.Create(new { error = "Route d'exemple absente." }) }
             : new HttpResponseMessage(HttpStatusCode.OK) { Content = JsonContent.Create(body, body.GetType(), options: Json) };
         return Task.FromResult(response);
+    }
+
+    private static object? ModuleSample(HttpRequestMessage request, string path)
+    {
+        var method = request.Method.Method;
+        var query = request.RequestUri!.Query;
+        var body = request.Content?.ReadAsStringAsync().GetAwaiter().GetResult();
+        return RhCaptures.Sample(method, path, query, body)
+               ?? OperationsCaptures.Sample(method, path, query, body)
+               ?? JudiciaireCaptures.Sample(method, path, query, body)
+               ?? ComplementsCaptures.Sample(method, path, query, body);
     }
 
     private static List<ProfilDto> Profils()

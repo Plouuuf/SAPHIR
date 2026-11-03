@@ -145,7 +145,7 @@ public static class Migrations
         {
             var appliquees = (await db.QueryAsync("SELECT version FROM sys_migrations", r => r.Int("version"), ct)).ToHashSet();
             var nombre = 0;
-            foreach (var migration in All.OrderBy(m => m.Version))
+            foreach (var migration in All.Concat(Saphir.Server.Modules.ModuleRegistry.Migrations).OrderBy(m => m.Version))
             {
                 if (appliquees.Contains(migration.Version))
                     continue;

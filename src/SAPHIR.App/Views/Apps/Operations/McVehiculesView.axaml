@@ -1,0 +1,194 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McVehiculesView">
+    <!-- DataContext : McVehiculesSection. Fiche (10.3), sortie (10.4), retour (10.5), mouvements et historique. -->
+    <Grid RowDefinitions="Auto,190,*" Margin="12,10">
+        <WrapPanel>
+            <Button Classes="default" Content="Nouveau véhicule" Command="{Binding NouveauCommand}" IsVisible="{Binding PeutGerer}" Margin="0,0,8,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Immatriculation" Binding="{Binding Immatriculation}" Width="115"/>
+                <DataGridTextColumn Header="Modèle" Binding="{Binding Modele}" Width="*"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="140"/>
+                <DataGridTextColumn Header="Indicatif" Binding="{Binding Indicatif}" Width="80"/>
+                <DataGridTextColumn Header="Kilométrage" Binding="{Binding Kilometrage}" Width="100"/>
+                <DataGridTextColumn Header="Disponibilité" Binding="{Binding Disponibilite}" Width="100"/>
+                <DataGridTextColumn Header="Équipage" Binding="{Binding Equipage}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <TabControl Grid.Row="2" Classes="win7" Margin="0,10,0,0" IsVisible="{Binding EnEdition}">
+            <TabItem Header="Fiche">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="8">
+                        <TextBlock Classes="groupheader" Text="{Binding TitreEditeur}" FontSize="13"/>
+                        <TextBlock Classes="muted" Text="{Binding InfoVehicule}"/>
+                        <StackPanel Spacing="8" IsEnabled="{Binding PeutGerer}">
+                            <WrapPanel>
+                                <StackPanel Width="140" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Immatriculation"/>
+                                    <TextBox Text="{Binding Immatriculation}" Watermark="AB-123-CD"/>
+                                </StackPanel>
+                                <StackPanel Width="140" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Marque"/>
+                                    <TextBox Text="{Binding Marque}"/>
+                                </StackPanel>
+                                <StackPanel Width="140" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Modèle"/>
+                                    <TextBox Text="{Binding Modele}"/>
+                                </StackPanel>
+                                <StackPanel Width="180" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Type"/>
+                                    <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                                <StackPanel Width="200" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Service"/>
+                                    <TextBox Text="{Binding Service}"/>
+                                </StackPanel>
+                                <StackPanel Width="120" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Indicatif habituel"/>
+                                    <TextBox Text="{Binding Indicatif}"/>
+                                </StackPanel>
+                                <StackPanel Width="120" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Kilométrage"/>
+                                    <TextBox Text="{Binding Kilometrage}"/>
+                                </StackPanel>
+                                <StackPanel Width="260" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="État"/>
+                                    <TextBox Text="{Binding Etat}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                            <TextBlock Classes="label" Text="Observations"/>
+                            <TextBox Text="{Binding Observations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                            <Button Classes="default" Content="Enregistrer la fiche" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <WrapPanel IsVisible="{Binding EstExistant}">
+                            <TextBox Text="{Binding MotifDisponibilite}" Watermark="Motif (obligatoire pour une indisponibilité)" Width="300" Margin="0,0,6,6"/>
+                            <Button Content="Rendre indisponible" Command="{Binding IndisponibleCommand}" IsVisible="{Binding PeutRendreIndisponible}" Margin="0,0,6,6"/>
+                            <Button Content="Remettre en service" Command="{Binding DisponibleCommand}" IsVisible="{Binding PeutRendreDisponible}" Margin="0,0,6,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Sortie / retour" IsVisible="{Binding EstExistant}">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="10">
+                        <StackPanel Spacing="6" IsVisible="{Binding PeutSortir}">
+                            <TextBlock Classes="groupheader" Text="Sortie du véhicule (10.4)"/>
+                            <WrapPanel>
+                                <StackPanel Width="230" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Équipage"/>
+                                    <ComboBox ItemsSource="{Binding Equipages}" SelectedItem="{Binding EquipageSortie}" HorizontalAlignment="Stretch">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock>
+                                                    <Run Text="{Binding Indicatif, Mode=OneWay}"/>
+                                                    <Run Text="{Binding Chef, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Width="250" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Conducteur"/>
+                                    <ComboBox ItemsSource="{Binding Repertoire}" SelectedItem="{Binding Conducteur}" HorizontalAlignment="Stretch">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate>
+                                                <TextBlock Text="{Binding Libelle}"/>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+                                <StackPanel Width="150" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Heure"/>
+                                    <TextBox Text="{Binding HeureSortie}"/>
+                                </StackPanel>
+                                <StackPanel Width="120" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Km départ"/>
+                                    <TextBox Text="{Binding KmSortie}"/>
+                                </StackPanel>
+                                <StackPanel Width="110" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Carburant"/>
+                                    <ComboBox ItemsSource="{Binding Carburants}" SelectedItem="{Binding CarburantSortie}" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                                <StackPanel Width="240" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="État constaté"/>
+                                    <TextBox Text="{Binding EtatSortie}"/>
+                                </StackPanel>
+                                <StackPanel Width="300" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Anomalies"/>
+                                    <TextBox Text="{Binding AnomaliesSortie}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                            <Button Classes="default" Content="Enregistrer la sortie" Command="{Binding SortieCommand}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+
+                        <StackPanel Spacing="6" IsVisible="{Binding PeutRentrer}">
+                            <TextBlock Classes="groupheader" Text="Retour du véhicule (10.5)"/>
+                            <WrapPanel>
+                                <StackPanel Width="150" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Heure de retour"/>
+                                    <TextBox Text="{Binding HeureRetour}"/>
+                                </StackPanel>
+                                <StackPanel Width="120" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Km retour"/>
+                                    <TextBox Text="{Binding KmRetour}"/>
+                                </StackPanel>
+                                <StackPanel Width="110" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Carburant"/>
+                                    <ComboBox ItemsSource="{Binding Carburants}" SelectedItem="{Binding CarburantRetour}" HorizontalAlignment="Stretch"/>
+                                </StackPanel>
+                                <StackPanel Width="240" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="État"/>
+                                    <TextBox Text="{Binding EtatRetour}"/>
+                                </StackPanel>
+                                <StackPanel Width="300" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Dégradations"/>
+                                    <TextBox Text="{Binding Degradations}"/>
+                                </StackPanel>
+                                <StackPanel Width="300" Margin="0,0,10,6">
+                                    <TextBlock Classes="label" Text="Observations"/>
+                                    <TextBox Text="{Binding ObservationsRetour}"/>
+                                </StackPanel>
+                            </WrapPanel>
+                            <CheckBox Content="Véhicule disponible après le retour" IsChecked="{Binding DisponibleRetour}"/>
+                            <Button Classes="default" Content="Enregistrer le retour" Command="{Binding RetourCommand}" HorizontalAlignment="Left"/>
+                        </StackPanel>
+                        <TextBlock Classes="muted" Text="Véhicule indisponible : remets-le en service depuis l'onglet Fiche avant une nouvelle sortie."
+                                   IsVisible="{Binding PeutRendreDisponible}"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <TabItem Header="Mouvements" IsVisible="{Binding EstExistant}">
+                <DataGrid ItemsSource="{Binding Mouvements}" AutoGenerateColumns="False" HeadersVisibility="Column" Margin="8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                        <DataGridTextColumn Header="Mouvement" Binding="{Binding Type}" Width="80"/>
+                        <DataGridTextColumn Header="Équipage" Binding="{Binding Equipage}" Width="80"/>
+                        <DataGridTextColumn Header="Conducteur" Binding="{Binding Conducteur}" Width="150"/>
+                        <DataGridTextColumn Header="Km" Binding="{Binding Kilometrage}" Width="80"/>
+                        <DataGridTextColumn Header="Carburant" Binding="{Binding Carburant}" Width="80"/>
+                        <DataGridTextColumn Header="État / anomalies" Binding="{Binding Etat}" Width="*"/>
+                        <DataGridTextColumn Header="Disponibilité" Binding="{Binding Disponibilite}" Width="100"/>
+                        <DataGridTextColumn Header="Responsable" Binding="{Binding Responsable}" Width="150"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+
+            <TabItem Header="Historique" IsVisible="{Binding EstExistant}">
+                <DataGrid ItemsSource="{Binding Historique}" AutoGenerateColumns="False" HeadersVisibility="Column" Margin="8">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                        <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="160"/>
+                        <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                        <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                        <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+            </TabItem>
+        </TabControl>
+    </Grid>
+</UserControl>

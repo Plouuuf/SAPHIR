@@ -1,0 +1,26 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgInterventionsView">
+    <!-- DataContext : PgInterventionsSection. -->
+    <Grid RowDefinitions="Auto,Auto,*" Margin="12,10">
+        <TextBlock Classes="muted" Text="{Binding Aide}" Margin="0,0,0,8"/>
+        <WrapPanel Grid.Row="1">
+            <TextBox Text="{Binding Recherche}" Watermark="Numéro, motif, adresse, commune" Width="260" Margin="0,0,8,6"/>
+            <Button Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,8,6"/>
+            <Button Classes="default" Content="Ouvrir la fiche" Command="{Binding OuvrirCommand}" Margin="0,0,8,6"/>
+            <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Center" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Prio." Binding="{Binding Priorite}" Width="50"/>
+                <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="125"/>
+                <DataGridTextColumn Header="Début" Binding="{Binding Debut}" Width="115"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Nature}" Width="*"/>
+                <DataGridTextColumn Header="Lieu" Binding="{Binding Lieu}" Width="220"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="160"/>
+                <DataGridTextColumn Header="Équipages" Binding="{Binding Equipages}" Width="180"/>
+                <DataGridTextColumn Header="Appels" Binding="{Binding Appels}" Width="60"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

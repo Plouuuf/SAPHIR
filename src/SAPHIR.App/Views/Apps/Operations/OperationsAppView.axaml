@@ -1,0 +1,77 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:controls="clr-namespace:Saphir.Views.Controls"
+             xmlns:ops="clr-namespace:Saphir.ViewModels.Apps.Operations"
+             xmlns:v="clr-namespace:Saphir.Views.Apps.Operations"
+             x:Class="Saphir.Views.Apps.Operations.OperationsAppView">
+    <!-- MAIN COURANTE et PÉGASE : menu latéral (liste déroulante sur téléphone) et écran choisi. DataContext : OperationsHostViewModel. -->
+    <UserControl.DataTemplates>
+        <DataTemplate DataType="ops:McTableauSection"><v:McTableauView/></DataTemplate>
+        <DataTemplate DataType="ops:McJournalSection"><v:McJournalView/></DataTemplate>
+        <DataTemplate DataType="ops:McMentionsSection"><v:McMentionsView/></DataTemplate>
+        <DataTemplate DataType="ops:McMentionEditeurSection"><v:McMentionEditeurView/></DataTemplate>
+        <DataTemplate DataType="ops:McVacationsSection"><v:McVacationsView/></DataTemplate>
+        <DataTemplate DataType="ops:McEquipagesSection"><v:McEquipagesView/></DataTemplate>
+        <DataTemplate DataType="ops:McVehiculesSection"><v:McVehiculesView/></DataTemplate>
+        <DataTemplate DataType="ops:McHistoriqueSection"><v:HistoriqueView/></DataTemplate>
+        <DataTemplate DataType="ops:PgTableauSection"><v:PgTableauView/></DataTemplate>
+        <DataTemplate DataType="ops:PgAppelSection"><v:PgAppelView/></DataTemplate>
+        <DataTemplate DataType="ops:PgInterventionsSection"><v:PgInterventionsView/></DataTemplate>
+        <DataTemplate DataType="ops:PgFicheSection"><v:PgFicheView/></DataTemplate>
+        <DataTemplate DataType="ops:PgEquipagesSection"><v:PgEquipagesView/></DataTemplate>
+        <DataTemplate DataType="ops:GeoopsSection"><v:GeoopsView/></DataTemplate>
+        <DataTemplate DataType="ops:PgCommunicationsSection"><v:PgCommunicationsView/></DataTemplate>
+        <DataTemplate DataType="ops:PgTnSection"><v:PgTnView/></DataTemplate>
+        <DataTemplate DataType="ops:PgHistoriqueSection"><v:PgHistoriqueView/></DataTemplate>
+        <DataTemplate DataType="ops:PgStatistiquesSection"><v:PgStatistiquesView/></DataTemplate>
+    </UserControl.DataTemplates>
+
+    <Grid>
+        <Grid ColumnDefinitions="Auto,*">
+            <!-- Menu latéral (panneau de configuration Windows 7) -->
+            <Border Width="196" BorderBrush="#C8D5E7" BorderThickness="0,0,1,0" IsVisible="{Binding !EstCompact}">
+                <Border.Background>
+                    <LinearGradientBrush StartPoint="0%,0%" EndPoint="0%,100%">
+                        <GradientStop Offset="0" Color="#F4F8FD"/>
+                        <GradientStop Offset="1" Color="#DCE6F4"/>
+                    </LinearGradientBrush>
+                </Border.Background>
+                <DockPanel Margin="10,14,8,10">
+                    <TextBlock DockPanel.Dock="Top" Classes="groupheader" Text="{Binding Titre}" FontSize="13" Margin="6,0,0,8"/>
+                    <ListBox ItemsSource="{Binding Menu}" SelectedItem="{Binding MenuSelectionne}" Background="Transparent" BorderThickness="0">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Margin="0,1">
+                                    <TextBlock Text="{Binding Libelle}" FontSize="12.5" Foreground="{StaticResource LinkBrush}"/>
+                                    <TextBlock Text="{Binding Groupe}" FontSize="10" Foreground="#7C8CA0"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+                </DockPanel>
+            </Border>
+
+            <Grid Grid.Column="1" RowDefinitions="Auto,Auto,Auto,*">
+                <!-- Menu en liste déroulante (téléphone) -->
+                <ComboBox Grid.Row="0" ItemsSource="{Binding Menu}" SelectedItem="{Binding MenuSelectionne}" IsVisible="{Binding EstCompact}"
+                          HorizontalAlignment="Stretch" Margin="8,8,8,0" PlaceholderText="Menu">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock Text="{Binding Libelle}"/>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+                <controls:MessageBar Grid.Row="1"/>
+                <Border Grid.Row="2" Background="{StaticResource HeaderBrush}" BorderBrush="#D5DFE9" BorderThickness="0,0,0,1" Padding="14,8">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="instruction" Text="{Binding Section.Titre}" TextTrimming="CharacterEllipsis"/>
+                        <TextBlock Grid.Column="1" Classes="muted" Text="Chargement…" IsVisible="{Binding IsBusy}" VerticalAlignment="Center"/>
+                    </Grid>
+                </Border>
+                <ContentControl Grid.Row="3" Content="{Binding Section}"/>
+            </Grid>
+        </Grid>
+
+        <controls:DialogOverlay DataContext="{Binding Dialog}" IsVisible="{Binding $parent[UserControl].DataContext.HasDialog}"/>
+    </Grid>
+</UserControl>

@@ -1,0 +1,45 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McJournalView">
+    <!-- DataContext : McJournalSection. -->
+    <Grid RowDefinitions="Auto,*,Auto,Auto" Margin="12,10">
+        <WrapPanel>
+            <StackPanel Width="120" Margin="0,0,8,6">
+                <TextBlock Classes="label" Text="Du (jj/mm/aaaa)"/>
+                <TextBox Text="{Binding Du}"/>
+            </StackPanel>
+            <StackPanel Width="120" Margin="0,0,8,6">
+                <TextBlock Classes="label" Text="Au"/>
+                <TextBox Text="{Binding Au}"/>
+            </StackPanel>
+            <StackPanel Width="190" Margin="0,0,8,6">
+                <TextBlock Classes="label" Text="Événement"/>
+                <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+            <StackPanel Width="200" Margin="0,0,8,6">
+                <TextBlock Classes="label" Text="Recherche"/>
+                <TextBox Text="{Binding Recherche}" Watermark="Libellé, auteur, intervention"/>
+            </StackPanel>
+            <Button Content="Afficher" Command="{Binding FiltrerCommand}" VerticalAlignment="Bottom" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                <DataGridTextColumn Header="Événement" Binding="{Binding Type}" Width="160"/>
+                <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="100"/>
+                <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="160"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Border Grid.Row="2" Background="#F7FAFD" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10,6" Margin="0,8,0,0">
+            <TextBlock Text="{Binding DetailSelection}" TextWrapping="Wrap" FontSize="12" Foreground="Black"/>
+        </Border>
+        <Border Grid.Row="3" IsVisible="{Binding PeutSaisir}" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Padding="0,8,0,0" Margin="0,8,0,0">
+            <Grid ColumnDefinitions="*,*,Auto">
+                <TextBox Text="{Binding Libelle}" Watermark="Événement à inscrire (ex. : Point de situation avec la salle de commandement)"/>
+                <TextBox Grid.Column="1" Text="{Binding Details}" Watermark="Détails (facultatif)" Margin="8,0,0,0"/>
+                <Button Grid.Column="2" Classes="default" Content="Inscrire" Command="{Binding AjouterCommand}" Margin="8,0,0,0"/>
+            </Grid>
+        </Border>
+    </Grid>
+</UserControl>

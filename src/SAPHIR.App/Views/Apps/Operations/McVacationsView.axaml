@@ -1,0 +1,125 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McVacationsView">
+    <!-- DataContext : McVacationsSection. Liste en haut, formulaire 10.1 en dessous. -->
+    <Grid RowDefinitions="Auto,190,*" Margin="12,10">
+        <WrapPanel>
+            <ComboBox ItemsSource="{Binding Filtres}" SelectedItem="{Binding Filtre}" Width="130" Margin="0,0,8,6"/>
+            <Button Content="Actualiser" Command="{Binding FiltrerCommand}" Margin="0,0,8,6"/>
+            <Button Classes="default" Content="Nouvelle vacation" Command="{Binding NouvelleCommand}" IsVisible="{Binding PeutGerer}" Margin="0,0,8,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="125"/>
+                <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="*"/>
+                <DataGridTextColumn Header="Début" Binding="{Binding Debut}" Width="120"/>
+                <DataGridTextColumn Header="Fin" Binding="{Binding Fin}" Width="150"/>
+                <DataGridTextColumn Header="Responsable" Binding="{Binding Responsable}" Width="160"/>
+                <DataGridTextColumn Header="Agents" Binding="{Binding Agents}" Width="60"/>
+                <DataGridTextColumn Header="Équipages" Binding="{Binding Equipages}" Width="75"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <ScrollViewer Grid.Row="2" Margin="0,10,0,0" IsVisible="{Binding EnEdition}">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="groupheader" Text="{Binding TitreEditeur}" FontSize="13"/>
+                <TextBlock Classes="muted" Text="{Binding InfoVacation}"/>
+                <StackPanel Spacing="8" IsEnabled="{Binding PeutModifier}">
+                    <WrapPanel>
+                        <StackPanel Width="240" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Service"/>
+                            <TextBox Text="{Binding Service}" Watermark="BPS / BAC, CSI, Police-secours…"/>
+                        </StackPanel>
+                        <StackPanel Width="150" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Début"/>
+                            <TextBox Text="{Binding Debut}" Watermark="jj/mm/aaaa hh:mm"/>
+                        </StackPanel>
+                        <StackPanel Width="150" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Fin prévue"/>
+                            <TextBox Text="{Binding FinPrevue}" Watermark="jj/mm/aaaa hh:mm"/>
+                        </StackPanel>
+                        <StackPanel Width="260" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Responsable"/>
+                            <ComboBox ItemsSource="{Binding Repertoire}" SelectedItem="{Binding Responsable}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Libelle}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                    </WrapPanel>
+                    <WrapPanel>
+                        <StackPanel Width="380" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Consignes"/>
+                            <TextBox Text="{Binding Consignes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50"/>
+                        </StackPanel>
+                        <StackPanel Width="380" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Observations"/>
+                            <TextBox Text="{Binding Observations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="50"/>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <Grid ColumnDefinitions="*,Auto">
+                        <TextBlock Classes="groupheader" Text="Agents (répertoire RH)"/>
+                        <TextBlock Grid.Column="1" Classes="muted" Text="{Binding ResumeAgents}"/>
+                    </Grid>
+                    <WrapPanel>
+                        <ComboBox ItemsSource="{Binding Repertoire}" SelectedItem="{Binding AgentAAjouter}" Width="280" Margin="0,0,6,6" PlaceholderText="Choisir un agent">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Libelle}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <ComboBox ItemsSource="{Binding Presences}" SelectedItem="{Binding PresenceAAjouter}" Width="120" Margin="0,0,6,6"/>
+                        <Button Classes="small" Content="Ajouter" Command="{Binding AjouterAgentCommand}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                    <ItemsControl ItemsSource="{Binding Agents}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#E3E8EF" BorderThickness="0,0,0,1" Padding="0,3">
+                                    <WrapPanel>
+                                        <TextBlock Text="{Binding Libelle}" Width="250" FontSize="12" Foreground="Black" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Presences}" SelectedItem="{Binding Presence}" Width="115" Margin="0,0,6,0"/>
+                                        <TextBox Text="{Binding Observation}" Watermark="Observation (retard, absence…)" Width="220" Margin="0,0,6,0"/>
+                                        <Button Classes="small" Content="Retirer" Command="{Binding $parent[UserControl].DataContext.RetirerAgentCommand}" CommandParameter="{Binding}"/>
+                                    </WrapPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Classes="default" Content="Enregistrer la vacation" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+
+                <Grid ColumnDefinitions="*,Auto" Margin="0,6,0,0">
+                    <TextBlock Classes="groupheader" Text="Équipages de la vacation"/>
+                    <Button Grid.Column="1" Classes="small" Content="Constituer un équipage" Command="{Binding ConstituerEquipageCommand}" IsVisible="{Binding PeutCloturer}"/>
+                </Grid>
+                <DataGrid ItemsSource="{Binding Equipages}" AutoGenerateColumns="False" Height="140" HeadersVisibility="Column">
+                    <DataGrid.Columns>
+                        <DataGridTextColumn Header="Indicatif" Binding="{Binding Indicatif}" Width="90"/>
+                        <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                        <DataGridTextColumn Header="Chef de bord" Binding="{Binding Chef}" Width="160"/>
+                        <DataGridTextColumn Header="Membres" Binding="{Binding Membres}" Width="*"/>
+                        <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="160"/>
+                        <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="110"/>
+                        <DataGridTextColumn Header="État" Binding="{Binding Etat}" Width="70"/>
+                    </DataGrid.Columns>
+                </DataGrid>
+
+                <Border IsVisible="{Binding PeutCloturer}" Background="#FFF8E8" BorderBrush="#E3C565" BorderThickness="1" Padding="10,8" Margin="0,6,0,0">
+                    <StackPanel Spacing="6">
+                        <TextBlock Classes="groupheader" Text="Fin de vacation"/>
+                        <WrapPanel>
+                            <TextBox Text="{Binding FinCloture}" Watermark="Fin (vide = maintenant)" Width="170" Margin="0,0,6,6"/>
+                            <TextBox Text="{Binding ObservationsCloture}" Watermark="Observations de fin de service" Width="340" Margin="0,0,6,6"/>
+                            <Button Content="Clôturer la vacation" Command="{Binding CloturerCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

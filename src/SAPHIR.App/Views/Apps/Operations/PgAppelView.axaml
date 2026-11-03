@@ -1,0 +1,449 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgAppelView">
+    <!-- DataContext : PgAppelSection. Formulaire « Nouvel appel CIC » (6.3, sections A à H) : aucun champ n'est obligatoire. -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto">
+        <!-- Appels en cours / nouvel appel -->
+        <Border Background="#F0F0F0" BorderBrush="#DFDFDF" BorderThickness="0,0,0,1" Padding="12,6">
+            <WrapPanel>
+                <ComboBox ItemsSource="{Binding Canaux}" SelectedItem="{Binding CanalNouveau}" Width="170" Margin="0,2,6,2" IsVisible="{Binding PeutPrendreAppel}"/>
+                <Button Classes="default" Content="Nouvel appel" Command="{Binding NouvelAppelCommand}" IsVisible="{Binding PeutPrendreAppel}" Margin="0,2,16,2"/>
+                <TextBlock Classes="label" Text="Appels en cours :" VerticalAlignment="Center" Margin="0,2,6,2"/>
+                <ComboBox ItemsSource="{Binding AppelsOuverts}" SelectedItem="{Binding Selection}" Width="330" Margin="0,2,0,2" PlaceholderText="Reprendre un appel">
+                    <ComboBox.ItemTemplate>
+                        <DataTemplate>
+                            <TextBlock>
+                                <Run Text="{Binding Numero, Mode=OneWay}"/>
+                                <Run Text="{Binding Recu, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                <Run Text="{Binding Motif, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                <Run Text="{Binding Etat, Mode=OneWay, StringFormat=' ({0})'}" Foreground="#5B6B7C"/>
+                            </TextBlock>
+                        </DataTemplate>
+                    </ComboBox.ItemTemplate>
+                </ComboBox>
+            </WrapPanel>
+        </Border>
+
+        <!-- A — Identification -->
+        <Border Grid.Row="1" Background="#F7FAFD" BorderBrush="#C8D5E7" BorderThickness="0,0,0,1" Padding="12,6">
+            <StackPanel Spacing="2">
+                <TextBlock Text="{Binding Entete}" FontSize="12.5" Foreground="Black" TextWrapping="Wrap" FontWeight="SemiBold"/>
+                <WrapPanel IsVisible="{Binding AAppel}">
+                    <TextBlock Classes="muted" Text="{Binding Etat, StringFormat='État : {0}'}" Margin="0,0,14,0"/>
+                    <TextBlock Classes="muted" Text="{Binding Intervention, StringFormat='Intervention : {0}'}" Margin="0,0,6,0"/>
+                    <Button Classes="link" Content="Ouvrir la fiche" Command="{Binding OuvrirInterventionCommand}" IsVisible="{Binding AIntervention}" Margin="0,0,14,0"/>
+                    <TextBlock Classes="muted" Text="{Binding Duree}"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+
+        <TabControl Grid.Row="2" Classes="win7" Margin="10,8,10,6" IsVisible="{Binding AAppel}" IsEnabled="{Binding EstModifiable}">
+            <!-- A et B -->
+            <TabItem Header="Appel et requérant">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="8">
+                        <WrapPanel>
+                            <StackPanel Width="190" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Canal de réception"/>
+                                <ComboBox ItemsSource="{Binding Canaux}" SelectedItem="{Binding Edition.Canal}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="220" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Nature de l'appel"/>
+                                <ComboBox ItemsSource="{Binding Natures}" SelectedItem="{Binding Edition.Nature}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Classes="groupheader" Text="B — Requérant"/>
+                        <WrapPanel>
+                            <TextBox Text="{Binding RecherchePersonne}" Watermark="Rechercher une personne existante (nom, PER-…)" Width="290" Margin="0,0,6,6"/>
+                            <Button Classes="small" Content="Rechercher" Command="{Binding RechercherPersonneCommand}" Margin="0,0,6,6"/>
+                            <ComboBox ItemsSource="{Binding PersonnesTrouvees}" SelectedItem="{Binding PersonneChoisie}" Width="280" Margin="0,0,6,6">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Libelle}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Classes="small" Content="Requérant" Command="{Binding PersonneRequerantCommand}" Margin="0,0,6,6"/>
+                            <Button Classes="small" Content="Personne concernée" Command="{Binding PersonneConcerneeCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                        <TextBlock Classes="muted" Text="{Binding Edition.ReqFiche}"/>
+                        <WrapPanel>
+                            <StackPanel Width="140" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Qualité"/>
+                                <ComboBox ItemsSource="{Binding Qualites}" SelectedItem="{Binding Edition.ReqQualite}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <CheckBox Content="Identité connue" IsChecked="{Binding Edition.ReqIdentiteConnue}" VerticalAlignment="Bottom" Margin="0,0,10,8"/>
+                            <StackPanel Width="170" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="NOM"/>
+                                <TextBox Text="{Binding Edition.ReqNom}"/>
+                            </StackPanel>
+                            <StackPanel Width="170" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Prénom"/>
+                                <TextBox Text="{Binding Edition.ReqPrenom}"/>
+                            </StackPanel>
+                            <StackPanel Width="140" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Téléphone"/>
+                                <TextBox Text="{Binding Edition.ReqTelephone}"/>
+                            </StackPanel>
+                            <StackPanel Width="140" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Téléphone de rappel"/>
+                                <TextBox Text="{Binding Edition.ReqRappel}"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Adresse"/>
+                                <TextBox Text="{Binding Edition.ReqAdresse}"/>
+                            </StackPanel>
+                            <StackPanel Width="130" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Né(e) le"/>
+                                <TextBox Text="{Binding Edition.ReqNaissance}" Watermark="jj/mm/aaaa"/>
+                            </StackPanel>
+                            <StackPanel Width="220" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Lien avec les faits"/>
+                                <TextBox Text="{Binding Edition.ReqLien}"/>
+                            </StackPanel>
+                            <StackPanel Width="130" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Langue"/>
+                                <TextBox Text="{Binding Edition.ReqLangue}"/>
+                            </StackPanel>
+                            <CheckBox Content="Besoin d'interprète" IsChecked="{Binding Edition.ReqInterprete}" VerticalAlignment="Bottom" Margin="0,0,10,8"/>
+                        </WrapPanel>
+                        <TextBlock Classes="label" Text="Observations"/>
+                        <TextBox Text="{Binding Edition.ReqObservations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- C -->
+            <TabItem Header="Localisation">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="8">
+                        <WrapPanel>
+                            <StackPanel Width="190" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Commune"/>
+                                <TextBox Text="{Binding Edition.Commune}" Watermark="Créteil"/>
+                            </StackPanel>
+                            <StackPanel Width="90" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Code postal"/>
+                                <TextBox Text="{Binding Edition.CodePostal}" Watermark="94000"/>
+                            </StackPanel>
+                            <StackPanel Width="70" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="N°"/>
+                                <TextBox Text="{Binding Edition.Numero}"/>
+                            </StackPanel>
+                            <StackPanel Width="260" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Rue"/>
+                                <TextBox Text="{Binding Edition.Rue}"/>
+                            </StackPanel>
+                            <StackPanel Width="360" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Adresse complète (si différente)"/>
+                                <TextBox Text="{Binding Edition.AdresseComplete}"/>
+                            </StackPanel>
+                            <StackPanel Width="180" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Résidence"/>
+                                <TextBox Text="{Binding Edition.Residence}"/>
+                            </StackPanel>
+                            <StackPanel Width="90" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Bâtiment"/>
+                                <TextBox Text="{Binding Edition.Batiment}"/>
+                            </StackPanel>
+                            <StackPanel Width="70" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Étage"/>
+                                <TextBox Text="{Binding Edition.Etage}"/>
+                            </StackPanel>
+                            <StackPanel Width="90" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Appartement"/>
+                                <TextBox Text="{Binding Edition.Appartement}"/>
+                            </StackPanel>
+                            <StackPanel Width="210" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Type de lieu"/>
+                                <ComboBox ItemsSource="{Binding TypesLieu}" SelectedItem="{Binding Edition.TypeLieu}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Point de repère"/>
+                                <TextBox Text="{Binding Edition.Repere}"/>
+                            </StackPanel>
+                            <StackPanel Width="210" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Fiabilité de la localisation"/>
+                                <ComboBox ItemsSource="{Binding Fiabilites}" SelectedItem="{Binding Edition.Fiabilite}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="100" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Carte : X"/>
+                                <TextBox Text="{Binding Edition.PosX}"/>
+                            </StackPanel>
+                            <StackPanel Width="100" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Carte : Y"/>
+                                <TextBox Text="{Binding Edition.PosY}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Classes="muted" Text="Position sur carte : coordonnées du jeu ; l'intervention pourra aussi être placée d'un clic dans GÉOOPS."/>
+                        <TextBlock Classes="label" Text="Informations d'accès (digicode, accès pompiers…)"/>
+                        <TextBox Text="{Binding Edition.Acces}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- D -->
+            <TabItem Header="Motif">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="8">
+                        <WrapPanel>
+                            <StackPanel Width="230" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Motif principal"/>
+                                <ComboBox ItemsSource="{Binding Motifs}" SelectedItem="{Binding Edition.Motif}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="240" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Sous-motif"/>
+                                <TextBox Text="{Binding Edition.SousMotif}"/>
+                            </StackPanel>
+                            <StackPanel Width="90" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Priorité"/>
+                                <ComboBox ItemsSource="{Binding Priorites}" SelectedItem="{Binding Edition.Priorite}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="140" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Gravité déclarée"/>
+                                <ComboBox ItemsSource="{Binding Gravites}" SelectedItem="{Binding Edition.Gravite}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="150" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Date et heure des faits"/>
+                                <TextBox Text="{Binding Edition.FaitsLe}"/>
+                            </StackPanel>
+                            <StackPanel Width="110" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Nb de personnes"/>
+                                <TextBox Text="{Binding Edition.NombrePersonnes}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <WrapPanel>
+                            <CheckBox Content="Faits toujours en cours" IsChecked="{Binding Edition.FaitsEnCours}" Margin="0,0,16,6"/>
+                            <CheckBox Content="Blessés signalés" IsChecked="{Binding Edition.BlessesSignales}" Margin="0,0,16,6"/>
+                            <CheckBox Content="Danger immédiat signalé" IsChecked="{Binding Edition.DangerImmediat}" Margin="0,0,16,6"/>
+                        </WrapPanel>
+                        <TextBlock Classes="label" Text="Description"/>
+                        <TextBox Text="{Binding Edition.Description}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="90"/>
+                        <TextBlock Classes="label" Text="Observations"/>
+                        <TextBox Text="{Binding Edition.MotifObservations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="40"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- E et F -->
+            <TabItem Header="Personnes et véhicules">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Classes="groupheader" Text="E — Personnes concernées" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Classes="small" Content="Ajouter une personne" Command="{Binding AjouterPersonneCommand}"/>
+                        </Grid>
+                        <TextBlock Classes="muted" Text="Recherche dans SAPHIR : onglet « Appel et requérant », bouton « Personne concernée »."/>
+                        <ItemsControl ItemsSource="{Binding Edition.Personnes}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#D5DFE9" BorderThickness="1" Background="#FBFCFE" Padding="8,6" Margin="0,0,0,6">
+                                        <WrapPanel>
+                                            <StackPanel Width="150" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Rôle déclaré"/>
+                                                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Roles}" SelectedItem="{Binding Role}" HorizontalAlignment="Stretch"/>
+                                            </StackPanel>
+                                            <CheckBox Content="Identité connue" IsChecked="{Binding IdentiteConnue}" VerticalAlignment="Bottom" Margin="0,0,8,6"/>
+                                            <StackPanel Width="150" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="NOM"/>
+                                                <TextBox Text="{Binding Nom}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="150" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Prénom"/>
+                                                <TextBox Text="{Binding Prenom}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="300" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Description factuelle"/>
+                                                <TextBox Text="{Binding Description}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="200" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Localisation"/>
+                                                <TextBox Text="{Binding Localisation}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="180" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="État apparent"/>
+                                                <TextBox Text="{Binding EtatApparent}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="260" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Informations complémentaires"/>
+                                                <TextBox Text="{Binding Informations}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="180" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Source des renseignements"/>
+                                                <TextBox Text="{Binding Source}"/>
+                                            </StackPanel>
+                                            <TextBlock Classes="muted" Text="{Binding Fiche}" VerticalAlignment="Bottom" Margin="0,0,8,8"/>
+                                            <Button Classes="small" Content="Retirer" VerticalAlignment="Bottom" Margin="0,0,0,4"
+                                                    Command="{Binding $parent[UserControl].DataContext.RetirerPersonneCommand}" CommandParameter="{Binding}"/>
+                                        </WrapPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+
+                        <Grid ColumnDefinitions="*,Auto" Margin="0,8,0,0">
+                            <TextBlock Classes="groupheader" Text="F — Véhicules concernés" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Classes="small" Content="Ajouter un véhicule" Command="{Binding AjouterVehiculeCommand}"/>
+                        </Grid>
+                        <WrapPanel>
+                            <TextBox Text="{Binding RechercheVehicule}" Watermark="Rechercher une immatriculation dans SAPHIR" Width="290" Margin="0,0,6,6"/>
+                            <Button Classes="small" Content="Rechercher" Command="{Binding RechercherVehiculeCommand}" Margin="0,0,6,6"/>
+                            <ComboBox ItemsSource="{Binding VehiculesTrouves}" SelectedItem="{Binding VehiculeChoisi}" Width="280" Margin="0,0,6,6">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding Immatriculation, Mode=OneWay}"/>
+                                            <Run Text="{Binding Marque, Mode=OneWay, StringFormat=' {0}'}"/>
+                                            <Run Text="{Binding Modele, Mode=OneWay, StringFormat=' {0}'}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Classes="small" Content="Ajouter ce véhicule" Command="{Binding VehiculeConcerneCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                        <ItemsControl ItemsSource="{Binding Edition.Vehicules}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <Border BorderBrush="#D5DFE9" BorderThickness="1" Background="#FBFCFE" Padding="8,6" Margin="0,0,0,6">
+                                        <WrapPanel>
+                                            <StackPanel Width="120" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Immatriculation"/>
+                                                <TextBox Text="{Binding Immatriculation}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="100" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Pays"/>
+                                                <TextBox Text="{Binding Pays}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="120" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Marque"/>
+                                                <TextBox Text="{Binding Marque}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="120" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Modèle"/>
+                                                <TextBox Text="{Binding Modele}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="100" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Couleur"/>
+                                                <TextBox Text="{Binding Couleur}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="150" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Catégorie"/>
+                                                <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.CategoriesVehicule}" SelectedItem="{Binding Categorie}" HorizontalAlignment="Stretch"/>
+                                            </StackPanel>
+                                            <StackPanel Width="260" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Description"/>
+                                                <TextBox Text="{Binding Description}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="200" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Direction déclarée"/>
+                                                <TextBox Text="{Binding Direction}"/>
+                                            </StackPanel>
+                                            <StackPanel Width="200" Margin="0,0,8,4">
+                                                <TextBlock Classes="label" Text="Lien avec les faits"/>
+                                                <TextBox Text="{Binding LienFaits}"/>
+                                            </StackPanel>
+                                            <TextBlock Classes="muted" Text="{Binding Fiche}" VerticalAlignment="Bottom" Margin="0,0,8,8"/>
+                                            <Button Classes="small" Content="Retirer" VerticalAlignment="Bottom" Margin="0,0,0,4"
+                                                    Command="{Binding $parent[UserControl].DataContext.RetirerVehiculeCommand}" CommandParameter="{Binding}"/>
+                                        </WrapPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- G et H -->
+            <TabItem Header="Sécurité et engagement">
+                <ScrollViewer>
+                    <StackPanel Margin="12,10" Spacing="8">
+                        <TextBlock Classes="groupheader" Text="G — Sécurité"/>
+                        <WrapPanel>
+                            <CheckBox Content="Blessés" IsChecked="{Binding Edition.Blesses}" Margin="0,0,8,6"/>
+                            <TextBox Text="{Binding Edition.NombreBlesses}" Watermark="Nombre" Width="80" Margin="0,0,16,6"/>
+                            <CheckBox Content="Menace signalée" IsChecked="{Binding Edition.Menace}" Margin="0,0,16,6"/>
+                            <CheckBox Content="Arme signalée" IsChecked="{Binding Edition.Arme}" Margin="0,0,8,6"/>
+                            <TextBox Text="{Binding Edition.ArmePrecision}" Watermark="Type d'arme" Width="160" Margin="0,0,16,6"/>
+                            <CheckBox Content="Mineurs présents" IsChecked="{Binding Edition.Mineurs}" Margin="0,0,16,6"/>
+                            <CheckBox Content="Personne ayant besoin d'assistance" IsChecked="{Binding Edition.Assistance}" Margin="0,0,16,6"/>
+                            <CheckBox Content="Secours demandés" IsChecked="{Binding Edition.SecoursDemandes}" Margin="0,0,16,6"/>
+                            <CheckBox Content="Renfort envisagé" IsChecked="{Binding Edition.RenfortEnvisage}" Margin="0,0,16,6"/>
+                        </WrapPanel>
+                        <WrapPanel>
+                            <StackPanel Width="320" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Services déjà sur place"/>
+                                <TextBox Text="{Binding Edition.ServicesSurPlace}" Watermark="SAMU, BSPP…"/>
+                            </StackPanel>
+                            <StackPanel Width="420" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Consignes de prudence"/>
+                                <TextBox Text="{Binding Edition.Consignes}"/>
+                            </StackPanel>
+                        </WrapPanel>
+
+                        <TextBlock Classes="groupheader" Text="H — Engagement" Margin="0,6,0,0"/>
+                        <WrapPanel>
+                            <CheckBox Content="Engagement nécessaire" IsChecked="{Binding Edition.EngagementNecessaire}" Margin="0,0,16,6" VerticalAlignment="Bottom"/>
+                            <StackPanel Width="140" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Équipages demandés"/>
+                                <TextBox Text="{Binding Edition.NombreEquipages}"/>
+                            </StackPanel>
+                            <StackPanel Width="190" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Catégorie de moyen"/>
+                                <ComboBox ItemsSource="{Binding CategoriesMoyen}" SelectedItem="{Binding Edition.CategorieMoyen}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Observations (renforts…)"/>
+                                <TextBox Text="{Binding Edition.EngagementObservations}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <StackPanel Spacing="4" IsVisible="{Binding PeutEngager}">
+                            <TextBlock Classes="label" Text="Équipage à affecter dès la création de l'intervention (facultatif)"/>
+                            <ComboBox ItemsSource="{Binding EquipagesDisponibles}" SelectedItem="{Binding EquipageAEngager}" Width="360" HorizontalAlignment="Left" PlaceholderText="Aucun (affectation par le TN)">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding Indicatif, Mode=OneWay}" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Type, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                            <Run Text="{Binding Chef, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <TextBlock Classes="muted" Text="Chef de bord, agents et véhicule sont repris automatiquement de l'équipage ; heures de demande et d'affectation horodatées."/>
+                        </StackPanel>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Actions -->
+        <Border Grid.Row="3" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Background="#F0F0F0" Padding="12,8" IsVisible="{Binding EstModifiable}">
+            <StackPanel Spacing="6">
+                <WrapPanel IsVisible="{Binding EstOuvert}">
+                    <TextBox Text="{Binding MotifAction}" Watermark="Motif (mise en attente, clôture sans suite)" Width="300" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding InterventionsActives}" SelectedItem="{Binding InterventionRattachement}" Width="300" Margin="0,0,6,6"
+                              PlaceholderText="Intervention existante (rattachement)">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding Numero, Mode=OneWay}"/>
+                                    <Run Text="{Binding Nature, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                    <Run Text="{Binding Commune, Mode=OneWay, StringFormat=' ({0})'}" Foreground="#5B6B7C"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <Button Content="Rattacher" Command="{Binding RattacherCommand}" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <WrapPanel HorizontalAlignment="Right">
+                    <Button Content="Enregistrer le brouillon" Command="{Binding EnregistrerCommand}" Margin="0,0,8,0"/>
+                    <Button Content="Mettre en attente" Command="{Binding AttenteCommand}" IsVisible="{Binding EstOuvert}" Margin="0,0,8,0"/>
+                    <Button Content="Transmettre au TN" Command="{Binding TransmettreTnCommand}" IsVisible="{Binding EstOuvert}" Margin="0,0,8,0"/>
+                    <Button Content="Clore sans suite" Command="{Binding CloreCommand}" IsVisible="{Binding EstOuvert}" Margin="0,0,8,0"/>
+                    <Button Classes="default" Content="Créer l'intervention" Command="{Binding CreerInterventionCommand}" IsVisible="{Binding PeutCreerIntervention}"/>
+                </WrapPanel>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

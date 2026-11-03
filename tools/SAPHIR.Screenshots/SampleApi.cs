@@ -8,7 +8,7 @@ namespace Saphir.Screenshots;
 /// <summary>Faux serveur SAPHIR pour les captures : données fictives, aucune écriture.</summary>
 public sealed class SampleApi : HttpMessageHandler
 {
-    public const string Version = "SAPHIR - v0.2.0.0";
+    public const string Version = "SAPHIR - v1.0.0.0";
     private static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
     private static readonly DateTimeOffset Now = new(2026, 11, 2, 9, 41, 0, TimeSpan.FromHours(1));
 
@@ -80,7 +80,7 @@ public sealed class SampleApi : HttpMessageHandler
 
     private static List<ParametreDto> Parametres() =>
     [
-        new(ParametresCles.Version, "0.2.0.0", "Version affichée", "Affichée « SAPHIR - v0.2.0.0 » sur l'ouverture de session et le bureau.", true),
+        new(ParametresCles.Version, "1.0.0.0", "Version affichée", "Affichée « SAPHIR - v1.0.0.0 » sur l'ouverture de session et le bureau.", true),
         new(ParametresCles.NomOrganisation, "Commissariat central de Créteil", "Nom de l'organisation", null, true),
         new(ParametresCles.RioFormat, @"^\d{7}$", "Format du RIO", "Expression régulière : 7 chiffres.", true),
         new(ParametresCles.RioExemple, "1234567", "Exemple de RIO", "Montré aux agents RH lors de l'attribution.", true),

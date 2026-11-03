@@ -126,7 +126,7 @@ public sealed class ShellViewModel : ViewModelBase
 
     public bool CanQuit => !AppPaths.IsMobile;
 
-    /// <summary>« SAPHIR - v0.2.0.0 », lu sur le serveur.</summary>
+    /// <summary>« SAPHIR - v1.0.0.0 », lu sur le serveur.</summary>
     public string Version
     {
         get => _version;

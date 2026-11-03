@@ -1,0 +1,100 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgTableauView">
+    <!-- DataContext : PgTableauSection. -->
+    <ScrollViewer>
+        <StackPanel Margin="14,12" Spacing="10">
+            <WrapPanel>
+                <Border Background="#FDF1EF" BorderBrush="#E7B4A9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="140">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Donnees.AppelsOuverts}" FontSize="22" Foreground="#B3261E"/>
+                        <TextBlock Classes="muted" Text="appel(s) à traiter"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#FFF8E8" BorderBrush="#E3C565" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="140">
+                    <StackPanel>
+                        <TextBlock FontSize="22" Foreground="#9A6B00">
+                            <Run Text="{Binding Donnees.InterventionsAQualifier, Mode=OneWay}"/>
+                            <Run Text="{Binding Donnees.InterventionsEnAttente, Mode=OneWay, StringFormat=' + {0}'}" FontSize="15"/>
+                        </TextBlock>
+                        <TextBlock Classes="muted" Text="à qualifier + en attente"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="140">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Donnees.InterventionsEnCours}" FontSize="22" Foreground="#1E395B"/>
+                        <TextBlock Classes="muted" Text="intervention(s) en cours"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="140">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Donnees.ComptesRendusAttendus}" FontSize="22" Foreground="#1E395B"/>
+                        <TextBlock Classes="muted" Text="compte(s) rendu(s) attendu(s)"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#EEF7EF" BorderBrush="#A9D3B0" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="160">
+                    <StackPanel>
+                        <TextBlock FontSize="22" Foreground="#2E8B3E">
+                            <Run Text="{Binding Donnees.EquipagesDisponibles, Mode=OneWay}"/>
+                            <Run Text="{Binding Donnees.EquipagesEngages, Mode=OneWay, StringFormat=' / {0}'}" FontSize="15" Foreground="#C7503B"/>
+                        </TextBlock>
+                        <TextBlock Classes="muted" Text="équipages disponibles / engagés"/>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <WrapPanel>
+                <TextBlock Text="{Binding Tn, StringFormat='TN du jour : {0}'}" FontSize="12" Foreground="Black" VerticalAlignment="Center" Margin="0,0,12,6"/>
+                <Button Classes="default" Content="Nouvel appel" Command="{Binding NouvelAppelCommand}" IsVisible="{Binding PeutPrendreAppel}" Margin="0,0,8,6"/>
+                <Button Content="GÉOOPS" Command="{Binding AllerCommand}" CommandParameter="geoops" Margin="0,0,8,6"/>
+                <Button Content="TN du jour" Command="{Binding AllerCommand}" CommandParameter="tn" Margin="0,0,8,6"/>
+            </WrapPanel>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="groupheader" Text="Interventions actives (par priorité)" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Classes="small" Content="Ouvrir la fiche" Command="{Binding OuvrirInterventionCommand}"
+                        CommandParameter="{Binding #GrilleInterventions.SelectedItem}"/>
+            </Grid>
+            <DataGrid Name="GrilleInterventions" ItemsSource="{Binding Interventions}" AutoGenerateColumns="False" Height="230" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Prio." Binding="{Binding Priorite}" Width="50"/>
+                    <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="125"/>
+                    <DataGridTextColumn Header="Début" Binding="{Binding Debut}" Width="115"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Nature}" Width="*"/>
+                    <DataGridTextColumn Header="Lieu" Binding="{Binding Lieu}" Width="200"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="150"/>
+                    <DataGridTextColumn Header="Équipages" Binding="{Binding Equipages}" Width="170"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="groupheader" Text="Appels en cours de traitement" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Classes="small" Content="Reprendre l'appel" Command="{Binding OuvrirAppelCommand}"
+                        CommandParameter="{Binding #GrilleAppels.SelectedItem}"/>
+            </Grid>
+            <DataGrid Name="GrilleAppels" ItemsSource="{Binding Appels}" AutoGenerateColumns="False" Height="150" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="125"/>
+                    <DataGridTextColumn Header="Reçu" Binding="{Binding Recu}" Width="115"/>
+                    <DataGridTextColumn Header="Canal" Binding="{Binding Canal}" Width="90"/>
+                    <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="*"/>
+                    <DataGridTextColumn Header="Commune" Binding="{Binding Commune}" Width="140"/>
+                    <DataGridTextColumn Header="État" Binding="{Binding Etat}" Width="130"/>
+                    <DataGridTextColumn Header="Opérateur" Binding="{Binding Operateur}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Classes="groupheader" Text="Équipages"/>
+            <DataGrid ItemsSource="{Binding Equipages}" AutoGenerateColumns="False" Height="200" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Indicatif" Binding="{Binding Indicatif}" Width="90"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                    <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="130"/>
+                    <DataGridTextColumn Header="Intervention" Binding="{Binding Intervention}" Width="125"/>
+                    <DataGridTextColumn Header="Chef de bord" Binding="{Binding Chef}" Width="160"/>
+                    <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="*"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

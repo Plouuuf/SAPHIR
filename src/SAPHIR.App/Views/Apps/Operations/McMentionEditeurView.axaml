@@ -1,0 +1,208 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McMentionEditeurView">
+    <!-- DataContext : McMentionEditeurSection. Une mention validée est affichée sans possibilité de modification. -->
+    <Grid RowDefinitions="*,Auto">
+        <ScrollViewer>
+            <StackPanel Margin="14,10" Spacing="10" MaxWidth="1000" HorizontalAlignment="Left">
+                <!-- Identification -->
+                <Border Background="#F7FAFD" BorderBrush="#C8D5E7" BorderThickness="1" Padding="12,8">
+                    <StackPanel Spacing="3">
+                        <TextBlock Classes="groupheader" Text="Identification"/>
+                        <TextBlock FontSize="12" Foreground="Black" TextWrapping="Wrap">
+                            <Run Text="{Binding Entete, Mode=OneWay}" FontWeight="SemiBold"/>
+                            <Run Text="{Binding Statut, Mode=OneWay, StringFormat=' — {0}'}"/>
+                        </TextBlock>
+                        <TextBlock Classes="muted" Text="{Binding Redacteur, StringFormat='Rédacteur : {0}'}"/>
+                        <TextBlock Classes="muted" Text="{Binding Validation}"/>
+                        <StackPanel Orientation="Horizontal" Spacing="6" IsVisible="{Binding Edition.EstRectificative}">
+                            <TextBlock Classes="muted" Text="{Binding Edition.ParentNumero, StringFormat='Mention rectificative de {0}'}" VerticalAlignment="Center"/>
+                            <Button Classes="link" Content="Ouvrir la mention d'origine" Command="{Binding OuvrirParentCommand}"/>
+                        </StackPanel>
+                    </StackPanel>
+                </Border>
+
+                <StackPanel Spacing="10" IsEnabled="{Binding EstModifiable}">
+                    <WrapPanel>
+                        <StackPanel Width="170" Margin="0,0,10,6" IsVisible="{Binding !Edition.EstRectificative}">
+                            <TextBlock Classes="label" Text="Type"/>
+                            <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Edition.Type}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel Width="220" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Catégorie"/>
+                            <ComboBox ItemsSource="{Binding Categories}" SelectedItem="{Binding Edition.Categorie}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel Width="200" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Origine"/>
+                            <ComboBox ItemsSource="{Binding Origines}" SelectedItem="{Binding Edition.Origine}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <!-- Intervention PÉGASE liée -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Intervention PÉGASE liée"/>
+                        <WrapPanel>
+                            <TextBlock Text="{Binding Edition.InterventionAffichee}" FontSize="12" Foreground="Black" VerticalAlignment="Center" Margin="0,0,10,6"/>
+                            <Button Classes="small" Content="Retirer" Command="{Binding RetirerInterventionCommand}" Margin="0,0,10,6"/>
+                            <TextBox Text="{Binding RechercheIntervention}" Watermark="Numéro ou motif" Width="170" Margin="0,0,6,6"/>
+                            <Button Classes="small" Content="Chercher" Command="{Binding RechercherInterventionCommand}" Margin="0,0,6,6"/>
+                            <ComboBox ItemsSource="{Binding Interventions}" SelectedItem="{Binding InterventionChoisie}" Width="260" Margin="0,0,6,6">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding Numero, Mode=OneWay}"/>
+                                            <Run Text="{Binding Nature, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Classes="small" Content="Lier" Command="{Binding LierInterventionCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                    </StackPanel>
+
+                    <!-- Déclarant -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Déclarant"/>
+                        <WrapPanel>
+                            <TextBox Text="{Binding RecherchePersonne}" Watermark="Recherche dans le répertoire (nom, prénom, PER-…)" Width="280" Margin="0,0,6,6"/>
+                            <Button Classes="small" Content="Rechercher" Command="{Binding RechercherPersonneCommand}" Margin="0,0,6,6"/>
+                            <ComboBox ItemsSource="{Binding Personnes}" SelectedItem="{Binding PersonneChoisie}" Width="280" Margin="0,0,6,6">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock Text="{Binding Libelle}"/>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                            <Button Classes="small" Content="Utiliser" Command="{Binding UtiliserPersonneCommand}" Margin="0,0,0,6"/>
+                        </WrapPanel>
+                        <TextBlock Classes="muted" Text="{Binding Edition.PersonneAffichee}"/>
+                        <WrapPanel>
+                            <StackPanel Width="150" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Qualité"/>
+                                <ComboBox ItemsSource="{Binding Qualites}" SelectedItem="{Binding Edition.Qualite}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="170" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="NOM"/>
+                                <TextBox Text="{Binding Edition.Nom}"/>
+                            </StackPanel>
+                            <StackPanel Width="170" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Prénom"/>
+                                <TextBox Text="{Binding Edition.Prenom}"/>
+                            </StackPanel>
+                            <StackPanel Width="130" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Né(e) le"/>
+                                <TextBox Text="{Binding Edition.DateNaissance}" Watermark="jj/mm/aaaa"/>
+                            </StackPanel>
+                            <StackPanel Width="170" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Lieu de naissance"/>
+                                <TextBox Text="{Binding Edition.LieuNaissance}"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Adresse"/>
+                                <TextBox Text="{Binding Edition.Adresse}"/>
+                            </StackPanel>
+                            <StackPanel Width="140" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Téléphone"/>
+                                <TextBox Text="{Binding Edition.Telephone}"/>
+                            </StackPanel>
+                            <StackPanel Width="200" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="E-mail"/>
+                                <TextBox Text="{Binding Edition.Email}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Classes="label" Text="Autres personnes concernées"/>
+                        <TextBox Text="{Binding Edition.AutresPersonnes}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                    </StackPanel>
+
+                    <!-- Faits -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Faits"/>
+                        <WrapPanel>
+                            <StackPanel Width="150" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Date et heure"/>
+                                <TextBox Text="{Binding Edition.FaitsDate}" Watermark="jj/mm/aaaa hh:mm"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Lieu"/>
+                                <TextBox Text="{Binding Edition.Lieu}"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Nature"/>
+                                <TextBox Text="{Binding Edition.Nature}"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Classes="label" Text="Déclaration / exposé des faits"/>
+                        <TextBox Text="{Binding Edition.Declaration}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="120"/>
+                        <WrapPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Personnes citées"/>
+                                <TextBox Text="{Binding Edition.PersonnesCitees}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Véhicules"/>
+                                <TextBox Text="{Binding Edition.Vehicules}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Objets"/>
+                                <TextBox Text="{Binding Edition.Objets}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                            </StackPanel>
+                            <StackPanel Width="300" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Documents"/>
+                                <TextBox Text="{Binding Edition.Documents}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Classes="label" Text="Observations du rédacteur"/>
+                        <TextBox Text="{Binding Edition.Observations}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                    </StackPanel>
+
+                    <!-- Suites -->
+                    <StackPanel Spacing="4">
+                        <TextBlock Classes="groupheader" Text="Suites"/>
+                        <WrapPanel>
+                            <StackPanel Width="230" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Orientation"/>
+                                <ComboBox ItemsSource="{Binding Orientations}" SelectedItem="{Binding Edition.Orientation}" HorizontalAlignment="Stretch"/>
+                            </StackPanel>
+                            <StackPanel Width="220" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Service informé"/>
+                                <TextBox Text="{Binding Edition.ServiceInforme}"/>
+                            </StackPanel>
+                            <StackPanel Width="200" Margin="0,0,10,6">
+                                <TextBlock Classes="label" Text="Procédure LRPPN liée"/>
+                                <TextBox Text="{Binding Edition.ProcedureLrppn}" Watermark="Référence de la procédure"/>
+                            </StackPanel>
+                        </WrapPanel>
+                        <TextBlock Classes="label" Text="Mesures prises"/>
+                        <TextBox Text="{Binding Edition.Mesures}" AcceptsReturn="True" TextWrapping="Wrap" MinHeight="44"/>
+                    </StackPanel>
+                </StackPanel>
+
+                <!-- Mentions rectificatives -->
+                <StackPanel Spacing="4" IsVisible="{Binding AvecRectificatives}">
+                    <TextBlock Classes="groupheader" Text="Mentions rectificatives (additifs)"/>
+                    <ItemsControl ItemsSource="{Binding Rectificatives}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <StackPanel Orientation="Horizontal" Spacing="8" Margin="0,2">
+                                    <Button Classes="link" Content="{Binding Numero}"
+                                            Command="{Binding $parent[UserControl].DataContext.OuvrirRectificativeCommand}" CommandParameter="{Binding}"/>
+                                    <TextBlock Classes="muted" Text="{Binding Statut}" VerticalAlignment="Center"/>
+                                    <TextBlock Classes="muted" Text="{Binding Redacteur}" VerticalAlignment="Center"/>
+                                </StackPanel>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </StackPanel>
+        </ScrollViewer>
+
+        <Border Grid.Row="1" BorderBrush="#DFDFDF" BorderThickness="0,1,0,0" Background="#F0F0F0" Padding="12,8">
+            <WrapPanel HorizontalAlignment="Right">
+                <Button Content="Nouvelle mention" Command="{Binding NouvelleCommand}" Margin="0,0,8,0"/>
+                <Button Content="Rédiger une mention rectificative" Command="{Binding RectificativeCommand}" IsVisible="{Binding PeutRectifier}" Margin="0,0,8,0"/>
+                <Button Content="Enregistrer le brouillon" Command="{Binding EnregistrerCommand}" IsVisible="{Binding EstModifiable}" Margin="0,0,8,0"/>
+                <Button Classes="default" Content="Valider la mention" Command="{Binding ValiderCommand}" IsVisible="{Binding PeutValider}"/>
+            </WrapPanel>
+        </Border>
+    </Grid>
+</UserControl>

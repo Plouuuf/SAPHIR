@@ -1,0 +1,111 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McEquipagesView">
+    <!-- DataContext : McEquipagesSection. -->
+    <Grid RowDefinitions="Auto,200,*" Margin="12,10">
+        <WrapPanel>
+            <CheckBox Content="Équipages actifs seulement" IsChecked="{Binding ActifsSeulement}" Margin="0,0,12,6"/>
+            <Button Content="Actualiser" Command="{Binding FiltrerCommand}" Margin="0,0,8,6"/>
+            <Button Classes="default" Content="Constituer un équipage" Command="{Binding NouveauCommand}" IsVisible="{Binding PeutGerer}" Margin="0,0,8,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Indicatif" Binding="{Binding Indicatif}" Width="90"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                <DataGridTextColumn Header="Chef de bord" Binding="{Binding Chef}" Width="160"/>
+                <DataGridTextColumn Header="Membres" Binding="{Binding Membres}" Width="*"/>
+                <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="160"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="110"/>
+                <DataGridTextColumn Header="Intervention" Binding="{Binding Intervention}" Width="120"/>
+                <DataGridTextColumn Header="Vacation" Binding="{Binding Vacation}" Width="120"/>
+            </DataGrid.Columns>
+        </DataGrid>
+
+        <ScrollViewer Grid.Row="2" Margin="0,10,0,0" IsVisible="{Binding EnEdition}">
+            <StackPanel Spacing="8">
+                <TextBlock Classes="groupheader" Text="{Binding TitreEditeur}" FontSize="13"/>
+                <TextBlock Classes="muted" Text="{Binding InfoEquipage}"/>
+                <StackPanel Spacing="8" IsEnabled="{Binding PeutModifier}">
+                    <WrapPanel>
+                        <StackPanel Width="270" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Vacation"/>
+                            <ComboBox ItemsSource="{Binding VacationsOuvertes}" SelectedItem="{Binding VacationChoisie}" HorizontalAlignment="Stretch">
+                                <ComboBox.ItemTemplate>
+                                    <DataTemplate>
+                                        <TextBlock>
+                                            <Run Text="{Binding Reference, Mode=OneWay}"/>
+                                            <Run Text="{Binding Service, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                        </TextBlock>
+                                    </DataTemplate>
+                                </ComboBox.ItemTemplate>
+                            </ComboBox>
+                        </StackPanel>
+                        <StackPanel Width="130" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Indicatif radio"/>
+                            <TextBox Text="{Binding Indicatif}" Watermark="PS 12"/>
+                        </StackPanel>
+                        <StackPanel Width="170" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Type"/>
+                            <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch"/>
+                        </StackPanel>
+                        <StackPanel Width="200" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Service"/>
+                            <TextBox Text="{Binding Service}"/>
+                        </StackPanel>
+                        <StackPanel Width="280" Margin="0,0,10,6">
+                            <TextBlock Classes="label" Text="Véhicule"/>
+                            <Grid ColumnDefinitions="*,Auto">
+                                <ComboBox ItemsSource="{Binding Vehicules}" SelectedItem="{Binding Vehicule}" HorizontalAlignment="Stretch" PlaceholderText="Sans véhicule">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate>
+                                            <TextBlock>
+                                                <Run Text="{Binding Immatriculation, Mode=OneWay}"/>
+                                                <Run Text="{Binding Modele, Mode=OneWay, StringFormat=' {0}'}"/>
+                                                <Run Text="{Binding Disponibilite, Mode=OneWay, StringFormat=' ({0})'}" Foreground="#5B6B7C"/>
+                                            </TextBlock>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <Button Grid.Column="1" Classes="small" Content="Aucun" Command="{Binding SansVehiculeCommand}" Margin="4,0,0,0"/>
+                            </Grid>
+                        </StackPanel>
+                    </WrapPanel>
+
+                    <TextBlock Classes="groupheader" Text="Membres"/>
+                    <WrapPanel>
+                        <ComboBox ItemsSource="{Binding Repertoire}" SelectedItem="{Binding AgentAAjouter}" Width="280" Margin="0,0,6,6" PlaceholderText="Choisir un agent">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding Libelle}"/>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <ComboBox ItemsSource="{Binding Roles}" SelectedItem="{Binding RoleAAjouter}" Width="130" Margin="0,0,6,6"/>
+                        <Button Classes="small" Content="Ajouter" Command="{Binding AjouterMembreCommand}" Margin="0,0,0,6"/>
+                    </WrapPanel>
+                    <ItemsControl ItemsSource="{Binding Membres}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Border BorderBrush="#E3E8EF" BorderThickness="0,0,0,1" Padding="0,3">
+                                    <WrapPanel>
+                                        <TextBlock Text="{Binding Libelle}" Width="250" FontSize="12" Foreground="Black" VerticalAlignment="Center" Margin="0,0,6,0"/>
+                                        <ComboBox ItemsSource="{Binding $parent[UserControl].DataContext.Roles}" SelectedItem="{Binding Role}" Width="130" Margin="0,0,6,0"/>
+                                        <Button Classes="small" Content="Retirer" Command="{Binding $parent[UserControl].DataContext.RetirerMembreCommand}" CommandParameter="{Binding}"/>
+                                    </WrapPanel>
+                                </Border>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                    <Button Classes="default" Content="Enregistrer l'équipage" Command="{Binding EnregistrerCommand}" HorizontalAlignment="Left"/>
+                </StackPanel>
+
+                <Border IsVisible="{Binding PeutDissoudre}" Background="#FFF8E8" BorderBrush="#E3C565" BorderThickness="1" Padding="10,8" Margin="0,6,0,0">
+                    <WrapPanel>
+                        <TextBox Text="{Binding MotifDissolution}" Watermark="Motif de dissolution (facultatif)" Width="320" Margin="0,0,6,0"/>
+                        <Button Content="Dissoudre l'équipage" Command="{Binding DissoudreCommand}"/>
+                    </WrapPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</UserControl>

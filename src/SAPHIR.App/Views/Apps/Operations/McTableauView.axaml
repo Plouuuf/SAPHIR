@@ -1,0 +1,96 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McTableauView">
+    <!-- DataContext : McTableauSection. -->
+    <ScrollViewer>
+        <StackPanel Margin="14,12" Spacing="12">
+            <WrapPanel>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="150">
+                    <StackPanel>
+                        <TextBlock Text="{Binding Donnees.VacationsOuvertes.Count}" FontSize="22" Foreground="#1E395B"/>
+                        <TextBlock Classes="muted" Text="vacation(s) ouverte(s)"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="150">
+                    <StackPanel>
+                        <TextBlock FontSize="22" Foreground="#1E395B">
+                            <Run Text="{Binding Donnees.EquipagesActifs, Mode=OneWay}"/>
+                            <Run Text="{Binding Donnees.EquipagesEngages, Mode=OneWay, StringFormat=' / {0}'}" FontSize="14" Foreground="#C7503B"/>
+                        </TextBlock>
+                        <TextBlock Classes="muted" Text="équipages actifs / engagés"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="250">
+                    <StackPanel>
+                        <TextBlock FontSize="14" Foreground="#1E395B">
+                            <Run Text="{Binding Donnees.VehiculesDisponibles, Mode=OneWay, StringFormat='{}{0} dispo.'}" Foreground="#2E8B3E"/>
+                            <Run Text="{Binding Donnees.VehiculesSortis, Mode=OneWay, StringFormat=' · {0} sortis'}"/>
+                            <Run Text="{Binding Donnees.VehiculesIndisponibles, Mode=OneWay, StringFormat=' · {0} indispo.'}" Foreground="#C7503B"/>
+                        </TextBlock>
+                        <TextBlock Classes="muted" Text="véhicules de service"/>
+                    </StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" CornerRadius="2" Padding="12,8" Margin="0,0,10,10" Width="150">
+                    <StackPanel>
+                        <TextBlock FontSize="22" Foreground="#1E395B">
+                            <Run Text="{Binding Donnees.MentionsAValider, Mode=OneWay}"/>
+                            <Run Text="{Binding Donnees.MentionsDuJour, Mode=OneWay, StringFormat=' · {0} auj.'}" FontSize="13" Foreground="#5B6B7C"/>
+                        </TextBlock>
+                        <TextBlock Classes="muted" Text="mentions à valider"/>
+                    </StackPanel>
+                </Border>
+            </WrapPanel>
+
+            <StackPanel Orientation="Horizontal" Spacing="8">
+                <Button Content="Journal de service" Command="{Binding AllerCommand}" CommandParameter="journal"/>
+                <Button Content="Vacations" Command="{Binding AllerCommand}" CommandParameter="vacations"/>
+                <Button Content="Véhicules" Command="{Binding AllerCommand}" CommandParameter="vehicules"/>
+            </StackPanel>
+
+            <TextBlock Classes="groupheader" Text="Vacations ouvertes"/>
+            <TextBlock Classes="muted" Text="Aucune vacation ouverte : la prise de service se fait dans « Vacations »." IsVisible="{Binding AucuneVacation}"/>
+            <ItemsControl ItemsSource="{Binding Vacations}">
+                <ItemsControl.ItemTemplate>
+                    <DataTemplate>
+                        <Border BorderBrush="#E3E8EF" BorderThickness="0,0,0,1" Padding="4,4">
+                            <TextBlock TextWrapping="Wrap" FontSize="12" Foreground="Black">
+                                <Run Text="{Binding Reference, Mode=OneWay}" FontWeight="SemiBold"/>
+                                <Run Text="{Binding Service, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                <Run Text="{Binding Debut, Mode=OneWay, StringFormat=' — depuis {0:dd/MM HH:mm}'}" Foreground="#5B6B7C"/>
+                                <Run Text="{Binding Responsable, Mode=OneWay, StringFormat=' — responsable {0}'}" Foreground="#5B6B7C"/>
+                                <Run Text="{Binding NombreAgents, Mode=OneWay, StringFormat=' — {0} agent(s)'}" Foreground="#5B6B7C"/>
+                                <Run Text="{Binding NombreEquipages, Mode=OneWay, StringFormat=', {0} équipage(s)'}" Foreground="#5B6B7C"/>
+                            </TextBlock>
+                        </Border>
+                    </DataTemplate>
+                </ItemsControl.ItemTemplate>
+            </ItemsControl>
+
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBlock Classes="groupheader" Text="Mentions en brouillon (à valider)" VerticalAlignment="Center"/>
+                <Button Grid.Column="1" Classes="small" Content="Ouvrir" Command="{Binding OuvrirMentionCommand}"
+                        CommandParameter="{Binding #GrilleBrouillons.SelectedItem}"/>
+            </Grid>
+            <DataGrid Name="GrilleBrouillons" ItemsSource="{Binding Brouillons}" AutoGenerateColumns="False" Height="150" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="125"/>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="110"/>
+                    <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="*"/>
+                    <DataGridTextColumn Header="Rédacteur" Binding="{Binding Redacteur}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+
+            <TextBlock Classes="groupheader" Text="Derniers événements du journal de service"/>
+            <DataGrid ItemsSource="{Binding Evenements}" AutoGenerateColumns="False" Height="260" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                    <DataGridTextColumn Header="Événement" Binding="{Binding Type}" Width="150"/>
+                    <DataGridTextColumn Header="Libellé" Binding="{Binding Libelle}" Width="*"/>
+                    <DataGridTextColumn Header="Source" Binding="{Binding Source}" Width="100"/>
+                    <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="150"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

@@ -1,0 +1,61 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.McMentionsView">
+    <!-- DataContext : McMentionsSection (mentions, déclarations, archives, recherche). -->
+    <Grid RowDefinitions="Auto,Auto,*,Auto" Margin="12,10">
+        <TextBlock Classes="muted" Text="{Binding Aide}" Margin="0,0,0,8"/>
+        <WrapPanel Grid.Row="1">
+            <StackPanel Width="230" Margin="0,0,8,6">
+                <TextBlock Classes="label" Text="Recherche"/>
+                <TextBox Text="{Binding Recherche}" Watermark="Numéro, nature, déclarant, rédacteur…"/>
+            </StackPanel>
+            <StackPanel Width="130" Margin="0,0,8,6">
+                <TextBlock Classes="label" Text="Statut"/>
+                <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding Statut}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+            <StackPanel Width="170" Margin="0,0,8,6" IsVisible="{Binding AvecFiltresAvances}">
+                <TextBlock Classes="label" Text="Type"/>
+                <ComboBox ItemsSource="{Binding Types}" SelectedItem="{Binding Type}" HorizontalAlignment="Stretch"/>
+            </StackPanel>
+            <StackPanel Width="115" Margin="0,0,8,6" IsVisible="{Binding AvecFiltresAvances}">
+                <TextBlock Classes="label" Text="Du"/>
+                <TextBox Text="{Binding Du}" Watermark="jj/mm/aaaa"/>
+            </StackPanel>
+            <StackPanel Width="115" Margin="0,0,8,6" IsVisible="{Binding AvecFiltresAvances}">
+                <TextBlock Classes="label" Text="Au"/>
+                <TextBox Text="{Binding Au}" Watermark="jj/mm/aaaa"/>
+            </StackPanel>
+            <Button Content="Rechercher" Command="{Binding RechercherCommand}" VerticalAlignment="Bottom" Margin="0,0,8,6"/>
+            <Button Content="Ouvrir" Classes="default" Command="{Binding OuvrirCommand}" VerticalAlignment="Bottom" Margin="0,0,8,6"/>
+            <Button Content="Nouvelle mention" Command="{Binding NouvelleCommand}" IsVisible="{Binding PeutRediger}" VerticalAlignment="Bottom" Margin="0,0,8,6"/>
+            <TextBlock Classes="muted" Text="{Binding Compte}" VerticalAlignment="Bottom" Margin="0,0,0,10"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="125"/>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="115"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="130"/>
+                <DataGridTextColumn Header="Catégorie" Binding="{Binding Categorie}" Width="150"/>
+                <DataGridTextColumn Header="Nature" Binding="{Binding Nature}" Width="220"/>
+                <DataGridTextColumn Header="Déclarant" Binding="{Binding Declarant}" Width="140"/>
+                <DataGridTextColumn Header="Rédacteur" Binding="{Binding Redacteur}" Width="140"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="80"/>
+                <DataGridTextColumn Header="Intervention" Binding="{Binding Intervention}" Width="120"/>
+                <DataGridTextColumn Header="Origine" Binding="{Binding Origine}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="3" IsVisible="{Binding EstArchives}" Margin="0,10,0,0" Spacing="6">
+            <TextBlock Classes="groupheader" Text="Vacations clôturées"/>
+            <DataGrid ItemsSource="{Binding VacationsCloturees}" AutoGenerateColumns="False" Height="180" HeadersVisibility="Column">
+                <DataGrid.Columns>
+                    <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="125"/>
+                    <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="*"/>
+                    <DataGridTextColumn Header="Début" Binding="{Binding Debut, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="125"/>
+                    <DataGridTextColumn Header="Fin" Binding="{Binding Fin, StringFormat='{}{0:dd/MM/yyyy HH:mm}'}" Width="125"/>
+                    <DataGridTextColumn Header="Responsable" Binding="{Binding Responsable}" Width="160"/>
+                    <DataGridTextColumn Header="Agents" Binding="{Binding NombreAgents}" Width="70"/>
+                </DataGrid.Columns>
+            </DataGrid>
+        </StackPanel>
+    </Grid>
+</UserControl>

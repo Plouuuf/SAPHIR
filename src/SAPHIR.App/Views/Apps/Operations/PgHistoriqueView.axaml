@@ -1,0 +1,35 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgHistoriqueView">
+    <!-- DataContext : PgHistoriqueSection. -->
+    <Grid RowDefinitions="Auto,*,Auto,*" Margin="12,10">
+        <WrapPanel>
+            <TextBox Text="{Binding Recherche}" Watermark="Numéro, motif, commune" Width="220" Margin="0,0,8,6"/>
+            <TextBox Text="{Binding Du}" Watermark="Du jj/mm/aaaa" Width="120" Margin="0,0,8,6"/>
+            <TextBox Text="{Binding Au}" Watermark="Au jj/mm/aaaa" Width="120" Margin="0,0,8,6"/>
+            <Button Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,0,8,6"/>
+            <Button Classes="default" Content="Ouvrir la fiche" Command="{Binding OuvrirCommand}" Margin="0,0,8,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Interventions}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Numéro" Binding="{Binding Numero}" Width="125"/>
+                <DataGridTextColumn Header="Début" Binding="{Binding Debut}" Width="115"/>
+                <DataGridTextColumn Header="Prio." Binding="{Binding Priorite}" Width="50"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Nature}" Width="*"/>
+                <DataGridTextColumn Header="Commune" Binding="{Binding Commune}" Width="140"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="100"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <TextBlock Grid.Row="2" Classes="groupheader" Text="{Binding Reference, StringFormat='Modifications enregistrées {0}'}" Margin="0,10,0,6"/>
+        <DataGrid Grid.Row="3" ItemsSource="{Binding Modifications}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="160"/>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="125"/>
+                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="110"/>
+                <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="150"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

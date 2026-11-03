@@ -1,0 +1,28 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgTnView">
+    <!-- DataContext : PgTnSection. -->
+    <Grid RowDefinitions="Auto,Auto,*" Margin="12,10">
+        <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,10">
+            <StackPanel Spacing="4">
+                <TextBlock Classes="groupheader" Text="Permanence en cours"/>
+                <TextBlock Text="{Binding TexteActuel}" TextWrapping="Wrap" FontSize="12.5" Foreground="Black"/>
+            </StackPanel>
+        </Border>
+        <WrapPanel Grid.Row="1" Margin="0,10,0,8" IsVisible="{Binding PeutTn}">
+            <TextBox Text="{Binding Service}" Watermark="Service" Width="240" Margin="0,0,8,6"/>
+            <Button Classes="default" Content="Prendre la permanence TN" Command="{Binding PrendreCommand}" Margin="0,0,8,6"/>
+            <Button Content="Terminer la permanence" Command="{Binding TerminerCommand}" IsVisible="{Binding PeutTerminer}" Margin="0,0,8,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="2" ItemsSource="{Binding Lignes}" AutoGenerateColumns="False" HeadersVisibility="Column" Margin="0,8,0,0">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="150"/>
+                <DataGridTextColumn Header="Agent TN" Binding="{Binding Agent}" Width="*"/>
+                <DataGridTextColumn Header="Service" Binding="{Binding Service}" Width="180"/>
+                <DataGridTextColumn Header="Début" Binding="{Binding Debut}" Width="120"/>
+                <DataGridTextColumn Header="Fin" Binding="{Binding Fin}" Width="120"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="90"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

@@ -8,7 +8,7 @@ namespace Saphir.Server;
 /// <summary>Règles pures du socle (sans base) : identifiants, validations, formats. Testées dans SAPHIR.Tests.</summary>
 public static class SocleRegles
 {
-    public const string VersionParDefaut = "0.2.0.0";
+    public const string VersionParDefaut = "1.0.0.0";
     public const string RioFormatParDefaut = @"^\d{7}$";
     public const string RioExempleParDefaut = "1234567";
     public const string NomOrganisationParDefaut = "Police nationale — Val-de-Marne Simulation";
@@ -49,7 +49,7 @@ public static class SocleRegles
     public static bool VersionValide(string? version)
         => !string.IsNullOrWhiteSpace(version) && VersionRegex.IsMatch(version.Trim());
 
-    /// <summary>« SAPHIR - v0.2.0.0 ».</summary>
+    /// <summary>« SAPHIR - v1.0.0.0 ».</summary>
     public static string AffichageVersion(string? version)
         => "SAPHIR - v" + (VersionValide(version) ? version!.Trim() : VersionParDefaut);
 
@@ -113,6 +113,14 @@ public static class SocleRegles
             ParametresCles.NomOrganisation => valeur.Trim().Length > 200
                 ? "Le nom de l'organisation est trop long (200 caractères au plus)."
                 : null,
+            "pegase.discord.webhook" => Saphir.Server.Modules.Operations.OperationsRegles.WebhookValide(valeur.Trim())
+                ? null
+                : "Webhook Discord invalide : « désactivé » ou une adresse https://discord.com/api/webhooks/…",
+            _ when cle.StartsWith("geoops.carte.", StringComparison.Ordinal) || cle == "geoops.positions.peremption"
+                => double.TryParse(valeur.Trim().Replace(',', '.'), System.Globalization.NumberStyles.Float,
+                       System.Globalization.CultureInfo.InvariantCulture, out _)
+                    ? null
+                    : "Valeur numérique attendue.",
             _ => null
         };
     }

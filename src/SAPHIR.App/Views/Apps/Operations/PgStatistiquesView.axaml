@@ -1,0 +1,64 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgStatistiquesView">
+    <!-- DataContext : PgStatistiquesSection. -->
+    <UserControl.Resources>
+        <DataTemplate x:Key="Barre">
+            <Grid ColumnDefinitions="140,Auto,Auto" Margin="0,1">
+                <TextBlock Text="{Binding Libelle}" FontSize="12" Foreground="Black" TextTrimming="CharacterEllipsis"/>
+                <Border Grid.Column="1" Width="{Binding Largeur}" Height="12" Background="#5B8BC9" CornerRadius="1" Margin="6,0" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="2" Text="{Binding Nombre}" FontSize="12" Foreground="#1E395B"/>
+            </Grid>
+        </DataTemplate>
+    </UserControl.Resources>
+    <ScrollViewer>
+        <StackPanel Margin="14,12" Spacing="10">
+            <WrapPanel>
+                <TextBox Text="{Binding Du}" Watermark="Du jj/mm/aaaa" Width="130" Margin="0,0,8,6"/>
+                <TextBox Text="{Binding Au}" Watermark="Au (vide = maintenant)" Width="160" Margin="0,0,8,6"/>
+                <Button Classes="default" Content="Calculer" Command="{Binding CalculerCommand}" Margin="0,0,8,6"/>
+                <TextBlock Classes="muted" Text="{Binding Periode}" VerticalAlignment="Center" Margin="0,0,0,6"/>
+            </WrapPanel>
+            <WrapPanel>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8" Margin="0,0,10,10" Width="130">
+                    <StackPanel><TextBlock Text="{Binding Donnees.Appels}" FontSize="22" Foreground="#1E395B"/><TextBlock Classes="muted" Text="appels"/></StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8" Margin="0,0,10,10" Width="130">
+                    <StackPanel><TextBlock Text="{Binding Donnees.Interventions}" FontSize="22" Foreground="#1E395B"/><TextBlock Classes="muted" Text="interventions"/></StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8" Margin="0,0,10,10" Width="130">
+                    <StackPanel><TextBlock Text="{Binding Donnees.Cloturees}" FontSize="22" Foreground="#2E8B3E"/><TextBlock Classes="muted" Text="clôturées"/></StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8" Margin="0,0,10,10" Width="130">
+                    <StackPanel><TextBlock Text="{Binding Donnees.Annulees}" FontSize="22" Foreground="#C7503B"/><TextBlock Classes="muted" Text="annulées"/></StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8" Margin="0,0,10,10" Width="170">
+                    <StackPanel><TextBlock Text="{Binding DelaiAffectation}" FontSize="22" Foreground="#1E395B"/><TextBlock Classes="muted" Text="délai moyen d'affectation"/></StackPanel>
+                </Border>
+                <Border Background="#F4F8FC" BorderBrush="#D5DFE9" BorderThickness="1" Padding="12,8" Margin="0,0,10,10" Width="170">
+                    <StackPanel><TextBlock Text="{Binding DelaiArrivee}" FontSize="22" Foreground="#1E395B"/><TextBlock Classes="muted" Text="délai moyen d'arrivée sur place"/></StackPanel>
+                </Border>
+            </WrapPanel>
+            <WrapPanel>
+                <StackPanel Width="370" Margin="0,0,20,12">
+                    <TextBlock Classes="groupheader" Text="Par motif" Margin="0,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding ParMotif}" ItemTemplate="{StaticResource Barre}"/>
+                </StackPanel>
+                <StackPanel Width="370" Margin="0,0,20,12">
+                    <TextBlock Classes="groupheader" Text="Par priorité" Margin="0,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding ParPriorite}" ItemTemplate="{StaticResource Barre}"/>
+                    <TextBlock Classes="groupheader" Text="Par statut" Margin="0,10,0,4"/>
+                    <ItemsControl ItemsSource="{Binding ParStatut}" ItemTemplate="{StaticResource Barre}"/>
+                </StackPanel>
+                <StackPanel Width="370" Margin="0,0,20,12">
+                    <TextBlock Classes="groupheader" Text="Appels par canal" Margin="0,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding ParCanal}" ItemTemplate="{StaticResource Barre}"/>
+                </StackPanel>
+                <StackPanel Width="370" Margin="0,0,20,12">
+                    <TextBlock Classes="groupheader" Text="Par commune (10 premières)" Margin="0,0,0,4"/>
+                    <ItemsControl ItemsSource="{Binding ParCommune}" ItemTemplate="{StaticResource Barre}"/>
+                </StackPanel>
+            </WrapPanel>
+        </StackPanel>
+    </ScrollViewer>
+</UserControl>

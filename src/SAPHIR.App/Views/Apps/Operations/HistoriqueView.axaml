@@ -1,0 +1,22 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.HistoriqueView">
+    <!-- DataContext : McHistoriqueSection. -->
+    <Grid RowDefinitions="Auto,*" Margin="12,10">
+        <WrapPanel>
+            <TextBox Text="{Binding Reference}" Watermark="Référence exacte (MC-2026-000012, VAC-…)" Width="240" Margin="0,0,8,6"/>
+            <TextBox Text="{Binding Recherche}" Watermark="Recherche (auteur, action, champ)" Width="240" Margin="0,0,8,6"/>
+            <Button Content="Filtrer" Command="{Binding FiltrerCommand}" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Date" Binding="{Binding Date}" Width="120"/>
+                <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="170"/>
+                <DataGridTextColumn Header="Référence" Binding="{Binding Reference}" Width="130"/>
+                <DataGridTextColumn Header="Action" Binding="{Binding Action}" Width="120"/>
+                <DataGridTextColumn Header="Détail" Binding="{Binding Detail}" Width="*"/>
+                <DataGridTextColumn Header="Motif" Binding="{Binding Motif}" Width="160"/>
+            </DataGrid.Columns>
+        </DataGrid>
+    </Grid>
+</UserControl>

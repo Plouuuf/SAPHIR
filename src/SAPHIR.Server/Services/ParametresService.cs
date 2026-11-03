@@ -20,7 +20,7 @@ public sealed class ParametresService(SaphirDb db, ILogger<ParametresService> lo
         return SocleRegles.ParametresParDefaut.FirstOrDefault(p => p.Cle == cle)?.Valeur ?? string.Empty;
     }
 
-    /// <summary>« SAPHIR - v0.2.0.0 ».</summary>
+    /// <summary>« SAPHIR - v1.0.0.0 ».</summary>
     public async Task<string> VersionAffichageAsync(CancellationToken ct)
         => SocleRegles.AffichageVersion(await ValeurAsync(ParametresCles.Version, ct));
 

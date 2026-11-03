@@ -1,0 +1,27 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgCommunicationsView">
+    <!-- DataContext : PgCommunicationsSection. -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12,10">
+        <WrapPanel>
+            <CheckBox Content="Messages seulement (sans les événements)" IsChecked="{Binding MessagesSeulement}" Margin="0,0,12,6"/>
+            <Button Content="Ouvrir l'intervention" Command="{Binding OuvrirCommand}" Margin="0,0,8,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Heure" Binding="{Binding Date}" Width="120"/>
+                <DataGridTextColumn Header="Intervention" Binding="{Binding Intervention}" Width="125"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                <DataGridTextColumn Header="Texte" Binding="{Binding Texte}" Width="*"/>
+                <DataGridTextColumn Header="Auteur" Binding="{Binding Auteur}" Width="160"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <StackPanel Grid.Row="2" Spacing="4" Margin="0,8,0,0" IsVisible="{Binding PeutEcrire}">
+            <TextBlock Classes="muted" Text="{Binding Destinataire}"/>
+            <Grid ColumnDefinitions="*,Auto">
+                <TextBox Text="{Binding Message}" Watermark="Message horodaté (ex. : PS 12 demande un renfort)"/>
+                <Button Grid.Column="1" Classes="default" Content="Envoyer" Command="{Binding EnvoyerCommand}" Margin="8,0,0,0"/>
+            </Grid>
+        </StackPanel>
+    </Grid>
+</UserControl>

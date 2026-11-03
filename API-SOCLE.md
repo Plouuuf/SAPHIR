@@ -5,7 +5,7 @@ Erreurs : JSON `{ "error": "message lisible en français" }` avec 400 (saisie), 
 
 | Méthode | Route | Permission | Corps → réponse |
 |---|---|---|---|
-| GET | /api/version | aucune (public) | → `{ "version": "SAPHIR - v0.2.0.0" }` |
+| GET | /api/version | aucune (public) | → `{ "version": "SAPHIR - v1.0.0.0" }` |
 | GET | /api/session | session | → `SessionInfoDto` |
 | POST | /api/session/premiere-connexion | session, pas encore d'agent | `PremiereConnexionInput` → `SessionInfoDto` |
 | GET | /api/admin/comptes?q=&statut= | admin.comptes | → `List<CompteDto>` |

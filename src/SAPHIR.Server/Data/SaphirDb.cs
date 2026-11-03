@@ -121,6 +121,11 @@ public static class SocleSeeder
                     ("@cle", parametre.Cle), ("@libelle", parametre.Libelle), ("@aide", parametre.Aide));
             }
 
+            // Montée de version : une version affichée antérieure à celle du serveur est remplacée.
+            await db.ExecuteAsync(
+                "UPDATE sys_parametres SET valeur = @v WHERE cle = @cle AND valeur IN ('0.1.0.0', '0.2.0.0')", ct,
+                ("@v", SocleRegles.VersionParDefaut), ("@cle", ParametresCles.Version));
+
             await db.CommitAsync(ct);
         }
         catch

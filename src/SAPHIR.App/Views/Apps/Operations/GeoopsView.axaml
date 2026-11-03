@@ -1,0 +1,118 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:v="clr-namespace:Saphir.Views.Apps.Operations"
+             x:Class="Saphir.Views.Apps.Operations.GeoopsView">
+    <!-- DataContext : GeoopsSection. Carte opérationnelle (8.1) : positions simulées ou déclarées, jamais des positions GPS mesurées. -->
+    <Grid RowDefinitions="Auto,*,Auto" ColumnDefinitions="*,Auto">
+        <Border Grid.ColumnSpan="2" Background="#F0F0F0" BorderBrush="#DFDFDF" BorderThickness="0,0,0,1" Padding="10,5">
+            <StackPanel Spacing="3">
+                <WrapPanel>
+                    <TextBox Text="{Binding Recherche}" Watermark="Intervention, adresse, indicatif" Width="220" Margin="0,2,6,2"/>
+                    <Button Classes="small" Content="Rechercher" Command="{Binding RechercherCommand}" Margin="0,2,6,2"/>
+                    <Button Classes="small" Content="Actualiser" Command="{Binding ActualiserCommand}" Margin="0,2,6,2"/>
+                    <Button Classes="small" Content="Recharger le fond de carte" Command="{Binding RechargerCarteCommand}" Margin="0,2,6,2"/>
+                    <TextBlock Classes="muted" Text="{Binding Resume}" VerticalAlignment="Center" Margin="4,2,0,2"/>
+                </WrapPanel>
+                <TextBlock Classes="muted" Text="{Binding Avertissement}" FontSize="11"/>
+            </StackPanel>
+        </Border>
+
+        <Grid Grid.Row="1">
+            <v:GeoopsCarte Image="{Binding Carte}" Calibration="{Binding Calibration}" Marqueurs="{Binding Marqueurs}" Centre="{Binding Centre}"
+                           ClicCommand="{Binding ClicCarteCommand}" SelectionCommand="{Binding SelectionCarteCommand}"/>
+            <Border Background="#E6FFFFFF" BorderBrush="#C8D5E7" BorderThickness="1" CornerRadius="2" Padding="8,4" Margin="8"
+                    HorizontalAlignment="Left" VerticalAlignment="Bottom">
+                <StackPanel Spacing="2">
+                    <TextBlock Text="{Binding TexteMode}" FontSize="11.5" Foreground="Black" TextWrapping="Wrap" MaxWidth="420"/>
+                    <TextBlock FontSize="10.5" Foreground="#5B6B7C" Text="● vert : disponible   ● orange : affecté / en route   ● rouge : sur place   ◆ intervention (rouge P1, orange P2, bleu P3)   pointillé : position déclarée" TextWrapping="Wrap" MaxWidth="420"/>
+                </StackPanel>
+            </Border>
+        </Grid>
+
+        <!-- Panneau latéral -->
+        <Border Grid.Row="1" Grid.Column="1" Width="280" BorderBrush="#C8D5E7" BorderThickness="1,0,0,0" Background="#F7FAFD"
+                IsVisible="{Binding !Host.EstCompact}">
+            <ScrollViewer>
+                <StackPanel Margin="10" Spacing="6">
+                    <TextBlock Classes="groupheader" Text="Sélection"/>
+                    <TextBlock Text="{Binding InfoSelection}" TextWrapping="Wrap" FontSize="12" Foreground="Black"/>
+                    <WrapPanel>
+                        <Button Classes="small" Content="Ouvrir la fiche" Command="{Binding OuvrirFicheCommand}" IsVisible="{Binding ASelection}" Margin="0,0,6,6"/>
+                        <Button Classes="small" Content="Placer l'intervention" Command="{Binding PlacerInterventionCommand}" IsVisible="{Binding PeutPlacer}" Margin="0,0,6,6"/>
+                        <Button Classes="small" Content="Annuler" Command="{Binding AnnulerModeCommand}" Margin="0,0,6,6"/>
+                    </WrapPanel>
+                    <StackPanel Spacing="4" IsVisible="{Binding PeutDeclarer}">
+                        <TextBlock Classes="label" Text="Déclarer la position d'un équipage"/>
+                        <ComboBox ItemsSource="{Binding TousEquipages}" SelectedItem="{Binding EquipageADeclarer}" HorizontalAlignment="Stretch">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock>
+                                        <Run Text="{Binding Indicatif, Mode=OneWay}"/>
+                                        <Run Text="{Binding Statut, Mode=OneWay, StringFormat=' — {0}'}" Foreground="#5B6B7C"/>
+                                    </TextBlock>
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+                        <Button Classes="small" Content="Cliquer sur la carte pour déclarer" Command="{Binding DeclarerPositionCommand}" HorizontalAlignment="Left"/>
+                    </StackPanel>
+
+                    <TextBlock Classes="groupheader" Text="Équipages positionnés" Margin="0,6,0,0"/>
+                    <ItemsControl ItemsSource="{Binding Equipages}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="link" Command="{Binding $parent[UserControl].DataContext.ChoisirEquipageCommand}" CommandParameter="{Binding}" Margin="0,1">
+                                    <StackPanel>
+                                        <TextBlock FontSize="12">
+                                            <Run Text="●" Foreground="{Binding Pinceau, Mode=OneWay}"/>
+                                            <Run Text="{Binding Indicatif, Mode=OneWay}" Foreground="Black" FontWeight="SemiBold"/>
+                                            <Run Text="{Binding Statut, Mode=OneWay, StringFormat=' — {0}'}" Foreground="Black"/>
+                                        </TextBlock>
+                                        <TextBlock FontSize="10.5" Foreground="#7C8CA0" Text="{Binding Source}"/>
+                                    </StackPanel>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Classes="groupheader" Text="Interventions sur la carte" Margin="0,6,0,0"/>
+                    <ItemsControl ItemsSource="{Binding Interventions}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="link" Command="{Binding $parent[UserControl].DataContext.ChoisirInterventionCommand}" CommandParameter="{Binding}" Margin="0,1">
+                                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                                        <Run Text="{Binding Priorite, Mode=OneWay}" Foreground="#B3261E" FontWeight="SemiBold"/>
+                                        <Run Text="{Binding Numero, Mode=OneWay, StringFormat=' {0}'}"/>
+                                        <Run Text="{Binding Nature, Mode=OneWay, StringFormat=' — {0}'}" Foreground="Black"/>
+                                    </TextBlock>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+
+                    <TextBlock Classes="groupheader" Text="Non placées" Margin="0,6,0,0"/>
+                    <ItemsControl ItemsSource="{Binding NonPlacees}">
+                        <ItemsControl.ItemTemplate>
+                            <DataTemplate>
+                                <Button Classes="link" Command="{Binding $parent[UserControl].DataContext.ChoisirInterventionCommand}" CommandParameter="{Binding}" Margin="0,1">
+                                    <TextBlock FontSize="12" TextWrapping="Wrap">
+                                        <Run Text="{Binding Numero, Mode=OneWay}"/>
+                                        <Run Text="{Binding Nature, Mode=OneWay, StringFormat=' — {0}'}" Foreground="Black"/>
+                                        <Run Text="{Binding Adresse, Mode=OneWay, StringFormat=' ({0})'}" Foreground="#5B6B7C"/>
+                                    </TextBlock>
+                                </Button>
+                            </DataTemplate>
+                        </ItemsControl.ItemTemplate>
+                    </ItemsControl>
+                </StackPanel>
+            </ScrollViewer>
+        </Border>
+
+        <!-- Téléphone : sélection sous la carte -->
+        <Border Grid.Row="2" Grid.ColumnSpan="2" IsVisible="{Binding Host.EstCompact}" Background="#F7FAFD" BorderBrush="#C8D5E7" BorderThickness="0,1,0,0" Padding="10,6">
+            <StackPanel Spacing="4">
+                <TextBlock Text="{Binding InfoSelection}" TextWrapping="Wrap" FontSize="12" Foreground="Black"/>
+                <Button Classes="small" Content="Ouvrir la fiche" Command="{Binding OuvrirFicheCommand}" IsVisible="{Binding ASelection}" HorizontalAlignment="Left"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</UserControl>

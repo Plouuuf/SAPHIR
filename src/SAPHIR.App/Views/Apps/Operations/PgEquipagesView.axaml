@@ -1,0 +1,54 @@
+<UserControl xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             x:Class="Saphir.Views.Apps.Operations.PgEquipagesView">
+    <!-- DataContext : PgEquipagesSection. -->
+    <Grid RowDefinitions="Auto,*,Auto" Margin="12,10">
+        <WrapPanel>
+            <Button Content="Mon équipage" Command="{Binding MonEquipageCommand}" Margin="0,0,8,6"/>
+            <Button Content="Constituer les équipages (Main courante)" Command="{Binding ConstituerCommand}" IsVisible="{Binding PeutConstituer}" Margin="0,0,8,6"/>
+            <TextBlock Classes="muted" Text="Le statut d'un équipage est indépendant du statut de l'intervention." VerticalAlignment="Center" Margin="0,0,0,6"/>
+        </WrapPanel>
+        <DataGrid Grid.Row="1" ItemsSource="{Binding Lignes}" SelectedItem="{Binding Selection}" AutoGenerateColumns="False" HeadersVisibility="Column">
+            <DataGrid.Columns>
+                <DataGridTextColumn Header="Indicatif" Binding="{Binding Indicatif}" Width="90"/>
+                <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="120"/>
+                <DataGridTextColumn Header="Statut" Binding="{Binding Statut}" Width="140"/>
+                <DataGridTextColumn Header="Intervention" Binding="{Binding Intervention}" Width="125"/>
+                <DataGridTextColumn Header="Chef de bord" Binding="{Binding Chef}" Width="160"/>
+                <DataGridTextColumn Header="Agents" Binding="{Binding NombreAgents}" Width="60"/>
+                <DataGridTextColumn Header="Véhicule" Binding="{Binding Vehicule}" Width="*"/>
+            </DataGrid.Columns>
+        </DataGrid>
+        <Grid Grid.Row="2" Margin="0,10,0,0" RowDefinitions="Auto,Auto">
+            <Border Background="#F7FAFD" BorderBrush="#C8D5E7" BorderThickness="1" Padding="10,8">
+                <TextBlock Text="{Binding Detail}" TextWrapping="Wrap" FontSize="12" Foreground="Black"/>
+            </Border>
+            <StackPanel Grid.Row="1" Spacing="6" Margin="0,8,0,0">
+                <WrapPanel IsVisible="{Binding PeutChangerStatut}">
+                    <TextBlock Classes="label" Text="Nouveau statut" VerticalAlignment="Center" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Statuts}" SelectedItem="{Binding NouveauStatut}" Width="190" Margin="0,0,6,6"/>
+                    <TextBox Text="{Binding Motif}" Watermark="Précision (facultatif)" Width="240" Margin="0,0,6,6"/>
+                    <Button Classes="default" Content="Appliquer le statut" Command="{Binding StatutCommand}" Margin="0,0,6,6"/>
+                    <Button Content="Ouvrir l'intervention" Command="{Binding OuvrirInterventionCommand}" IsVisible="{Binding EstEngage}" Margin="0,0,6,6"/>
+                </WrapPanel>
+                <WrapPanel IsVisible="{Binding PeutAffecter}">
+                    <TextBlock Classes="label" Text="Engager sur" VerticalAlignment="Center" Margin="0,0,6,6"/>
+                    <ComboBox ItemsSource="{Binding Interventions}" SelectedItem="{Binding Intervention}" Width="320" Margin="0,0,6,6">
+                        <ComboBox.ItemTemplate>
+                            <DataTemplate>
+                                <TextBlock>
+                                    <Run Text="{Binding Priorite, Mode=OneWay}" FontWeight="SemiBold"/>
+                                    <Run Text="{Binding Numero, Mode=OneWay, StringFormat=' {0}'}"/>
+                                    <Run Text="{Binding Nature, Mode=OneWay, StringFormat=' — {0}'}"/>
+                                    <Run Text="{Binding Commune, Mode=OneWay, StringFormat=' ({0})'}" Foreground="#5B6B7C"/>
+                                </TextBlock>
+                            </DataTemplate>
+                        </ComboBox.ItemTemplate>
+                    </ComboBox>
+                    <CheckBox Content="Renfort" IsChecked="{Binding Renfort}" Margin="0,0,6,6"/>
+                    <Button Content="Engager l'équipage" Command="{Binding EngagerCommand}" Margin="0,0,6,6"/>
+                </WrapPanel>
+            </StackPanel>
+        </Grid>
+    </Grid>
+</UserControl>

@@ -47,7 +47,7 @@ public class SocleReglesTests
 
     [Fact]
     public void Affichage_version()
-        => Assert.Equal("SAPHIR - v0.2.0.0", SocleRegles.AffichageVersion(SocleRegles.VersionParDefaut));
+        => Assert.Equal("SAPHIR - v1.0.0.0", SocleRegles.AffichageVersion(SocleRegles.VersionParDefaut));
 
     [Fact]
     public void Validation_des_parametres()

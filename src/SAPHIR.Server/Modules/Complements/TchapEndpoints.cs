@@ -204,6 +204,9 @@ internal sealed class TchapStore(SaphirDb saphirDb, RealtimeHub hub)
         await using (var db = await saphirDb.OpenAsync(ct))
         {
             await db.BeginAsync(ct);
+            // Verrou du salon d'abord : sans lui, deux envois simultanés (verrou partagé de la clé étrangère à l'insertion,
+            // puis mise à jour du salon) se bloquent mutuellement (interblocage InnoDB).
+            await db.ScalarAsync("SELECT id FROM app_tchap_salons WHERE id = @id FOR UPDATE", ct, ("@id", id));
             salon = await SalonLisibleAsync(db, ctx, id, ct);
             if (salon.Archive)
                 throw ApiException.Conflit("Ce salon est archivé : il est en lecture seule.");

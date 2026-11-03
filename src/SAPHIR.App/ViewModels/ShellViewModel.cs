@@ -27,6 +27,8 @@ public sealed class ShellViewModel : ViewModelBase
     private readonly RealtimeClient _realtime = new();
     private readonly DispatcherTimer _clock;
     private readonly DispatcherTimer _revalidation;
+    private readonly DispatcherTimer _updateTimer;
+    private bool _updateAnnounced;
 
     private CancellationTokenSource? _signInCts;
     private ShellScreen _screen = ShellScreen.Logon;
@@ -67,6 +69,11 @@ public sealed class ShellViewModel : ViewModelBase
 
         _revalidation = new DispatcherTimer { Interval = RevalidationInterval };
         _revalidation.Tick += (_, _) => _ = RevalidateAsync();
+
+        // Mise à jour automatique du poste : au démarrage, puis toutes les 30 minutes et à l'annonce du serveur.
+        _updateTimer = new DispatcherTimer { Interval = TimeSpan.FromMinutes(30) };
+        _updateTimer.Tick += (_, _) => _ = CheckForUpdateAsync();
+        if (UpdateClient.IsSupported) _updateTimer.Start();
 
         _ = InitializeAsync();
     }
@@ -246,6 +253,10 @@ public sealed class ShellViewModel : ViewModelBase
     private async Task InitializeAsync()
     {
         _ = LoadVersionAsync();
+
+        UpdateClient.CleanUp();
+        if (await CheckForUpdateAsync())
+            return;
 
         var saved = _auth.PeekSavedUser();
         if (saved is not null)
@@ -433,6 +444,46 @@ public sealed class ShellViewModel : ViewModelBase
         Desktop = null;
         ErrorText = null;
         Screen = ShellScreen.Logon;
+        if (_updateAnnounced)
+            _ = CheckForUpdateAsync();
+    }
+
+    /// <summary>
+    /// Nouvelle version sur le serveur : installée tout de suite à l'écran d'ouverture de session (puis SAPHIR redémarre),
+    /// annoncée sur le bureau pendant une session (installée à la fermeture de session ou au prochain lancement).
+    /// Renvoie vrai si l'installation est lancée.
+    /// </summary>
+    private async Task<bool> CheckForUpdateAsync()
+    {
+        if (!UpdateClient.IsSupported || IsBusy) return false;
+        var info = await UpdateClient.CheckAsync();
+        if (info is null) return false;
+
+        if (Screen is ShellScreen.Desktop or ShellScreen.Welcome)
+        {
+            if (!_updateAnnounced)
+                Desktop?.ShowNotification("Mise à jour de SAPHIR",
+                    $"{info.Version} est disponible : elle s'installera à la fermeture de ta session.");
+            _updateAnnounced = true;
+            return false;
+        }
+        if (Screen == ShellScreen.FirstLogin)
+            return false;
+
+        ErrorText = null;
+        IsBusy = true;
+        StatusText = $"Mise à jour de SAPHIR ({info.Version})…";
+        var progress = new Progress<int>(p => StatusText = $"Mise à jour de SAPHIR ({info.Version}) : {p} %");
+        var error = await UpdateClient.InstallAsync(info, progress);
+        // En cas de succès, SAPHIR se ferme et la nouvelle version démarre.
+        StatusText = null;
+        IsBusy = false;
+        if (error is not null)
+        {
+            ErrorText = error;
+            return false;
+        }
+        return true;
     }
 
     private async Task UseOtherAccountAsync()
@@ -453,6 +504,11 @@ public sealed class ShellViewModel : ViewModelBase
 
     private void OnRealtime(RealtimeMessage message)
     {
+        if (message.Type == RealtimeTypes.UpdateAvailable)
+        {
+            _ = CheckForUpdateAsync();
+            return;
+        }
         if (message.Type is RealtimeTypes.SessionChanged or RealtimeTypes.ParametresChanged)
             _ = ReloadSessionAsync(message.Type == RealtimeTypes.SessionChanged);
         Desktop?.HandleRealtime(message);

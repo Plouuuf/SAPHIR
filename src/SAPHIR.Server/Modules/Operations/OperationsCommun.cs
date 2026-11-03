@@ -13,6 +13,28 @@ internal static class OpSql
 {
     public static readonly JsonSerializerOptions Json = new(JsonSerializerDefaults.Web);
 
+    /// <summary>
+    /// Rejoue (3 essais au plus) une opération faite d'une seule transaction quand InnoDB l'a choisie comme victime d'un
+    /// interblocage — la transaction a alors été annulée en entier — ou, si <paramref name="doublon"/>, quand une création
+    /// simultanée a déjà inséré la même clé unique (le nouvel essai retrouve la ligne existante).
+    /// </summary>
+    public static async Task<T> ReessayerAsync<T>(Func<Task<T>> operation, bool doublon = false)
+    {
+        for (var essai = 1; ; essai++)
+        {
+            try
+            {
+                return await operation();
+            }
+            catch (MySqlConnector.MySqlException ex) when (essai < 3 &&
+                (ex.ErrorCode == MySqlConnector.MySqlErrorCode.LockDeadlock ||
+                 (doublon && ex.ErrorCode == MySqlConnector.MySqlErrorCode.DuplicateKeyEntry)))
+            {
+                await Task.Delay(Random.Shared.Next(20, 120));
+            }
+        }
+    }
+
     public static DateTime Utc(DateTimeOffset date) => date.UtcDateTime;
 
     public static DateTime? Utc(DateTimeOffset? date) => date?.UtcDateTime;

@@ -28,4 +28,7 @@ public static class RealtimeTypes
 
     /// <summary>Paramètres centraux modifiés (version…).</summary>
     public const string ParametresChanged = "parametres-changed";
+
+    /// <summary>Nouvelle version des postes disponible sur le serveur (GET /api/updates/latest).</summary>
+    public const string UpdateAvailable = "update-available";
 }

@@ -158,7 +158,10 @@ public sealed class PegaseStore(SaphirDb saphirDb, OperationsNotifier notifier)
     }
 
     /// <summary>SIMCALL : décroché d'un 17. Crée (ou retrouve) l'appel et ouvre la prise d'appel sur le poste de l'opérateur.</summary>
-    public async Task<long> SimcallDecrocheAsync(SimcallCallAnswered message, CancellationToken ct)
+    public Task<long> SimcallDecrocheAsync(SimcallCallAnswered message, CancellationToken ct)
+        => OpSql.ReessayerAsync(() => SimcallDecrocheEssaiAsync(message, ct), doublon: true);
+
+    private async Task<long> SimcallDecrocheEssaiAsync(SimcallCallAnswered message, CancellationToken ct)
     {
         var simcallId = OpSql.T(message.SimcallCallId, 64) ?? throw ApiException.Saisie("Appel SIMCALL incomplet.");
         var discordId = OperationsRegles.NettoyerDiscordId(message.DiscordUserId) ?? throw ApiException.Saisie("Appel SIMCALL incomplet.");
@@ -175,7 +178,9 @@ public sealed class PegaseStore(SaphirDb saphirDb, OperationsNotifier notifier)
                 "SELECT id, nom, prenom FROM rh_agents WHERE discord_id = @discord",
                 r => new { Id = r.Long("id"), Libelle = $"{r.Text("nom")} {r.Text("prenom")}" }, ct, ("@discord", discordId));
             var operateur = agent?.Libelle ?? OpSql.T(message.OperatorName, 200) ?? "Opérateur SIMCALL";
-            var existant = await db.FirstOrDefaultAsync("SELECT id FROM pg_appels WHERE simcall_id = @simcall FOR UPDATE",
+            // Pas de FOR UPDATE : sur un appel encore absent, le verrou de plage puis l'insertion provoquaient des interblocages
+            // entre décrochés simultanés. La clé unique simcall_id protège des doublons (nouvel essai, voir SimcallDecrocheAsync).
+            var existant = await db.FirstOrDefaultAsync("SELECT id FROM pg_appels WHERE simcall_id = @simcall",
                 r => (object)r.Long("id"), ct, ("@simcall", simcallId));
             nouveau = existant is null;
             var maintenant = DateTime.UtcNow;
@@ -1411,7 +1416,10 @@ public sealed class PegaseStore(SaphirDb saphirDb, OperationsNotifier notifier)
     }
 
     /// <summary>L'agent connecté prend la permanence TN ; la permanence en cours est close.</summary>
-    public async Task<TnDto> PrendreTnAsync(AgentContext ctx, TnInput input, CancellationToken ct)
+    public Task<TnDto> PrendreTnAsync(AgentContext ctx, TnInput input, CancellationToken ct)
+        => OpSql.ReessayerAsync(() => PrendreTnEssaiAsync(ctx, input, ct));
+
+    private async Task<TnDto> PrendreTnEssaiAsync(AgentContext ctx, TnInput input, CancellationToken ct)
     {
         await using var db = await saphirDb.OpenAsync(ct);
         await db.BeginAsync(ct);

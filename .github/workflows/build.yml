@@ -31,7 +31,7 @@ jobs:
 
       - name: Poste Windows (x64)
         run: >
-          dotnet publish src/SAPHIR.Desktop -c Release -r win-x64 --self-contained true
+          dotnet publish src/SAPHIR.Desktop -c Release -r win-x64 --self-contained true -p:SaphirBuild=${{ github.run_number }}
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/windows
 
       - uses: actions/upload-artifact@v4
@@ -53,7 +53,7 @@ jobs:
 
       - name: Poste macOS (Apple Silicon)
         run: >
-          dotnet publish src/SAPHIR.Desktop -c Release -r osx-arm64 --self-contained true
+          dotnet publish src/SAPHIR.Desktop -c Release -r osx-arm64 --self-contained true -p:SaphirBuild=${{ github.run_number }}
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/macos
 
       - name: Application SAPHIR.app
@@ -126,13 +126,13 @@ jobs:
 
       - name: Serveur Windows (VPS)
         run: |
-          dotnet publish src/SAPHIR.Server -c Release -r win-x64 --self-contained true -o artifacts/server-win
-          cp deploy/install-serveur.ps1 artifacts/server-win/
+          dotnet publish src/SAPHIR.Server -c Release -r win-x64 --self-contained true -p:SaphirBuild=${{ github.run_number }} -o artifacts/server-win
+          cp deploy/install-serveur.ps1 deploy/maj-serveur.ps1 artifacts/server-win/
           (cd artifacts/server-win && zip -qr ../SAPHIR-server-win-x64.zip .)
 
       - name: Poste Windows
         run: >
-          dotnet publish src/SAPHIR.Desktop -c Release -r win-x64 --self-contained true
+          dotnet publish src/SAPHIR.Desktop -c Release -r win-x64 --self-contained true -p:SaphirBuild=${{ github.run_number }}
           -p:PublishSingleFile=true -p:IncludeNativeLibrariesForSelfExtract=true -o artifacts/windows
 
       - uses: actions/download-artifact@v4

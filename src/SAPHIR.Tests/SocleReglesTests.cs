@@ -59,6 +59,10 @@ public class SocleReglesTests
         Assert.NotNull(SocleRegles.ValiderParametre(ParametresCles.RioExemple, "12", SocleRegles.RioFormatParDefaut));
         Assert.Null(SocleRegles.ValiderParametre(ParametresCles.RioExemple, "7654321", SocleRegles.RioFormatParDefaut));
         Assert.NotNull(SocleRegles.ValiderParametre(ParametresCles.NomOrganisation, "  ", null));
+        // Webhook PÉGASE : « désactivé » (valeur de départ) doit rester enregistrable pour couper la notification.
+        Assert.Null(SocleRegles.ValiderParametre("pegase.discord.webhook", "désactivé", null));
+        Assert.Null(SocleRegles.ValiderParametre("pegase.discord.webhook", "https://discord.com/api/webhooks/1/abc", null));
+        Assert.NotNull(SocleRegles.ValiderParametre("pegase.discord.webhook", "https://exemple.fr/hook", null));
     }
 
     [Fact]

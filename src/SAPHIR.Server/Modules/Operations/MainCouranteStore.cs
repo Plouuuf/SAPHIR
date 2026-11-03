@@ -843,6 +843,9 @@ public sealed class MainCouranteStore(SaphirDb saphirDb, OperationsNotifier noti
             }
 
             var distance = sortie is null ? (int?)null : input.Kilometrage - sortie.Km;
+            // Rattache le retour à la vacation de l'équipage (sinon absent du journal filtré par vacation).
+            var vacationRetour = vehicule.EquipageId is null ? 0
+                : await db.LongAsync("SELECT vacation_id FROM mc_equipages WHERE id = @equipage", ct, ("@equipage", vehicule.EquipageId));
             await Historique.EcrireAsync(db, ctx.Auteur, OperationsRegles.ObjetVehicule, vehicule.Reference, "Retour", "disponibilite",
                 VehiculeDisponibilites.Sorti, disponibilite, OpSql.T(input.Degradations, 500), ct);
             await new EvenementService(JournalTypes.RetourVehicule, $"Retour du véhicule {vehicule.Immatriculation} — {disponibilite.ToLowerInvariant()}")
@@ -850,6 +853,7 @@ public sealed class MainCouranteStore(SaphirDb saphirDb, OperationsNotifier noti
                 Details = $"Kilométrage : {input.Kilometrage}" + (distance is null ? "." : $" ({distance} km parcourus).") +
                           $" Carburant : {input.Carburant ?? "non relevé"}." +
                           (string.IsNullOrWhiteSpace(input.Degradations) ? string.Empty : " Dégradations : " + input.Degradations.Trim()),
+                VacationId = vacationRetour > 0 ? vacationRetour : null,
                 EquipageId = vehicule.EquipageId,
                 VehiculeId = id
             }.EcrireAsync(db, ctx.Auteur, ct);

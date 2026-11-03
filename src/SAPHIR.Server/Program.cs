@@ -53,6 +53,11 @@ public static class Program
         builder.Services.AddSingleton<AdminStore>();
         builder.Services.AddSingleton<SessionService>();
 
+        // Mise à jour automatique (serveur et postes)
+        builder.Services.Configure<UpdateOptions>(builder.Configuration.GetSection("Updates"));
+        builder.Services.AddHttpClient("updates", c => c.Timeout = TimeSpan.FromMinutes(10));
+        builder.Services.AddHostedService<UpdateService>();
+
         // Modules métier (phases 3 à 8)
         builder.Services.AddSaphirModules();
 
@@ -81,7 +86,8 @@ public static class Program
             status = "ok",
             utc = DateTimeOffset.UtcNow,
             connections = hub.ConnectionCount,
-            database = database.IsReady
+            database = database.IsReady,
+            build = Saphir.Shared.BuildInfo.Number
         }));
 
         // ===== Connexion Discord =====
@@ -143,6 +149,7 @@ public static class Program
 
         app.MapSocle();
         app.MapSaphirModules();
+        app.MapUpdates();
 
         // ===== Intégrations serveur à serveur (clé SAPHIR:AccessKey dans l'en-tête X-Saphir-Key) =====
 

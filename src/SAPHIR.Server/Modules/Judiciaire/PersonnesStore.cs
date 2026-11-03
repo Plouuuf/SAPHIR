@@ -186,8 +186,10 @@ public sealed class PersonnesStore(SaphirDb saphirDb, FiveMLecture fivem)
 
         await using var db = await saphirDb.OpenAsync(ct);
         await db.BeginAsync(ct);
+        // Lecture simple (sans FOR UPDATE) : un verrou de plage sur une identité absente, suivi de l'insertion,
+        // provoquait des interblocages entre créations simultanées.
         var doublon = await db.ScalarAsync(
-            "SELECT reference FROM per_personnes WHERE nom = @nom AND prenom = @prenom AND date_naissance <=> @naissance LIMIT 1 FOR UPDATE", ct,
+            "SELECT reference FROM per_personnes WHERE nom = @nom AND prenom = @prenom AND date_naissance <=> @naissance LIMIT 1", ct,
             ("@nom", nom), ("@prenom", prenom), ("@naissance", Sqlj.Jour(input.DateNaissance)));
         if (doublon is string reference)
             throw ApiException.Conflit($"Cette identité existe déjà ({reference}). Sélectionne la fiche existante.");

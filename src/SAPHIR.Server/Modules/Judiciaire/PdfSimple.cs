@@ -152,6 +152,12 @@ public sealed class PdfSimple
         var table = gras ? Gras : Normal;
         if (c >= 32 && c <= 126)
             return table[c - 32];
+        // Moitié d'un caractère hors BMP (émoji…) : la paire est rendue par un seul « ? » (Chaine), la seconde moitié est vide.
+        // Normalize lèverait une exception sur une moitié isolée.
+        if (char.IsHighSurrogate(c))
+            return table['?' - 32];
+        if (char.IsLowSurrogate(c))
+            return 0;
         // Lettres accentuées : largeur de la lettre de base.
         var decompose = c.ToString().Normalize(NormalizationForm.FormD);
         if (decompose.Length > 0 && decompose[0] >= 32 && decompose[0] <= 126)
@@ -208,6 +214,8 @@ public sealed class PdfSimple
         var builder = new StringBuilder("(");
         foreach (var c in texte)
         {
+            if (char.IsLowSurrogate(c))
+                continue; // paire hors BMP : un seul « ? » (émis pour la première moitié)
             var b = WinAnsi(c);
             switch (b)
             {

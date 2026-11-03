@@ -12,5 +12,10 @@
     <AssemblyTitle>SAPHIR - $(Version) © 2026 VAL-DE-MARNE SIMULATION</AssemblyTitle>
     <Description>SAPHIR - poste de travail Police nationale du réseau VAL-DE-MARNE SIMULATION</Description>
     <Copyright>© 2026 VAL-DE-MARNE SIMULATION</Copyright>
+    <!-- Numéro de compilation officiel (GitHub Actions : numéro du run = build-N de la version publiée). 0 = compilation locale. -->
+    <SaphirBuild Condition="'$(SaphirBuild)' == ''">0</SaphirBuild>
   </PropertyGroup>
+  <ItemGroup>
+    <AssemblyMetadata Include="SaphirBuild" Value="$(SaphirBuild)" />
+  </ItemGroup>
 </Project>

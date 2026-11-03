@@ -92,6 +92,10 @@ public static class SocleRegles
     /// Contrôle la valeur d'un paramètre central. Retourne le message d'erreur, ou <c>null</c> si la valeur est acceptée.
     /// <paramref name="formatRio"/> = format du RIO en vigueur (pour contrôler l'exemple).
     /// </summary>
+    /// <summary>Valeur qui coupe la notification Discord de PÉGASE (« désactivé », valeur par défaut).</summary>
+    private static bool WebhookDesactive(string valeur)
+        => valeur.Trim().ToLowerInvariant() is "désactivé" or "desactive" or "désactivée" or "desactivee" or "aucun";
+
     public static string? ValiderParametre(string cle, string valeur, string? formatRio)
     {
         if (string.IsNullOrWhiteSpace(valeur))
@@ -113,7 +117,7 @@ public static class SocleRegles
             ParametresCles.NomOrganisation => valeur.Trim().Length > 200
                 ? "Le nom de l'organisation est trop long (200 caractères au plus)."
                 : null,
-            "pegase.discord.webhook" => Saphir.Server.Modules.Operations.OperationsRegles.WebhookValide(valeur.Trim())
+            "pegase.discord.webhook" => WebhookDesactive(valeur) || Saphir.Server.Modules.Operations.OperationsRegles.WebhookValide(valeur.Trim())
                 ? null
                 : "Webhook Discord invalide : « désactivé » ou une adresse https://discord.com/api/webhooks/…",
             _ when cle.StartsWith("geoops.carte.", StringComparison.Ordinal) || cle == "geoops.positions.peremption"

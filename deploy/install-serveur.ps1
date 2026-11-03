@@ -8,6 +8,7 @@
 #  écrit appsettings.Local.json (clé, Discord, base), ouvre le port 8091, crée la tâche
 #  planifiée « SAPHIR Server » (démarrage automatique) et lance le serveur.
 #  Fois suivantes : met simplement le serveur à jour, les réglages sont conservés.
+#  Ensuite, le serveur se met à jour tout seul (GitHub, toutes les 10 minutes) et sert les mises à jour aux postes.
 # =====================================================================================
 
 $ErrorActionPreference = 'Stop'
@@ -92,6 +93,13 @@ function Installer {
     Register-ScheduledTask -TaskName $Tache -Action $action -Trigger $trigger -Principal $principal -Settings $settings -Force | Out-Null
     Start-ScheduledTask -TaskName $Tache
     Ok "Serveur lancé."
+
+    # Tâche de mise à jour automatique : le serveur télécharge lui-même ses nouvelles versions et la déclenche.
+    $actionMaj = New-ScheduledTaskAction -Execute 'powershell.exe' `
+        -Argument "-NoProfile -ExecutionPolicy Bypass -File `"$(Join-Path $Dossier 'maj-serveur.ps1')`"" -WorkingDirectory $Dossier
+    $reglagesMaj = New-ScheduledTaskSettingsSet -AllowStartIfOnBatteries -DontStopIfGoingOnBatteries -ExecutionTimeLimit (New-TimeSpan -Minutes 15)
+    Register-ScheduledTask -TaskName 'SAPHIR Mise a jour' -Action $actionMaj -Principal $principal -Settings $reglagesMaj -Force | Out-Null
+    Ok "Mise à jour automatique activée (tâche « SAPHIR Mise a jour »)."
 
     # ----- 6. Vérification -----
     Etape "Vérification"

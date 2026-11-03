@@ -70,6 +70,13 @@ demande le mot de passe root de MariaDB), reprend l'application Discord d'ARGOS 
 écrit `C:\SAPHIR\appsettings.Local.json`, ouvre le port 8091, crée la tâche planifiée « SAPHIR Server » et lance
 le serveur. Ensuite, la même commande sert à mettre à jour (les réglages sont conservés).
 
+**Mise à jour automatique (comme ARGOS)** : à chaque version publiée sur GitHub, le serveur la télécharge
+(vérification toutes les 10 minutes), s'installe lui-même via la tâche « SAPHIR Mise a jour », et sert les
+nouveaux postes Windows et macOS. Les postes se mettent à jour depuis le serveur : à l'écran d'ouverture de
+session (installation puis redémarrage), ou à la fermeture de session si une session est ouverte. Journaux :
+`C:\SAPHIR\data\updates\verification.log` et `maj-serveur.log`. Désactivation : `"Updates": { "Enabled": false }`
+dans `appsettings.Local.json`.
+
 Les étapes manuelles ci-dessous restent valables pour une installation à la main.
 
 ### 2. Base de données (MariaDB, sur le VPS)
